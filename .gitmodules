@@ -1,6 +1,3 @@
-[submodule "DenOfIz"]
-	path = DenOfIz
-	url = https://github.com/MMuratCengiz/DenOfIz.git
 [submodule "vcpkg"]
 	path = vcpkg
 	url = https://github.com/microsoft/vcpkg.git

@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="BackendCodeEditorMiscSettings">
-    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="9" type="long" />
+    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="54" type="long" />
     <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
     <option name="/Default/RiderDebugger/RiderRestoreDecompile/RestoreDecompileSetting/@EntryValue" value="false" type="bool" />
   </component>
@@ -28,19 +28,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="06b35b54-58db-4060-8284-227ce3dd18aa" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.clang-format" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gitmodules" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CMakePresets.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/DenOfIz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Editor/CMakeLists.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Editor/Include/Editor.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Editor/Source/Editor.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Main.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vcpkg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vcpkg.json" afterDir="false" />
-    </list>
+    <list default="true" id="06b35b54-58db-4060-8284-227ce3dd18aa" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -57,7 +45,7 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/DenOfIz" />
   </component>
   <component name="ProjectApplicationVersion">
     <option name="ide" value="CLion" />
@@ -84,7 +72,6 @@
     "cf.advertisement.text.has.clang-format": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "main",
     "last_opened_file_path": "C:/Workspace/DZEngine",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -113,7 +100,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1753821038209</updated>
-      <workItem from="1753821039373" duration="658000" />
+      <workItem from="1753821039373" duration="3500000" />
     </task>
     <servers />
   </component>

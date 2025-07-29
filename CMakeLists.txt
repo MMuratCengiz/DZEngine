@@ -25,7 +25,15 @@ if (MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif ()
 
-add_subdirectory(DenOfIz)
+# Don't use add_subdirectory for DenOfIz
+# Instead, build it separately and use find_package
+# add_subdirectory(DenOfIz)
+
+# Find DenOfIz as an installed package
+# You'll need to build and install DenOfIz separately first:
+# cd DenOfIz && cmake -B build -DCMAKE_INSTALL_PREFIX=../DenOfIz_install && cmake --build build --target install
+find_package(DenOfIzGraphics REQUIRED)
+
 add_subdirectory(Editor)
 
 set(SOURCES Main.cpp)
