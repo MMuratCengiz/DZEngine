@@ -52,12 +52,10 @@ void App::HandleEvent( const Event &event )
     }
 }
 
-void App::Update( )
-{
-}
-
 void App::Run( )
 {
+    InitSystems( );
+
     Event       event;
     InputSystem inputSystem{ };
     while ( m_isRunning )
@@ -74,7 +72,27 @@ void App::Run( )
     }
 }
 
+void App::Update( )
+{
+    uint32_t nextImage = m_graphicsContext->AcquireNextImage( );
+
+
+
+}
+
+void App::InitSystems( )
+{
+}
+
 App::~App( )
 {
     Engine::Shutdown( );
+}
+
+void App::RunEditor( )
+{
+}
+
+void App::RunGame( )
+{
 }

@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
 #include "DZEngine/AppContext.h"
+#include "DZEngine/Editor.h"
 
 namespace DZEngine
 {
@@ -35,11 +36,18 @@ namespace DZEngine
 
         bool m_isRunning = true;
 
+        std::unique_ptr<Editor> m_editor;
+
     public:
         explicit App( AppDesc launchDesc );
         void HandleEvent( const Event &event );
         void Update( );
         void Run( );
+        void InitSystems( );
         ~App( );
+
+    private:
+        void RunEditor( );
+        void RunGame( );
     };
 } // namespace DZEngine

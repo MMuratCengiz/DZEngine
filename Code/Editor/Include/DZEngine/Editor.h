@@ -18,23 +18,23 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include "DZEngine/AppContext.h"
 #include "DenOfIzGrahics/DenOfIzGrahics.h"
-#include "DenOfIzGraphics/Backends/GraphicsApi.h"
 #include "DenOfIzGraphics/Input/Window.h"
 
-namespace DenOfIz
+namespace DZEngine
 {
     struct EditorDesc
     {
-        GraphicsApi *   GraphicsApi;
-        Window *        Window;
-        ILogicalDevice *LogicalDevice;
+        AppContext *AppContext;
     };
 
     class Editor
     {
+        AppContext *m_appContext;
+
     public:
-        Editor(EditorDesc editorDesc);
-        ~Editor();
+        Editor( EditorDesc editorDesc );
+        ~Editor( );
     };
-}
+} // namespace DZEngine

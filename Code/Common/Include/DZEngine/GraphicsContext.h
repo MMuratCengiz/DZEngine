@@ -39,7 +39,8 @@ namespace DZEngine
         std::unique_ptr<ICommandQueue>    m_graphicsQueue;
         std::unique_ptr<ICommandQueue>    m_computeQueue;
 
-        bool m_deviceLost = false;
+        bool                       m_deviceLost = false;
+        std::unique_ptr<FrameSync> m_frameSync;
 
     public:
         explicit GraphicsContext( GraphicsContextDesc graphicsContextDesc );
@@ -55,6 +56,7 @@ namespace DZEngine
 
         void WaitIdle( ) const;
 
+        uint32_t          NextFrame( ) const;
         uint32_t          AcquireNextImage( ) const;
         ITextureResource *GetSwapChainRenderTarget( uint32_t index ) const;
         void              Present( uint32_t imageIndex );

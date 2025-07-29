@@ -100,9 +100,14 @@ void GraphicsContext::WaitIdle( ) const
     m_logicalDevice->WaitIdle( );
 }
 
+uint32_t GraphicsContext::NextFrame( ) const
+{
+    return m_frameSync->NextFrame( );
+}
+
 uint32_t GraphicsContext::AcquireNextImage( ) const
 {
-    return m_swapChain->AcquireNextImage( );
+    return m_frameSync->AcquireNextImage( );
 }
 
 ITextureResource *GraphicsContext::GetSwapChainRenderTarget( const uint32_t index ) const
@@ -112,7 +117,7 @@ ITextureResource *GraphicsContext::GetSwapChainRenderTarget( const uint32_t inde
 
 void GraphicsContext::Present( const uint32_t imageIndex )
 {
-    switch ( m_swapChain->Present( imageIndex ) )
+    switch ( m_frameSync->Present( imageIndex ) )
     {
     case PresentResult::Success:
     case PresentResult::Suboptimal:
