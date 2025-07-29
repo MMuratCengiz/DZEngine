@@ -16,6 +16,15 @@ project(DZEngine
 set(VCPKG_MANIFEST_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 include("${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
 
+if (WIN32)
+    list(APPEND CMAKE_PREFIX_PATH "_ThirdParty/DenOfIzGraphics/win32/")
+elseif (LINUX)
+    list(APPEND CMAKE_PREFIX_PATH "_ThirdParty/DenOfIzGraphics/linux/")
+else ()
+    list(APPEND CMAKE_PREFIX_PATH "_ThirdParty/DenOfIzGraphics/osx/")
+endif ()
+
+find_package(DenOfIzGraphics REQUIRED)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -34,7 +43,7 @@ endif ()
 # cd DenOfIz && cmake -B build -DCMAKE_INSTALL_PREFIX=../DenOfIz_install && cmake --build build --target install
 find_package(DenOfIzGraphics REQUIRED)
 
-add_subdirectory(Editor)
+add_subdirectory(Code)
 
 set(SOURCES Main.cpp)
 if (APPLE)
@@ -69,5 +78,5 @@ set_target_properties(DZEngine PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}"
 )
 
-target_link_libraries(DZEngine PRIVATE DenOfIz::DenOfIzGraphics)
+target_link_libraries(DZEngine PRIVATE DZApp)
 denofiz_setup_target(DZEngine)

@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="BackendCodeEditorMiscSettings">
-    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="54" type="long" />
+    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="30" type="long" />
     <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
+    <option name="/Default/Housekeeping/LiveTemplatesHousekeeping/HotspotSessionHintIsShown/@EntryValue" value="true" type="bool" />
     <option name="/Default/RiderDebugger/RiderRestoreDecompile/RestoreDecompileSetting/@EntryValue" value="false" type="bool" />
   </component>
   <component name="CMakePresetLoader"><![CDATA[{
@@ -18,35 +19,57 @@
     <option name="reloaded" value="true" />
   </component>
   <component name="CMakeRunConfigurationManager">
-    <generated />
+    <generated>
+      <config projectName="DZEngine" targetName="DZCommon" />
+      <config projectName="DZEngine" targetName="DZEditor" />
+      <config projectName="DZEngine" targetName="DZEngine" />
+      <config projectName="DZEngine" targetName="DZApp" />
+    </generated>
   </component>
   <component name="CMakeSettings">
     <configurations>
-      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
-      <configuration PROFILE_NAME="windows-msvc" ENABLED="false" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/build/windows-msvc" />
+      <configuration PROFILE_NAME="windows-msvc" ENABLED="true" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/build/windows-msvc" />
       <configuration PROFILE_NAME="windows-msvc - windows-msvc" ENABLED="false" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/build/windows-msvc" />
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="06b35b54-58db-4060-8284-227ce3dd18aa" name="Changes" comment="" />
+    <list default="true" id="39e8b7cb-75f8-4ce9-a377-79d49c844fe0" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Code/CMakeLists.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Code/Common/CMakeLists.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Code/Common/Include/DZEngine/GraphicsContext.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Code/Editor/Include/DZEngine/Editor.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Code/Editor/Source/Editor.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.clang-format" beforeDir="false" afterPath="$PROJECT_DIR$/.clang-format" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Editor/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Code/Editor/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Editor/Include/Editor.h" beforeDir="false" afterPath="$PROJECT_DIR$/Code/Common/Include/DZEngine/AppContext.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Editor/Source/Editor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Code/Common/Source/GraphicsContext.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Main.cpp" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ClangdSettings">
-    <option name="formatViaClangd" value="false" />
-  </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="CMakeLists.txt" />
-      </list>
-    </option>
-  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:windows-msvc" />
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/DenOfIz" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "MMuratCengiz"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "git@github.com:MMuratCengiz/DZEngine.git",
+    "accountId": "da6ba135-11a0-4634-a367-6c26dbdefcb5"
+  }
+}]]></component>
   <component name="ProjectApplicationVersion">
     <option name="ide" value="CLion" />
     <option name="majorVersion" value="2025" />
@@ -56,7 +79,7 @@
   <component name="ProjectColorInfo"><![CDATA[{
   "associatedIndex": 5
 }]]></component>
-  <component name="ProjectId" id="30Z2zkuaPHIwoY8JFzqYEMMznKi" />
+  <component name="ProjectId" id="30ZG4Y3jSGbt3djjmicWCIt853Z" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -69,10 +92,11 @@
     "RunOnceActivity.cidr.known.project.marker": "true",
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "RunOnceActivity.west.config.association.type.startup.service": "true",
-    "cf.advertisement.text.has.clang-format": "true",
+    "cf.advertisement.text.overridden": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
-    "last_opened_file_path": "C:/Workspace/DZEngine",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -81,26 +105,47 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Workspace\DZEngine" />
-    </key>
-  </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="CMake Application.DZEngine">
     <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="CLION.EXTERNAL.BUILD" enabled="true" />
       </method>
     </configuration>
+    <configuration name="DZApp" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DZEngine" TARGET_NAME="DZApp" CONFIG_NAME="windows-msvc">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="DZCommon" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DZEngine" TARGET_NAME="DZCommon" CONFIG_NAME="windows-msvc">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="DZEditor" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DZEngine" TARGET_NAME="DZEditor" CONFIG_NAME="windows-msvc">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="DZEngine" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DZEngine" TARGET_NAME="DZEngine" CONFIG_NAME="windows-msvc" RUN_TARGET_PROJECT_NAME="DZEngine" RUN_TARGET_NAME="DZEngine">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="CMake Application.DZApp" />
+      <item itemvalue="CMake Application.DZCommon" />
+      <item itemvalue="CMake Application.DZEditor" />
+      <item itemvalue="CMake Application.DZEngine" />
+    </list>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="06b35b54-58db-4060-8284-227ce3dd18aa" name="Changes" comment="" />
-      <created>1753821038209</created>
+      <changelist id="39e8b7cb-75f8-4ce9-a377-79d49c844fe0" name="Changes" comment="" />
+      <created>1753827490719</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1753821038209</updated>
-      <workItem from="1753821039373" duration="3500000" />
+      <updated>1753827490719</updated>
+      <workItem from="1753827491885" duration="1390000" />
     </task>
     <servers />
   </component>

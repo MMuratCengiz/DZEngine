@@ -18,8 +18,28 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "DenOfIzGrahics/DenOfIzGrahics.h"
+#include "DZEngine/AppContext.h"
 
-namespace DenOfIz
+namespace DZEngine
 {
-}
+    struct AppDesc
+    {
+    };
+
+    class App
+    {
+        std::unique_ptr<Window>               m_window;
+        std::unique_ptr<GraphicsWindowHandle> m_windowHandle;
+        std::unique_ptr<GraphicsContext>      m_graphicsContext;
+        std::unique_ptr<AppContext>           m_appContext;
+
+        bool m_isRunning = true;
+
+    public:
+        explicit App( AppDesc launchDesc );
+        void HandleEvent( const Event &event );
+        void Update( );
+        void Run( );
+        ~App( );
+    };
+} // namespace DZEngine
