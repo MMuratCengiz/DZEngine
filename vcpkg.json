@@ -1,0 +1,11 @@
+{
+  "name": "dzengine",
+  "version": "0.0.1",
+  "dependencies": [
+    "spdlog",
+    "eigen3",
+    "flecs",
+    "joltphysics",
+    "taskflow"
+  ]
+}

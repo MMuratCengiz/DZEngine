@@ -1,0 +1,113 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 28,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "installDir": "${sourceDir}/install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "vcpkg/scripts/buildsystems/vcpkg.cmake"
+      }
+    },
+    {
+      "name": "windows-msvc",
+      "inherits": "base",
+      "displayName": "Windows MSVC",
+      "description": "Windows build with MSVC",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_FLAGS": "/W4 /permissive- /Zc:__cplusplus /EHsc",
+        "CMAKE_CXX_FLAGS_DEBUG": "/MDd /Zi /Ob0 /Od /RTC1",
+        "CMAKE_CXX_FLAGS_RELEASE": "/MD /O2 /Ob2 /DNDEBUG"
+      }
+    },
+    {
+      "name": "macos",
+      "inherits": "base",
+      "displayName": "macOS",
+      "description": "macOS build with Clang",
+      "generator": "Xcode",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "arm64-osx",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic",
+        "CMAKE_CXX_FLAGS_DEBUG": "-g -O0",
+        "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG"
+      }
+    },
+    {
+      "name": "linux-clang",
+      "inherits": "base",
+      "displayName": "Linux Clang",
+      "description": "Linux build with Clang",
+      "generator": "Unix Makefiles",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -fcolor-diagnostics",
+        "CMAKE_CXX_FLAGS_DEBUG": "-g -O0",
+        "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG"
+      }
+    },
+    {
+      "name": "emscripten",
+      "inherits": "base",
+      "displayName": "Emscripten",
+      "description": "Emscripten Build",
+      "generator": "Ninja",
+      "condition": {
+        "type": "equals",
+        "lhs": "$env{EMSDK}",
+        "rhs": "1"
+      },
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "wasm32-emscripten",
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+      },
+      "environment": {
+        "VCPKG_ENV_PASSTHROUGH_UNTRACKED": "EMSCRIPTEN_ROOT;EMSDK;PATH"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "windows-msvc",
+      "configurePreset": "windows-msvc"
+    },
+    {
+      "name": "macos",
+      "configurePreset": "macos"
+    },
+    {
+      "name": "linux-clang",
+      "configurePreset": "linux-clang"
+    },
+    {
+      "name": "emscripten",
+      "configurePreset": "emscripten"
+    }
+  ]
+}
