@@ -17,9 +17,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "DZEngine/App.h"
-
 #include "DZEngine/DummyGame.h"
+
+// TODO find a better approach
+#define DZ_RUN_MODE_EDITOR 1
+
+#ifdef DZ_RUN_MODE_EDITOR
+#include "DZEngine/EditorGameRunner.h"
+#else
 #include "DZEngine/GameRunner.h"
+#endif
 
 using namespace DZEngine;
 

@@ -31,6 +31,10 @@ EditorGameRunner::EditorGameRunner( const GameRunnerDesc &desc ) : m_game( desc.
     m_appContext->GraphicsContext = m_graphicsContext;
     m_game->Init( m_appContext.get( ) );
 
+    EditorDesc editorDesc{ };
+    editorDesc.AppContext = m_appContext.get( );
+    m_editor              = std::make_unique<Editor>( editorDesc );
+
     m_renderCompleteSemaphores.resize( m_graphicsContext->NumFramesInFlight );
     for ( int i = 0; i < m_graphicsContext->NumFramesInFlight; i++ )
     {
