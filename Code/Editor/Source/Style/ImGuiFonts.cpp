@@ -74,8 +74,8 @@ void ImGuiFonts::LoadFonts( )
 
         if ( m_config.MergeIcons )
         {
-            fontConfig.MergeMode        = true;
-            fontConfig.GlyphMinAdvanceX = m_config.VerySmallSize;
+            fontConfig.MergeMode  = true;
+            fontConfig.SizePixels = m_config.VerySmallSize;
             io.Fonts->AddFontFromMemoryTTF( FontAwesome_data, FontAwesome_size, m_config.IconVerySmallSize, &fontConfig, icon_ranges );
         }
 
@@ -85,8 +85,8 @@ void ImGuiFonts::LoadFonts( )
 
         if ( m_config.MergeIcons )
         {
-            fontConfig.MergeMode        = true;
-            fontConfig.GlyphMinAdvanceX = m_config.SmallSize;
+            fontConfig.MergeMode  = true;
+            fontConfig.SizePixels = m_config.SmallSize;
             io.Fonts->AddFontFromMemoryTTF( FontAwesome_data, FontAwesome_size, m_config.IconSmallSize, &fontConfig, icon_ranges );
         }
 
@@ -97,8 +97,8 @@ void ImGuiFonts::LoadFonts( )
 
         if ( m_config.MergeIcons )
         {
-            fontConfig.MergeMode        = true;
-            fontConfig.GlyphMinAdvanceX = m_config.MediumSize;
+            fontConfig.MergeMode  = true;
+            fontConfig.SizePixels = m_config.MediumSize;
             io.Fonts->AddFontFromMemoryTTF( FontAwesome_data, FontAwesome_size, m_config.IconMediumSize, &fontConfig, icon_ranges );
         }
 
@@ -108,8 +108,8 @@ void ImGuiFonts::LoadFonts( )
 
         if ( m_config.MergeIcons )
         {
-            fontConfig.MergeMode        = true;
-            fontConfig.GlyphMinAdvanceX = m_config.LargeSize;
+            fontConfig.MergeMode  = true;
+            fontConfig.SizePixels = m_config.LargeSize;
             io.Fonts->AddFontFromMemoryTTF( FontAwesome_data, FontAwesome_size, m_config.IconLargeSize, &fontConfig, icon_ranges );
         }
 
@@ -119,8 +119,8 @@ void ImGuiFonts::LoadFonts( )
 
         if ( m_config.MergeIcons )
         {
-            fontConfig.MergeMode        = true;
-            fontConfig.GlyphMinAdvanceX = m_config.VeryLargeSize;
+            fontConfig.MergeMode  = true;
+            fontConfig.SizePixels = m_config.VeryLargeSize;
             io.Fonts->AddFontFromMemoryTTF( FontAwesome_data, FontAwesome_size, m_config.IconVeryLargeSize, &fontConfig, icon_ranges );
         }
     }
@@ -135,8 +135,8 @@ void ImGuiFonts::LoadFonts( )
 
         for ( int i = 0; i < 5; ++i )
         {
-            iconConfig.GlyphMinAdvanceX = iconSizes[ i ];
-            auto *iconFont              = io.Fonts->AddFontFromMemoryTTF( FontAwesome_data, FontAwesome_size, iconSizes[ i ], &iconConfig, icon_ranges );
+            iconConfig.SizePixels = iconSizes[ i ];
+            auto *iconFont        = io.Fonts->AddFontFromMemoryTTF( FontAwesome_data, FontAwesome_size, iconSizes[ i ], &iconConfig, icon_ranges );
             m_fonts[ GetFontKey( FontType::Icon, fontSizes[ i ] ) ] = iconFont;
         }
     }
