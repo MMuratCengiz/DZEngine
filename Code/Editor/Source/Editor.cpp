@@ -17,14 +17,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "DZEngine/Editor.h"
+#include <imgui_internal.h>
+#include "DZEngine/Style/ImGuiFonts.h"
 
 using namespace DZEngine;
-
-extern unsigned int  JetbrainsMonoImGui_size;
-extern unsigned char JetbrainsMonoImGui_data[];
-
-extern unsigned int  FontAwesome_size;
-extern unsigned char FontAwesome_data[];
 
 Editor::Editor( const EditorDesc editorDesc ) : m_appContext( editorDesc.AppContext ), m_graphicsContext( editorDesc.AppContext->GraphicsContext )
 {
@@ -39,18 +35,13 @@ Editor::Editor( const EditorDesc editorDesc ) : m_appContext( editorDesc.AppCont
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
-    io.Fonts->Clear( );
-
-    ImFontConfig fontConfig;
-    fontConfig.FontDataOwnedByAtlas = false;
-    m_font                          = io.Fonts->AddFontFromMemoryTTF( JetbrainsMonoImGui_data, JetbrainsMonoImGui_size, 24.0f, &fontConfig );
-
-    fontConfig.MergeMode                   = true;
-    fontConfig.GlyphMinAdvanceX            = 24.0f;
-    static constexpr ImWchar icon_ranges[] = { 0xf000, 0xf8ff, 0 };
-    io.Fonts->AddFontFromMemoryTTF( FontAwesome_data, FontAwesome_size, 24.0f, &fontConfig, icon_ranges );
-    io.Fonts->Build( );
+    ImGuiFonts::Instance( ).Initialize( { } );
+    ImGuiFonts::Instance( ).LoadFonts( );
     m_imguiRenderer->RecreateFonts( );
+
+    EditorStyle::ApplyTheme( Theme::Dark );
+
+    m_assetBrowser = std::make_unique<AssetBrowser>( );
 
     CommandListPoolDesc commandListPoolDesc{ };
     commandListPoolDesc.CommandQueue    = m_graphicsContext->GraphicsQueue;
@@ -59,7 +50,7 @@ Editor::Editor( const EditorDesc editorDesc ) : m_appContext( editorDesc.AppCont
 
     const ICommandListArray commandLists = m_commandListPool->GetCommandLists( );
     m_commandLists.resize( commandLists.NumElements );
-    for ( int i = 0; i < commandLists.NumElements; ++i )
+    for ( uint32_t i = 0; i < commandLists.NumElements; ++i )
     {
         m_commandLists[ i ] = commandLists.Elements[ i ];
     }
@@ -69,9 +60,9 @@ Editor::~Editor( )
 {
 }
 
-GameRenderView Editor::GetGameRenderView( uint32_t frameIndex )
+GameRenderView Editor::GetGameRenderView( uint32_t /*frameIndex*/ ) const
 {
-    GameRenderView renderView{ };
+    const GameRenderView renderView{ };
 
     return renderView;
 }
@@ -95,7 +86,7 @@ void Editor::Update( EditorUpdateDesc updateDesc )
     const auto viewport = m_graphicsContext->SwapChain->GetViewport( );
     m_imguiRenderer->NewFrame( static_cast<uint32_t>( viewport.Width ), static_cast<uint32_t>( viewport.Height ), m_stepTimer.GetDeltaTime( ) );
 
-    ImGui::ShowDemoWindow( );
+    RenderMainUI( );
 
     ImGui::Render( );
 
@@ -117,4 +108,187 @@ void Editor::Update( EditorUpdateDesc updateDesc )
         executeCommandListsDesc.WaitSemaphores.NumElements = 1;
     }
     m_graphicsContext->GraphicsQueue->ExecuteCommandLists( executeCommandListsDesc );
+}
+
+void Editor::RenderMenuBar( )
+{
+    if ( ImGui::BeginMenuBar( ) )
+    {
+        if ( ImGui::BeginMenu( "File" ) )
+        {
+            if ( ImGui::MenuItem( "New Scene", "Ctrl+N" ) )
+            {
+            }
+            if ( ImGui::MenuItem( "Open Scene", "Ctrl+O" ) )
+            {
+            }
+            if ( ImGui::MenuItem( "Save Scene", "Ctrl+S" ) )
+            {
+            }
+            ImGui::Separator( );
+            if ( ImGui::MenuItem( "Exit", "Alt+F4" ) )
+            {
+            }
+            ImGui::EndMenu( );
+        }
+
+        if ( ImGui::BeginMenu( "Edit" ) )
+        {
+            if ( ImGui::MenuItem( "Undo", "Ctrl+Z" ) )
+            {
+            }
+            if ( ImGui::MenuItem( "Redo", "Ctrl+Y" ) )
+            {
+            }
+            ImGui::Separator( );
+            if ( ImGui::MenuItem( "Cut", "Ctrl+X" ) )
+            {
+            }
+            if ( ImGui::MenuItem( "Copy", "Ctrl+C" ) )
+            {
+            }
+            if ( ImGui::MenuItem( "Paste", "Ctrl+V" ) )
+            {
+            }
+            ImGui::EndMenu( );
+        }
+
+        if ( ImGui::BeginMenu( "View" ) )
+        {
+            ImGui::MenuItem( "Asset Browser", nullptr, nullptr );
+            ImGui::MenuItem( "Inspector", nullptr, nullptr );
+            ImGui::MenuItem( "Hierarchy", nullptr, nullptr );
+            ImGui::MenuItem( "Scene View", nullptr, nullptr );
+            ImGui::MenuItem( "Game View", nullptr, nullptr );
+            ImGui::Separator( );
+            ImGui::MenuItem( "Console", nullptr, nullptr );
+            ImGui::Separator( );
+            if ( ImGui::MenuItem( "Demo Window", nullptr, &m_showDemoWindow ) )
+            {
+            }
+            ImGui::EndMenu( );
+        }
+
+        if ( ImGui::BeginMenu( "Window" ) )
+        {
+            if ( ImGui::BeginMenu( "Layouts" ) )
+            {
+                if ( ImGui::MenuItem( "Default" ) )
+                {
+                }
+                if ( ImGui::MenuItem( "2 by 3" ) )
+                {
+                }
+                if ( ImGui::MenuItem( "4 Split" ) )
+                {
+                }
+                if ( ImGui::MenuItem( "Tall" ) )
+                {
+                }
+                if ( ImGui::MenuItem( "Wide" ) )
+                {
+                }
+                ImGui::EndMenu( );
+            }
+            ImGui::EndMenu( );
+        }
+
+        if ( ImGui::BeginMenu( "Help" ) )
+        {
+            if ( ImGui::MenuItem( "About" ) )
+            {
+            }
+            ImGui::EndMenu( );
+        }
+
+        ImGui::EndMenuBar( );
+    }
+}
+
+void Editor::RenderMainUI( )
+{
+    ImGuiWindowFlags     window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+    const ImGuiViewport *viewport     = ImGui::GetMainViewport( );
+    ImGui::SetNextWindowPos( viewport->Pos );
+    ImGui::SetNextWindowSize( viewport->Size );
+    ImGui::SetNextWindowViewport( viewport->ID );
+    ImGui::PushStyleVar( ImGuiStyleVar_WindowRounding, 0.0f );
+    ImGui::PushStyleVar( ImGuiStyleVar_WindowBorderSize, 0.0f );
+
+    window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+    window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+    ImGui::PushStyleVar( ImGuiStyleVar_WindowPadding, ImVec2( 0.0f, 0.0f ) );
+    ImGui::Begin( "DockSpace", nullptr, window_flags );
+    ImGui::PopStyleVar( );
+    ImGui::PopStyleVar( 2 );
+
+    m_dockspaceId = ImGui::GetID( "MainDockSpace" );
+    ImGui::DockSpace( m_dockspaceId, ImVec2( 0.0f, 0.0f ), ImGuiDockNodeFlags_None );
+
+    if ( m_firstFrame )
+    {
+        SetupDefaultDockingLayout( );
+        m_firstFrame = false;
+    }
+
+    RenderMenuBar( );
+    if ( m_showDemoWindow )
+    {
+        ImGui::ShowDemoWindow( &m_showDemoWindow );
+    }
+
+    if ( m_assetBrowser )
+    {
+        m_assetBrowser->Render( );
+    }
+
+    if ( ImGui::Begin( "Inspector" ) )
+    {
+        ImGui::Text( "Inspector Panel" );
+        ImGui::Text( "Selected object properties will appear here" );
+    }
+    ImGui::End( );
+
+    if ( ImGui::Begin( "Hierarchy" ) )
+    {
+        ImGui::Text( "Scene Hierarchy" );
+        ImGui::Text( "Scene objects will appear here" );
+    }
+    ImGui::End( );
+
+    if ( ImGui::Begin( "Scene View" ) )
+    {
+        ImGui::Text( "Scene View" );
+        ImGui::Text( "3D scene viewport will appear here" );
+    }
+    ImGui::End( );
+
+    if ( ImGui::Begin( "Game View" ) )
+    {
+        ImGui::Text( "Game View" );
+        ImGui::Text( "Game viewport will appear here" );
+    }
+    ImGui::End( );
+    ImGui::End( );
+}
+
+void Editor::SetupDefaultDockingLayout( ) const
+{
+    ImGui::DockBuilderRemoveNode( m_dockspaceId );
+    ImGui::DockBuilderAddNode( m_dockspaceId, ImGuiDockNodeFlags_None );
+    ImGui::DockBuilderSetNodeSize( m_dockspaceId, ImGui::GetMainViewport( )->Size );
+
+    ImGuiID       dockMainId   = m_dockspaceId;
+    const ImGuiID dockIdBottom = ImGui::DockBuilderSplitNode( dockMainId, ImGuiDir_Down, 0.25f, nullptr, &dockMainId );
+    const ImGuiID dockIdLeft   = ImGui::DockBuilderSplitNode( dockMainId, ImGuiDir_Left, 0.2f, nullptr, &dockMainId );
+    const ImGuiID dockIdRight  = ImGui::DockBuilderSplitNode( dockMainId, ImGuiDir_Right, 0.25f, nullptr, &dockMainId );
+    const ImGuiID dockIdCenter = dockMainId;
+
+    ImGui::DockBuilderDockWindow( "Asset Browser", dockIdBottom );
+    ImGui::DockBuilderDockWindow( "Hierarchy", dockIdLeft );
+    ImGui::DockBuilderDockWindow( "Inspector", dockIdRight );
+    ImGui::DockBuilderDockWindow( "Scene View", dockIdCenter );
+    ImGui::DockBuilderDockWindow( "Game View", dockIdCenter );
+    ImGui::DockBuilderFinish( m_dockspaceId );
 }

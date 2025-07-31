@@ -9,6 +9,9 @@ target_sources(DZEditor PRIVATE
         Source/Fonts/JetbrainsMonoImGui.cpp
         Source/Editor.cpp
         Source/EditorGameRunner.cpp
+        Source/Style/EditorStyle.cpp
+        Source/Style/ImGuiFonts.cpp
+        Source/Components/AssetBrowser.cpp
 )
 
 target_link_libraries(DZEditor PUBLIC DZRuntime imgui::imgui)

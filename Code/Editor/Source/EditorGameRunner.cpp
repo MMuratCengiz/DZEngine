@@ -36,7 +36,7 @@ EditorGameRunner::EditorGameRunner( const GameRunnerDesc &desc ) : m_game( desc.
     m_editor              = std::make_unique<Editor>( editorDesc );
 
     m_renderCompleteSemaphores.resize( m_graphicsContext->NumFramesInFlight );
-    for ( int i = 0; i < m_graphicsContext->NumFramesInFlight; i++ )
+    for ( uint32_t i = 0; i < m_graphicsContext->NumFramesInFlight; i++ )
     {
         m_renderCompleteSemaphores[ i ] = std::unique_ptr<ISemaphore>( m_graphicsContext->LogicalDevice->CreateSemaphore( ) );
     }

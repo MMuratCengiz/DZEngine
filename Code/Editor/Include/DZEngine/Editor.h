@@ -20,6 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "DZEngine/AppContext.h"
 #include "ImGuiBackend.h"
+#include "DZEngine/Style/EditorStyle.h"
+#include "DZEngine/Components/AssetBrowser.h"
+#include <memory>
 
 using namespace DenOfIz;
 
@@ -55,11 +58,21 @@ namespace DZEngine
         std::unique_ptr<ICommandListPool> m_commandListPool;
         std::vector<ICommandList *>       m_commandLists;
 
+        std::unique_ptr<AssetBrowser> m_assetBrowser;
+        bool m_showDemoWindow = false;
+        bool m_firstFrame = true;
+        ImGuiID m_dockspaceId = 0;
+
     public:
         explicit Editor( EditorDesc editorDesc );
         ~Editor( );
-        GameRenderView GetGameRenderView( uint32_t frameIndex );
+        GameRenderView GetGameRenderView( uint32_t frameIndex ) const;
         void           HandleEvent( const Event &event ) const;
         void           Update( EditorUpdateDesc updateDesc );
+
+    private:
+        void RenderMenuBar();
+        void RenderMainUI();
+        void SetupDefaultDockingLayout( ) const;
     };
 } // namespace DZEngine
