@@ -19,19 +19,24 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
 #include <memory>
-#include "AppContext.h"
 #include "DenOfIzGraphics/DenOfIzGraphics.h"
-#include "IGame.h"
 
 using namespace DenOfIz;
 
 namespace DZEngine
 {
-    class DummyGame final : public IGame
+    struct WorldEditorViewDesc
     {
-        AppContext       *m_appContext       = nullptr;
-        ILogicalDevice   *m_logicalDevice    = nullptr;
-        ResourceTracking *m_resourceTracking = nullptr;
+        ILogicalDevice *LogicalDevice = nullptr;
+        Viewport        Viewport{ };
+        uint32_t        NumFramesInFlight = 3;
+    };
+
+    class WorldEditorView
+    {
+        ILogicalDevice *m_logicalDevice = nullptr;
+        Viewport        m_viewport{ };
+        uint32_t        m_numFramesInFlight = 3;
 
         std::unique_ptr<IBufferResource> m_vertexBuffer;
         std::unique_ptr<ShaderProgram>   m_shaderProgram;
@@ -39,20 +44,27 @@ namespace DZEngine
         std::unique_ptr<IRootSignature>  m_rootSignature;
         std::unique_ptr<IPipeline>       m_pipeline;
 
-        std::unique_ptr<ICommandListPool> m_commandListPool;
-        std::vector<ICommandList *>       m_commandLists;
+        std::vector<std::unique_ptr<ITextureResource>> m_renderTargets;
+        std::vector<std::unique_ptr<ITextureResource>> m_depthTextures;
+
+        ResourceTracking m_resourceTracking{ };
+        float            m_animationTime = 0.0f;
 
     public:
-        ~DummyGame( ) override;
-        void Init( AppContext *appContext ) override;
-        void HandleEvent( const Event &event ) override;
-        void Update( ) override;
-        bool Render( RenderDesc renderDesc ) override;
+        explicit WorldEditorView( const WorldEditorViewDesc &desc );
+        ~WorldEditorView( ) = default;
+
+        void              UpdateViewport( const Viewport &viewport );
+        void              Update( );
+        void              Render( ICommandList *commandList, ITextureResource *renderTarget, uint32_t frameIndex );
+        void              HandleEvent( const Event &event, bool isViewportFocused, bool isViewportHovered ) const;
+        ITextureResource *GetRenderTexture( uint32_t frameIndex ) const;
 
     private:
         void      CreateVertexBuffer( );
         void      CreateShaderProgram( );
         void      CreatePipeline( );
+        void      CreateRenderTargets( );
         ByteArray GetVertexShader( ) const;
         ByteArray GetPixelShader( ) const;
     };

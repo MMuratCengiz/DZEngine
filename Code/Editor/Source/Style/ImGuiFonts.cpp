@@ -38,7 +38,7 @@ ImGuiFonts &ImGuiFonts::Instance( )
 
 void ImGuiFonts::Initialize( const FontConfig &config )
 {
-    const float dpiScale = DenOfIz::Display::GetPrimaryDisplay( ).DpiScale;
+    const float dpiScale = 1.5f; // Todo
     m_config             = config;
     m_config.VerySmallSize *= dpiScale;
     m_config.SmallSize *= dpiScale;

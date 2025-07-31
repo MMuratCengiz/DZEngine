@@ -23,8 +23,8 @@ namespace DZEngine
 {
     struct GameRunnerDesc
     {
-        GraphicsWindowHandle *WindowHandle;
-        IGame                *Game;
+        Window *Window;
+        IGame  *Game;
     };
 
     class IGameRunner

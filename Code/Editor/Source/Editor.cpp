@@ -43,6 +43,21 @@ Editor::Editor( const EditorDesc editorDesc ) : m_appContext( editorDesc.AppCont
 
     m_assetBrowser = std::make_unique<AssetBrowser>( );
 
+    SceneViewRendererDesc sceneViewDesc{ };
+    sceneViewDesc.LogicalDevice     = m_graphicsContext->LogicalDevice;
+    sceneViewDesc.Viewport          = m_graphicsContext->SwapChain->GetViewport( );
+    sceneViewDesc.NumFramesInFlight = m_graphicsContext->NumFramesInFlight;
+    m_sceneViewRenderer             = std::make_unique<SceneViewRenderer>( sceneViewDesc );
+
+    WorldEditorViewDesc worldEditorDesc{ };
+    worldEditorDesc.LogicalDevice     = m_graphicsContext->LogicalDevice;
+    worldEditorDesc.Viewport          = m_graphicsContext->SwapChain->GetViewport( );
+    worldEditorDesc.NumFramesInFlight = m_graphicsContext->NumFramesInFlight;
+    m_worldEditorView                 = std::make_unique<WorldEditorView>( worldEditorDesc );
+
+    m_gameViewport = m_graphicsContext->SwapChain->GetViewport( );
+    CreateGameRenderTargets( );
+
     CommandListPoolDesc commandListPoolDesc{ };
     commandListPoolDesc.CommandQueue    = m_graphicsContext->GraphicsQueue;
     commandListPoolDesc.NumCommandLists = m_graphicsContext->NumFramesInFlight;
@@ -54,15 +69,43 @@ Editor::Editor( const EditorDesc editorDesc ) : m_appContext( editorDesc.AppCont
     {
         m_commandLists[ i ] = commandLists.Elements[ i ];
     }
+
+    CommandListPoolDesc viewportCmdListPoolDesc{ };
+    viewportCmdListPoolDesc.CommandQueue    = m_graphicsContext->GraphicsQueue;
+    viewportCmdListPoolDesc.NumCommandLists = m_graphicsContext->NumFramesInFlight;
+    m_viewportCommandListPool               = std::unique_ptr<ICommandListPool>( m_graphicsContext->LogicalDevice->CreateCommandListPool( viewportCmdListPoolDesc ) );
+
+    const ICommandListArray viewportCmdLists = m_viewportCommandListPool->GetCommandLists( );
+    m_viewportCommandLists.resize( viewportCmdLists.NumElements );
+    for ( uint32_t i = 0; i < viewportCmdLists.NumElements; ++i )
+    {
+        m_viewportCommandLists[ i ] = viewportCmdLists.Elements[ i ];
+    }
+
+    m_viewportSemaphore = std::unique_ptr<ISemaphore>( m_graphicsContext->LogicalDevice->CreateSemaphore( ) );
 }
 
 Editor::~Editor( )
 {
+    if ( m_sceneViewTextureId != 0 && m_imguiRenderer )
+    {
+        m_imguiRenderer->RemoveTexture( m_sceneViewTextureId );
+    }
+    if ( m_gameViewTextureId != 0 && m_imguiRenderer )
+    {
+        m_imguiRenderer->RemoveTexture( m_gameViewTextureId );
+    }
 }
 
-GameRenderView Editor::GetGameRenderView( uint32_t /*frameIndex*/ ) const
+GameRenderView Editor::GetGameRenderView( uint32_t frameIndex ) const
 {
-    const GameRenderView renderView{ };
+    GameRenderView renderView{ };
+
+    if ( frameIndex < m_gameRenderTargets.size( ) && m_gameRenderTargets[ frameIndex ] )
+    {
+        renderView.RenderTarget = m_gameRenderTargets[ frameIndex ].get( );
+        renderView.Viewport     = m_gameViewport;
+    }
 
     return renderView;
 }
@@ -76,6 +119,28 @@ void Editor::Update( EditorUpdateDesc updateDesc )
 {
     m_stepTimer.Tick( );
 
+    if ( m_worldEditorView )
+    {
+        m_worldEditorView->Update( );
+    }
+
+    if ( ITextureResource *sceneTexture = m_sceneViewRenderer->GetRenderTexture( updateDesc.FrameIndex ) )
+    {
+        ICommandList *viewportCmdList = m_viewportCommandLists[ updateDesc.FrameIndex ];
+
+        viewportCmdList->Begin( );
+        m_sceneViewRenderer->Render( viewportCmdList, sceneTexture, updateDesc.FrameIndex );
+        viewportCmdList->End( );
+
+        ISemaphore *viewportSemaphore = m_viewportSemaphore.get( );
+        ExecuteCommandListsDesc viewportExecuteDesc{ };
+        viewportExecuteDesc.CommandLists.Elements       = &viewportCmdList;
+        viewportExecuteDesc.CommandLists.NumElements    = 1;
+        viewportExecuteDesc.SignalSemaphores.Elements   = &viewportSemaphore;
+        viewportExecuteDesc.SignalSemaphores.NumElements = 1;
+        m_graphicsContext->GraphicsQueue->ExecuteCommandLists( viewportExecuteDesc );
+    }
+
     ICommandList *commandList = m_commandLists[ updateDesc.FrameIndex ];
 
     commandList->Begin( );
@@ -86,7 +151,7 @@ void Editor::Update( EditorUpdateDesc updateDesc )
     const auto viewport = m_graphicsContext->SwapChain->GetViewport( );
     m_imguiRenderer->NewFrame( static_cast<uint32_t>( viewport.Width ), static_cast<uint32_t>( viewport.Height ), m_stepTimer.GetDeltaTime( ) );
 
-    RenderMainUI( );
+    RenderMainUI( updateDesc.FrameIndex );
 
     ImGui::Render( );
 
@@ -102,11 +167,17 @@ void Editor::Update( EditorUpdateDesc updateDesc )
     {
         executeCommandListsDesc.Signal = updateDesc.SignalFence;
     }
+    
+    std::vector<ISemaphore *> waitSemaphores;
     if ( updateDesc.GameSemaphore )
     {
-        executeCommandListsDesc.WaitSemaphores.Elements    = &updateDesc.GameSemaphore;
-        executeCommandListsDesc.WaitSemaphores.NumElements = 1;
+        waitSemaphores.push_back( updateDesc.GameSemaphore );
     }
+    waitSemaphores.push_back( m_viewportSemaphore.get( ) );
+    
+    executeCommandListsDesc.WaitSemaphores.Elements    = waitSemaphores.data( );
+    executeCommandListsDesc.WaitSemaphores.NumElements = static_cast<uint32_t>( waitSemaphores.size( ) );
+    
     m_graphicsContext->GraphicsQueue->ExecuteCommandLists( executeCommandListsDesc );
 }
 
@@ -205,7 +276,7 @@ void Editor::RenderMenuBar( )
     }
 }
 
-void Editor::RenderMainUI( )
+void Editor::RenderMainUI( uint32_t frameIndex )
 {
     ImGuiWindowFlags     window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
     const ImGuiViewport *viewport     = ImGui::GetMainViewport( );
@@ -259,15 +330,82 @@ void Editor::RenderMainUI( )
 
     if ( ImGui::Begin( "Scene View" ) )
     {
-        ImGui::Text( "Scene View" );
-        ImGui::Text( "3D scene viewport will appear here" );
+        if ( const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail( ); viewportPanelSize.x > 0 && viewportPanelSize.y > 0 && m_sceneViewRenderer )
+        {
+            Viewport sceneViewport{ };
+            sceneViewport.X                = 0;
+            sceneViewport.Y                = 0;
+            sceneViewport.Width            = viewportPanelSize.x;
+            sceneViewport.Height           = viewportPanelSize.y;
+            static ImVec2 lastViewportSize = { 0, 0 };
+            if ( lastViewportSize.x != viewportPanelSize.x || lastViewportSize.y != viewportPanelSize.y )
+            {
+                lastViewportSize = viewportPanelSize;
+                m_sceneViewRenderer->UpdateViewport( sceneViewport );
+                if ( m_sceneViewTextureId != 0 )
+                {
+                    m_imguiRenderer->RemoveTexture( m_sceneViewTextureId );
+                    m_sceneViewTextureId = 0;
+                }
+            }
+            if ( ITextureResource *renderTexture = m_sceneViewRenderer->GetRenderTexture( frameIndex ) )
+            {
+                if ( m_sceneViewTextureId == 0 )
+                {
+                    m_sceneViewTextureId = m_imguiRenderer->AddTexture( renderTexture );
+                }
+                if ( m_sceneViewTextureId != 0 )
+                {
+                    ImGui::Image( m_sceneViewTextureId, viewportPanelSize );
+                }
+            }
+        }
+        else
+        {
+            ImGui::Text( "Scene View" );
+            ImGui::Text( "3D scene viewport will appear here" );
+        }
     }
     ImGui::End( );
 
     if ( ImGui::Begin( "Game View" ) )
     {
-        ImGui::Text( "Game View" );
-        ImGui::Text( "Game viewport will appear here" );
+        if ( const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail( ); viewportPanelSize.x > 0 && viewportPanelSize.y > 0 && frameIndex < m_gameRenderTargets.size( ) )
+        {
+            static ImVec2 lastGameViewportSize = { 0, 0 };
+            if ( lastGameViewportSize.x != viewportPanelSize.x || lastGameViewportSize.y != viewportPanelSize.y )
+            {
+                lastGameViewportSize  = viewportPanelSize;
+                m_gameViewport.X      = 0;
+                m_gameViewport.Y      = 0;
+                m_gameViewport.Width  = viewportPanelSize.x;
+                m_gameViewport.Height = viewportPanelSize.y;
+                CreateGameRenderTargets( );
+                if ( m_gameViewTextureId != 0 )
+                {
+                    m_imguiRenderer->RemoveTexture( m_gameViewTextureId );
+                    m_gameViewTextureId = 0;
+                }
+            }
+
+            if ( ITextureResource *renderTexture = m_gameRenderTargets[ frameIndex ].get( ) )
+            {
+                if ( m_gameViewTextureId == 0 )
+                {
+                    m_gameViewTextureId = m_imguiRenderer->AddTexture( renderTexture );
+                }
+
+                if ( m_gameViewTextureId != 0 )
+                {
+                    ImGui::Image( m_gameViewTextureId, viewportPanelSize );
+                }
+            }
+        }
+        else
+        {
+            ImGui::Text( "Game View" );
+            ImGui::Text( "Game viewport will appear here" );
+        }
     }
     ImGui::End( );
     ImGui::End( );
@@ -291,4 +429,26 @@ void Editor::SetupDefaultDockingLayout( ) const
     ImGui::DockBuilderDockWindow( "Scene View", dockIdCenter );
     ImGui::DockBuilderDockWindow( "Game View", dockIdCenter );
     ImGui::DockBuilderFinish( m_dockspaceId );
+}
+
+void Editor::CreateGameRenderTargets( )
+{
+    if ( m_gameViewport.Width <= 0 || m_gameViewport.Height <= 0 )
+        return;
+
+    m_gameRenderTargets.clear( );
+
+    for ( uint32_t i = 0; i < m_graphicsContext->NumFramesInFlight; ++i )
+    {
+        TextureDesc renderTargetDesc{ };
+        renderTargetDesc.Width      = static_cast<uint32_t>( m_gameViewport.Width );
+        renderTargetDesc.Height     = static_cast<uint32_t>( m_gameViewport.Height );
+        renderTargetDesc.Format     = Format::B8G8R8A8Unorm;
+        renderTargetDesc.Descriptor = ResourceDescriptor::RenderTarget | ResourceDescriptor::Texture;
+        renderTargetDesc.DebugName  = "GameViewRenderTarget";
+
+        m_gameRenderTargets.push_back( std::unique_ptr<ITextureResource>( m_graphicsContext->LogicalDevice->CreateTextureResource( renderTargetDesc ) ) );
+
+        m_graphicsContext->ResourceTracking->TrackTexture( m_gameRenderTargets[ i ].get( ), ResourceUsage::ShaderResource );
+    }
 }

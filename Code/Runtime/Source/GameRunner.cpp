@@ -20,10 +20,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace DZEngine;
 
-GameRunner::GameRunner( const GameRunnerDesc &desc ) : m_windowHandle( desc.WindowHandle ), m_game( desc.Game )
+GameRunner::GameRunner( const GameRunnerDesc &desc ) : m_windowHandle( desc.Window->GetGraphicsWindowHandle( ) ), m_game( desc.Game )
 {
     RenderLoopDesc renderLoopDesc{ };
-    renderLoopDesc.WindowHandle = desc.WindowHandle;
+    renderLoopDesc.WindowHandle = m_windowHandle;
     m_renderLoop                = std::make_unique<RenderLoop>( renderLoopDesc );
     m_graphicsContext           = m_renderLoop->GetGraphicsContext( );
 
@@ -55,7 +55,7 @@ void GameRunner::Update( )
     RenderDesc renderDesc{ };
     renderDesc.FrameIndex      = frameState.FrameIndex;
     renderDesc.NotifyFence     = frameState.NotifyFence;
-    renderDesc.NotifySemaphore = nullptr;
+    renderDesc.SignalSemaphore = nullptr;
     renderDesc.RenderTarget    = frameState.RenderTarget;
 
     const GraphicsWindowSurface surface = m_windowHandle->GetSurface( );

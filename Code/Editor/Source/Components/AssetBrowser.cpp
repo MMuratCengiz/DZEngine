@@ -53,7 +53,9 @@ AssetBrowser::~AssetBrowser( )
 void AssetBrowser::Render( )
 {
     if ( !m_isOpen )
+    {
         return;
+    }
 
     ImGui::PushStyleVar( ImGuiStyleVar_WindowPadding, ImVec2( 0, 0 ) );
     if ( ImGui::Begin( "Asset Browser", &m_isOpen ) )
@@ -420,7 +422,7 @@ ImVec4 AssetBrowser::GetFileColor( const AssetItem &item )
 {
     if ( item.isDirectory )
     {
-        return ImVec4( 1.0f, 0.8f, 0.2f, 1.0f ); // Yellow for folders
+        return ImVec4( 1.0f, 0.8f, 0.2f, 1.0f );
     }
 
     std::string ext = item.extension;
@@ -428,18 +430,18 @@ ImVec4 AssetBrowser::GetFileColor( const AssetItem &item )
 
     if ( ext == "png" || ext == "jpg" || ext == "jpeg" || ext == "bmp" || ext == "tga" || ext == "dds" )
     {
-        return ImVec4( 0.2f, 0.8f, 0.2f, 1.0f ); // Green for images
+        return ImVec4( 0.2f, 0.8f, 0.2f, 1.0f );
     }
     if ( ext == "wav" || ext == "mp3" || ext == "ogg" || ext == "flac" )
     {
-        return ImVec4( 0.8f, 0.2f, 0.8f, 1.0f ); // Magenta for audio
+        return ImVec4( 0.8f, 0.2f, 0.8f, 1.0f );
     }
     if ( ext == "cpp" || ext == "h" || ext == "cs" || ext == "js" || ext == "py" )
     {
-        return ImVec4( 0.2f, 0.6f, 0.9f, 1.0f ); // Blue for code
+        return ImVec4( 0.2f, 0.6f, 0.9f, 1.0f );
     }
 
-    return ImVec4( 0.7f, 0.7f, 0.7f, 1.0f ); // Gray for generic files
+    return ImVec4( 0.7f, 0.7f, 0.7f, 1.0f );
 }
 
 std::string AssetBrowser::FormatFileSize( size_t bytes )

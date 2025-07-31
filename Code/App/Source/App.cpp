@@ -43,11 +43,11 @@ App::App( AppDesc appDesc )
 
     const auto graphicsWindowHandle = m_window->GetGraphicsWindowHandle( );
 
-    m_game = std::make_unique<DummyGame>( ); // TODO
+    m_game = std::make_unique<DummyGame>( );
 
     GameRunnerDesc gameRunnerDesc{ };
-    gameRunnerDesc.WindowHandle = graphicsWindowHandle;
-    gameRunnerDesc.Game         = m_game.get( );
+    gameRunnerDesc.Window = m_window.get( );
+    gameRunnerDesc.Game   = m_game.get( );
 
 #ifdef DZ_RUN_MODE_EDITOR
     m_gameRunner = std::make_unique<EditorGameRunner>( gameRunnerDesc );

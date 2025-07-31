@@ -23,7 +23,7 @@ using namespace DZEngine;
 EditorGameRunner::EditorGameRunner( const GameRunnerDesc &desc ) : m_game( desc.Game )
 {
     RenderLoopDesc renderLoopDesc{ };
-    renderLoopDesc.WindowHandle = desc.WindowHandle;
+    renderLoopDesc.WindowHandle = desc.Window->GetGraphicsWindowHandle( );
     m_renderLoop                = std::make_unique<RenderLoop>( renderLoopDesc );
     m_graphicsContext           = m_renderLoop->GetGraphicsContext( );
 
@@ -33,6 +33,7 @@ EditorGameRunner::EditorGameRunner( const GameRunnerDesc &desc ) : m_game( desc.
 
     EditorDesc editorDesc{ };
     editorDesc.AppContext = m_appContext.get( );
+    editorDesc.Window     = desc.Window;
     m_editor              = std::make_unique<Editor>( editorDesc );
 
     m_renderCompleteSemaphores.resize( m_graphicsContext->NumFramesInFlight );
@@ -66,7 +67,7 @@ void EditorGameRunner::Update( )
     RenderDesc renderDesc{ };
     renderDesc.FrameIndex      = frameState.FrameIndex;
     renderDesc.NotifyFence     = nullptr; // During engine run mode the editor notifies frame completion
-    renderDesc.NotifySemaphore = m_renderCompleteSemaphores[ frameState.FrameIndex ].get( );
+    renderDesc.SignalSemaphore = m_renderCompleteSemaphores[ frameState.FrameIndex ].get( );
     renderDesc.RenderTarget    = gameRenderView.RenderTarget;
     renderDesc.Viewport        = gameRenderView.Viewport;
 

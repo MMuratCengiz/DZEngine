@@ -12,6 +12,8 @@ target_sources(DZEditor PRIVATE
         Source/Style/EditorStyle.cpp
         Source/Style/ImGuiFonts.cpp
         Source/Components/AssetBrowser.cpp
+        Source/Components/SceneViewRenderer.cpp
+        Source/Components/WorldEditorView.cpp
 )
 
 target_link_libraries(DZEditor PUBLIC DZRuntime imgui::imgui)

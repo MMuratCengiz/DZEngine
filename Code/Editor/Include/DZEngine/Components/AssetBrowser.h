@@ -57,11 +57,11 @@ namespace DZEngine
 
         enum class ViewSize
         {
-            VerySmall = 0, // 64x64 grid
-            Small     = 1, // 80x80 grid
-            Medium    = 2, // 96x96 grid
-            Large     = 3, // 128x128 grid
-            VeryLarge = 4  // 160x160 grid
+            VerySmall = 0,
+            Small     = 1,
+            Medium    = 2,
+            Large     = 3,
+            VeryLarge = 4
         };
 
         ViewSize m_viewSize;

@@ -16,8 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DZEngine/DummyGame.h"
+#include "DZEngine/Components/WorldEditorView.h"
 #include <array>
+#include <cmath>
 #include "DenOfIzGraphics/Assets/Import/ShaderImporter.h"
 #include "DenOfIzGraphics/Data/BatchResourceCopy.h"
 #include "DenOfIzGraphics/Utilities/InteropUtilities.h"
@@ -25,99 +26,81 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using namespace DZEngine;
 using namespace DenOfIz;
 
-void DummyGame::Init( AppContext *appContext )
+WorldEditorView::WorldEditorView( const WorldEditorViewDesc &desc ) :
+    m_logicalDevice( desc.LogicalDevice ), m_viewport( desc.Viewport ), m_numFramesInFlight( desc.NumFramesInFlight )
 {
-    m_appContext       = appContext;
-    m_logicalDevice    = appContext->GraphicsContext->LogicalDevice;
-    m_resourceTracking = appContext->GraphicsContext->ResourceTracking;
-
     CreateVertexBuffer( );
     CreateShaderProgram( );
     CreatePipeline( );
+    CreateRenderTargets( );
+}
 
-    CommandListPoolDesc commandListPoolDesc{ };
-    commandListPoolDesc.CommandQueue    = m_appContext->GraphicsContext->GraphicsQueue;
-    commandListPoolDesc.NumCommandLists = m_appContext->GraphicsContext->NumFramesInFlight;
-    m_commandListPool                   = std::unique_ptr<ICommandListPool>( m_logicalDevice->CreateCommandListPool( commandListPoolDesc ) );
-
-    const ICommandListArray commandLists = m_commandListPool->GetCommandLists( );
-    m_commandLists.resize( commandLists.NumElements );
-    for ( uint32_t i = 0; i < commandLists.NumElements; ++i )
+void WorldEditorView::UpdateViewport( const Viewport &viewport )
+{
+    if ( m_viewport.Width != viewport.Width || m_viewport.Height != viewport.Height )
     {
-        m_commandLists[ i ] = commandLists.Elements[ i ];
+        m_viewport = viewport;
+        CreateRenderTargets( );
     }
 }
 
-DummyGame::~DummyGame( )
+void WorldEditorView::Update( )
 {
+    m_animationTime += 0.016f; // Approximate 60 FPS delta time
 }
 
-void DummyGame::HandleEvent( const Event &event )
+void WorldEditorView::Render( ICommandList *commandList, ITextureResource *renderTarget, uint32_t frameIndex )
 {
-}
-
-void DummyGame::Update( )
-{
-}
-
-bool DummyGame::Render( RenderDesc renderDesc )
-{
-    if ( !m_pipeline || !renderDesc.RenderTarget || renderDesc.FrameIndex >= m_commandLists.size( ) )
+    if ( !m_pipeline || !renderTarget )
     {
-        return false;
+        return;
     }
 
-    ICommandList *commandList = m_commandLists[ renderDesc.FrameIndex ];
+    ITextureResource *targetTexture = renderTarget ? renderTarget : GetRenderTexture( frameIndex );
 
-    commandList->Begin( );
-
-    m_resourceTracking->TransitionTexture( commandList, renderDesc.RenderTarget, ResourceUsage::RenderTarget );
+    m_resourceTracking.TransitionTexture( commandList, targetTexture, ResourceUsage::RenderTarget );
 
     RenderingAttachmentDesc attachmentDesc{ };
-    attachmentDesc.Resource = renderDesc.RenderTarget;
+    attachmentDesc.Resource = targetTexture;
 
     RenderingDesc renderingDesc{ };
     renderingDesc.RTAttachments.Elements    = &attachmentDesc;
     renderingDesc.RTAttachments.NumElements = 1;
     commandList->BeginRendering( renderingDesc );
 
-    commandList->BindViewport( renderDesc.Viewport.X, renderDesc.Viewport.Y, renderDesc.Viewport.Width, renderDesc.Viewport.Height );
-    commandList->BindScissorRect( renderDesc.Viewport.X, renderDesc.Viewport.Y, renderDesc.Viewport.Width, renderDesc.Viewport.Height );
+    commandList->BindViewport( m_viewport.X, m_viewport.Y, m_viewport.Width, m_viewport.Height );
+    commandList->BindScissorRect( m_viewport.X, m_viewport.Y, m_viewport.Width, m_viewport.Height );
     commandList->BindPipeline( m_pipeline.get( ) );
     commandList->BindVertexBuffer( m_vertexBuffer.get( ) );
     commandList->Draw( 3, 1, 0, 0 );
 
     commandList->EndRendering( );
 
-    m_resourceTracking->TransitionTexture( commandList, renderDesc.RenderTarget, ResourceUsage::Present );
-
-    commandList->End( );
-
-    ExecuteCommandListsDesc executeDesc{ };
-    executeDesc.CommandLists.Elements    = &commandList;
-    executeDesc.CommandLists.NumElements = 1;
-    if ( renderDesc.NotifyFence )
-    {
-        executeDesc.Signal = renderDesc.NotifyFence;
-    }
-    if ( renderDesc.SignalSemaphore )
-    {
-        executeDesc.SignalSemaphores.Elements    = &renderDesc.SignalSemaphore;
-        executeDesc.SignalSemaphores.NumElements = 1;
-    }
-    m_appContext->GraphicsContext->GraphicsQueue->ExecuteCommandLists( executeDesc );
-
-    return true;
+    m_resourceTracking.TransitionTexture( commandList, targetTexture, ResourceUsage::ShaderResource );
 }
 
-void DummyGame::CreateVertexBuffer( )
+void WorldEditorView::HandleEvent( const Event & /*event*/, bool /*isViewportFocused*/, bool /*isViewportHovered*/ ) const
 {
-    constexpr std::array vertices = { 0.0f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f };
+    // TODO
+}
+
+ITextureResource *WorldEditorView::GetRenderTexture( uint32_t frameIndex ) const
+{
+    if ( frameIndex < m_renderTargets.size( ) && m_renderTargets[ frameIndex ] )
+    {
+        return m_renderTargets[ frameIndex ].get( );
+    }
+    return nullptr;
+}
+
+void WorldEditorView::CreateVertexBuffer( )
+{
+    constexpr std::array vertices = { 0.0f, 0.6f, 0.0f, 0.8f, 0.6f, 0.2f, 1.0f, -0.6f, -0.6f, 0.0f, 0.2f, 0.8f, 0.2f, 1.0f, 0.6f, -0.6f, 0.0f, 0.2f, 0.2f, 0.8f, 1.0f };
 
     BufferDesc bufferDesc{ };
     bufferDesc.Descriptor = ResourceDescriptor::VertexBuffer;
     bufferDesc.NumBytes   = vertices.size( ) * sizeof( float );
-    bufferDesc.DebugName  = "GameViewTriangleVertexBuffer";
+    bufferDesc.DebugName  = "WorldEditorViewTriangleVertexBuffer";
 
     m_vertexBuffer = std::unique_ptr<IBufferResource>( m_logicalDevice->CreateBufferResource( bufferDesc ) );
 
@@ -131,10 +114,10 @@ void DummyGame::CreateVertexBuffer( )
     batchCopy.CopyToGPUBuffer( copyDesc );
     batchCopy.Submit( );
 
-    m_resourceTracking->TrackBuffer( m_vertexBuffer.get( ), ResourceUsage::VertexAndConstantBuffer );
+    m_resourceTracking.TrackBuffer( m_vertexBuffer.get( ), ResourceUsage::VertexAndConstantBuffer );
 }
 
-void DummyGame::CreateShaderProgram( )
+void WorldEditorView::CreateShaderProgram( )
 {
     std::array<ShaderStageDesc, 2> shaderStages{ };
 
@@ -157,7 +140,7 @@ void DummyGame::CreateShaderProgram( )
     std::free( pixelShaderDesc.Data.Elements );
 }
 
-void DummyGame::CreatePipeline( )
+void WorldEditorView::CreatePipeline( )
 {
     const ShaderReflectDesc reflectDesc = m_shaderProgram->Reflect( );
     m_inputLayout                       = std::unique_ptr<IInputLayout>( m_logicalDevice->CreateInputLayout( reflectDesc.InputLayout ) );
@@ -176,7 +159,44 @@ void DummyGame::CreatePipeline( )
     m_pipeline = std::unique_ptr<IPipeline>( m_logicalDevice->CreatePipeline( pipelineDesc ) );
 }
 
-ByteArray DummyGame::GetVertexShader( ) const
+void WorldEditorView::CreateRenderTargets( )
+{
+    if ( m_viewport.Width <= 0 || m_viewport.Height <= 0 )
+    {
+        return;
+    }
+
+    m_renderTargets.clear( );
+    m_depthTextures.clear( );
+
+    for ( uint32_t i = 0; i < m_numFramesInFlight; ++i )
+    {
+        TextureDesc renderTargetDesc{ };
+        renderTargetDesc.Width      = static_cast<uint32_t>( m_viewport.Width );
+        renderTargetDesc.Height     = static_cast<uint32_t>( m_viewport.Height );
+        renderTargetDesc.Format     = Format::B8G8R8A8Unorm;
+        renderTargetDesc.Descriptor = ResourceDescriptor::RenderTarget | ResourceDescriptor::Texture;
+        renderTargetDesc.DebugName  = "WorldEditorViewRenderTarget";
+
+        m_renderTargets.push_back( std::unique_ptr<ITextureResource>( m_logicalDevice->CreateTextureResource( renderTargetDesc ) ) );
+
+        m_resourceTracking.TrackTexture( m_renderTargets[ i ].get( ), ResourceUsage::ShaderResource );
+
+        TextureDesc depthDesc{ };
+        depthDesc.Width        = static_cast<uint32_t>( m_viewport.Width );
+        depthDesc.Height       = static_cast<uint32_t>( m_viewport.Height );
+        depthDesc.Format       = Format::D32Float;
+        depthDesc.Descriptor   = ResourceDescriptor::DepthStencil;
+        depthDesc.InitialUsage = ResourceUsage::DepthWrite;
+        depthDesc.DebugName    = "WorldEditorViewDepthBuffer";
+
+        m_depthTextures.push_back( std::unique_ptr<ITextureResource>( m_logicalDevice->CreateTextureResource( depthDesc ) ) );
+
+        m_resourceTracking.TrackTexture( m_depthTextures[ i ].get( ), ResourceUsage::DepthWrite );
+    }
+}
+
+ByteArray WorldEditorView::GetVertexShader( ) const
 {
     const auto shaderCode = R"(
         struct VSInput
@@ -203,7 +223,7 @@ ByteArray DummyGame::GetVertexShader( ) const
     return InteropUtilities::StringToBytes( shaderCode );
 }
 
-ByteArray DummyGame::GetPixelShader( ) const
+ByteArray WorldEditorView::GetPixelShader( ) const
 {
     const auto shaderCode = R"(
         struct PSInput

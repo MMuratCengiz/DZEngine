@@ -1,28 +1,13 @@
-/*
-Den Of Iz - Game/Game Engine
-Copyright (c) 2020-2024 Muhammed Murat Cengiz
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 
 #pragma once
 
-#include "DZEngine/AppContext.h"
-#include "ImGuiBackend.h"
-#include "DZEngine/Style/EditorStyle.h"
-#include "DZEngine/Components/AssetBrowser.h"
 #include <memory>
+#include "DZEngine/AppContext.h"
+#include "DZEngine/Components/AssetBrowser.h"
+#include "DZEngine/Components/SceneViewRenderer.h"
+#include "DZEngine/Components/WorldEditorView.h"
+#include "DZEngine/Style/EditorStyle.h"
+#include "ImGuiBackend.h"
 
 using namespace DenOfIz;
 
@@ -31,6 +16,7 @@ namespace DZEngine
     struct EditorDesc
     {
         AppContext *AppContext;
+        Window     *Window;
     };
 
     struct GameRenderView
@@ -57,11 +43,22 @@ namespace DZEngine
 
         std::unique_ptr<ICommandListPool> m_commandListPool;
         std::vector<ICommandList *>       m_commandLists;
+        
+        std::unique_ptr<ICommandListPool> m_viewportCommandListPool;
+        std::vector<ICommandList *>       m_viewportCommandLists;
+        std::unique_ptr<ISemaphore>       m_viewportSemaphore;
 
-        std::unique_ptr<AssetBrowser> m_assetBrowser;
-        bool m_showDemoWindow = false;
-        bool m_firstFrame = true;
-        ImGuiID m_dockspaceId = 0;
+        std::unique_ptr<AssetBrowser>      m_assetBrowser;
+        std::unique_ptr<SceneViewRenderer> m_sceneViewRenderer;
+        std::unique_ptr<WorldEditorView>   m_worldEditorView;
+        bool                               m_showDemoWindow     = false;
+        bool                               m_firstFrame         = true;
+        ImGuiID                            m_dockspaceId        = 0;
+        ImTextureID                        m_sceneViewTextureId = 0;
+        ImTextureID                        m_gameViewTextureId  = 0;
+
+        std::vector<std::unique_ptr<ITextureResource>> m_gameRenderTargets;
+        Viewport                                       m_gameViewport;
 
     public:
         explicit Editor( EditorDesc editorDesc );
@@ -71,8 +68,9 @@ namespace DZEngine
         void           Update( EditorUpdateDesc updateDesc );
 
     private:
-        void RenderMenuBar();
-        void RenderMainUI();
+        void RenderMenuBar( );
+        void RenderMainUI( uint32_t frameIndex );
         void SetupDefaultDockingLayout( ) const;
+        void CreateGameRenderTargets( );
     };
 } // namespace DZEngine

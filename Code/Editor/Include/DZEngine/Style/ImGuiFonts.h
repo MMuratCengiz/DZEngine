@@ -75,8 +75,8 @@ namespace DZEngine
         void PopIconFont( ) const;
 
     private:
-        ImGuiFonts( )                                = default;
-        ~ImGuiFonts( )                               = default;
+        ImGuiFonts( )                               = default;
+        ~ImGuiFonts( )                              = default;
         ImGuiFonts( const ImGuiFonts & )            = delete;
         ImGuiFonts &operator=( const ImGuiFonts & ) = delete;
 

@@ -29,7 +29,7 @@ namespace DZEngine
     {
         uint32_t          FrameIndex      = 0;
         IFence           *NotifyFence     = nullptr; // Can be null
-        ISemaphore       *NotifySemaphore = nullptr; // Can be null
+        ISemaphore       *SignalSemaphore = nullptr; // Can be null
         ITextureResource *RenderTarget    = nullptr;
         Viewport          Viewport{ };
     };
@@ -42,6 +42,6 @@ namespace DZEngine
         virtual void HandleEvent( const Event &event ) = 0;
         virtual void Update( )                         = 0;
         // Return false if didn't render to indicate semaphore will not be singled
-        virtual bool Render( const RenderDesc &renderDesc ) = 0;
+        virtual bool Render( RenderDesc renderDesc ) = 0;
     };
 } // namespace DZEngine
