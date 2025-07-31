@@ -16,11 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DZEngine/GraphicsContext.h"
+#include "DZEngine/Rendering/RenderLoop.h"
 
 using namespace DZEngine;
 
-GraphicsContext::GraphicsContext( const GraphicsContextDesc graphicsContextDesc ) : m_windowHandle( graphicsContextDesc.WindowHandle )
+RenderLoop::RenderLoop( const RenderLoopDesc renderLoopDesc ) : m_windowHandle( renderLoopDesc.WindowHandle )
 {
     APIPreference apiPreferences{ };
     apiPreferences.Windows = APIPreferenceWindows::DirectX12;
@@ -43,95 +43,92 @@ GraphicsContext::GraphicsContext( const GraphicsContextDesc graphicsContextDesc 
     m_computeQueue.reset( m_logicalDevice->CreateCommandQueue( computeQueue ) );
 
     CreateSwapChain( );
+
+    m_graphicsContext                    = std::make_unique<GraphicsContext>( );
+    m_graphicsContext->NumFramesInFlight = MAX_FRAMES_IN_FLIGHT;
+    m_graphicsContext->LogicalDevice     = m_logicalDevice.get( );
+    m_graphicsContext->CopyQueue         = m_copyQueue.get( );
+    m_graphicsContext->GraphicsQueue     = m_graphicsQueue.get( );
+    m_graphicsContext->ComputeQueue      = m_computeQueue.get( );
+    m_graphicsContext->ResourceTracking  = m_resourceTracking.get( );
+
+    m_frameFences.resize( MAX_FRAMES_IN_FLIGHT );
+    for ( int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++ )
+    {
+        m_frameFences[ i ] = std::unique_ptr<IFence>( m_logicalDevice->CreateFence( ) );
+    }
 }
 
-bool GraphicsContext::IsDeviceLost( ) const
+RenderLoop::~RenderLoop( ) = default;
+
+GraphicsContext *RenderLoop::GetGraphicsContext( ) const
 {
-    return m_deviceLost;
+    return m_graphicsContext.get( );
 }
 
-void GraphicsContext::HandleEvent( const Event &event ) const
+FrameState RenderLoop::NextFrame( )
+{
+    FrameState frameState{ };
+    frameState.IsDeviceBusy = m_deviceBusy;
+
+    if ( m_deviceBusy )
+    {
+        frameState.RenderTarget = nullptr;
+        return frameState;
+    }
+
+    m_currentFrame = m_nextFrame;
+    m_nextFrame    = ( m_nextFrame + 1 ) % MAX_FRAMES_IN_FLIGHT;
+
+    m_frameFences[ m_currentFrame ]->Wait( );
+    const uint32_t imageIndex = m_swapChain->AcquireNextImage( );
+
+    frameState.FrameIndex   = m_currentFrame;
+    frameState.NotifyFence  = m_frameFences[ m_currentFrame ].get( );
+    frameState.RenderTarget = m_swapChain->GetRenderTarget( imageIndex );
+    return frameState;
+}
+
+void RenderLoop::Present( ) const
+{
+    m_swapChain->Present( m_currentFrame );
+}
+
+void RenderLoop::HandleEvent( const Event &event )
 {
     if ( event.Type == EventType::WindowEvent && event.Window.Event == WindowEventType::Resized )
     {
         m_logicalDevice->WaitIdle( );
         m_graphicsQueue->WaitIdle( );
-        WaitIdle( );
+        m_deviceBusy = true;
         m_swapChain->Resize( event.Window.Data1, event.Window.Data2 );
         for ( uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++ )
         {
             m_resourceTracking->TrackTexture( m_swapChain->GetRenderTarget( i ), ResourceUsage::Common );
         }
+        m_deviceBusy = false;
     }
 }
 
-ICommandQueue *GraphicsContext::CopyQueue( ) const
+void RenderLoop::Present( const uint32_t imageIndex )
 {
-    return m_copyQueue.get( );
-}
-
-ICommandQueue *GraphicsContext::GraphicsQueue( ) const
-{
-    return m_graphicsQueue.get( );
-}
-
-ICommandQueue *GraphicsContext::ComputeQueue( ) const
-{
-    return m_computeQueue.get( );
-}
-
-ILogicalDevice *GraphicsContext::GetLogicalDevice( ) const
-{
-    return m_logicalDevice.get( );
-}
-
-ISwapChain *GraphicsContext::GetSwapChain( ) const
-{
-    return m_swapChain.get( );
-}
-
-ResourceTracking *GraphicsContext::GetResourceTracking( ) const
-{
-    return m_resourceTracking.get( );
-}
-
-void GraphicsContext::WaitIdle( ) const
-{
-    m_logicalDevice->WaitIdle( );
-}
-
-uint32_t GraphicsContext::NextFrame( ) const
-{
-    return m_frameSync->NextFrame( );
-}
-
-uint32_t GraphicsContext::AcquireNextImage( ) const
-{
-    return m_frameSync->AcquireNextImage( );
-}
-
-ITextureResource *GraphicsContext::GetSwapChainRenderTarget( const uint32_t index ) const
-{
-    return m_swapChain->GetRenderTarget( index );
-}
-
-void GraphicsContext::Present( const uint32_t imageIndex )
-{
-    switch ( m_frameSync->Present( imageIndex ) )
+    switch ( m_swapChain->Present( imageIndex ) )
     {
     case PresentResult::Success:
     case PresentResult::Suboptimal:
         break;
     case PresentResult::Timeout:
     case PresentResult::DeviceLost:
+        m_deviceBusy = true;
         m_logicalDevice->WaitIdle( );
         m_swapChain.reset( );
         CreateSwapChain( );
+        m_deviceBusy = false;
         break;
     }
 }
 
-void GraphicsContext::CreateSwapChain( )
+void RenderLoop::CreateSwapChain( )
 {
     SwapChainDesc swapChainDesc{ };
     swapChainDesc.WindowHandle      = m_windowHandle;

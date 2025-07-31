@@ -18,31 +18,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "DZEngine/Editor.h"
+#include "AppContext.h"
 #include "DZEngine/IGameRunner.h"
+#include "Rendering/GraphicsContext.h"
+#include "Rendering/RenderLoop.h"
 
 namespace DZEngine
 {
-    struct AppDesc
+    class GameRunner final : public IGameRunner
     {
-    };
-
-    class App
-    {
-        std::unique_ptr<Window>               m_window;
-        std::unique_ptr<GraphicsWindowHandle> m_windowHandle;
-        std::unique_ptr<IGameRunner>          m_gameRunner;
-        std::unique_ptr<IGame>                m_game;
-
-        bool m_isRunning = true;
-
-        std::unique_ptr<Editor> m_editor;
+        GraphicsWindowHandle                    *m_windowHandle;
+        IGame                                   *m_game;
+        GraphicsContext                         *m_graphicsContext;
+        std::unique_ptr<RenderLoop>              m_renderLoop;
+        std::unique_ptr<AppContext>              m_appContext;
 
     public:
-        explicit App( AppDesc launchDesc );
-        void HandleEvent( const Event &event );
-        void Update( ) const;
-        void Run( );
-        ~App( );
+        explicit GameRunner( const GameRunnerDesc &desc );
+        ~GameRunner( ) override;
+        void HandleEvent( const Event &event ) override;
+        void Update( ) override;
     };
 } // namespace DZEngine

@@ -18,18 +18,26 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "DenOfIzGraphics/DenOfIzGraphics.h"
+#include "GraphicsContext.h"
 
 namespace DZEngine
 {
-    struct GraphicsContextDesc
+    struct RenderLoopDesc
     {
         GraphicsWindowHandle *WindowHandle;
     };
 
-    class GraphicsContext
+    struct FrameState
     {
-        constexpr static uint32_t MAX_FRAMES_IN_FLIGHT = 3;
+        bool              IsDeviceBusy; // Do not render if the device is busy, ie. Resizing
+        uint32_t          FrameIndex;
+        ITextureResource *RenderTarget;
+        IFence           *NotifyFence;
+    };
+
+    class RenderLoop
+    {
+        constexpr static uint32_t MAX_FRAMES_IN_FLIGHT = 3; // Todo make this configurable
 
         GraphicsWindowHandle             *m_windowHandle;
         std::unique_ptr<ILogicalDevice>   m_logicalDevice;
@@ -39,31 +47,24 @@ namespace DZEngine
         std::unique_ptr<ICommandQueue>    m_graphicsQueue;
         std::unique_ptr<ICommandQueue>    m_computeQueue;
 
-        bool                       m_deviceLost = false;
-        std::unique_ptr<FrameSync> m_frameSync;
+        std::unique_ptr<GraphicsContext> m_graphicsContext;
+
+        std::vector<std::unique_ptr<IFence>> m_frameFences;
+        uint32_t                             m_currentFrame = 0;
+        uint32_t                             m_nextFrame    = 0;
+
+        bool m_deviceBusy = false;
 
     public:
-        explicit GraphicsContext( GraphicsContextDesc graphicsContextDesc );
-        [[nodiscard]] bool IsDeviceLost( ) const; // must halt rendering operations
-        void               HandleEvent( const Event &event ) const;
-
-        [[nodiscard]] ICommandQueue    *CopyQueue( ) const;
-        [[nodiscard]] ICommandQueue    *GraphicsQueue( ) const;
-        [[nodiscard]] ICommandQueue    *ComputeQueue( ) const;
-        [[nodiscard]] ILogicalDevice   *GetLogicalDevice( ) const;
-        [[nodiscard]] ISwapChain       *GetSwapChain( ) const;
-        [[nodiscard]] ResourceTracking *GetResourceTracking( ) const;
-
-        void WaitIdle( ) const;
-
-        uint32_t          NextFrame( ) const;
-        uint32_t          AcquireNextImage( ) const;
-        ITextureResource *GetSwapChainRenderTarget( uint32_t index ) const;
-        void              Present( uint32_t imageIndex );
-
-        ~GraphicsContext( ) = default;
+        explicit RenderLoop( RenderLoopDesc renderLoopDesc );
+        ~RenderLoop( );
+        [[nodiscard]] GraphicsContext *GetGraphicsContext( ) const;
+        [[nodiscard]] FrameState       NextFrame( );
+        void                           Present( ) const;
+        void                           HandleEvent( const Event &event );
 
     private:
+        void Present( uint32_t imageIndex );
         void CreateSwapChain( );
     };
 } // namespace DZEngine

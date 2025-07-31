@@ -15,3 +15,30 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
+#include "DZEngine/Editor.h"
+
+using namespace DZEngine;
+
+Editor::Editor( const EditorDesc editorDesc ) : m_appContext( editorDesc.AppContext )
+{
+}
+
+Editor::~Editor( )
+{
+}
+
+GameRenderView Editor::GetGameRenderView( uint32_t frameIndex )
+{
+    GameRenderView renderView{ };
+
+    return renderView;
+}
+
+void Editor::HandleEvent( const Event &event )
+{
+}
+
+void Editor::Update( const EditorUpdateDesc &updateDesc )
+{
+}

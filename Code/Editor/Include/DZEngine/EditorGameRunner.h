@@ -18,12 +18,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "GraphicsContext.h"
+#include "DZEngine/IGameRunner.h"
+#include "DZEngine/Rendering/RenderLoop.h"
+#include "Editor.h"
 
 namespace DZEngine
 {
-    struct AppContext
+    class EditorGameRunner final : public IGameRunner
     {
-        GraphicsContext *GraphicsContext;
+        IGame                                   *m_game;
+        GraphicsContext                         *m_graphicsContext;
+        std::unique_ptr<RenderLoop>              m_renderLoop;
+        std::unique_ptr<Editor>                  m_editor;
+        std::unique_ptr<AppContext>              m_appContext;
+        std::vector<std::unique_ptr<ISemaphore>> m_renderCompleteSemaphores;
+
+    public:
+        explicit EditorGameRunner( const GameRunnerDesc &desc );
+        ~EditorGameRunner( ) override;
+        void HandleEvent( const Event &event ) override;
+        void Update( ) override;
     };
 } // namespace DZEngine

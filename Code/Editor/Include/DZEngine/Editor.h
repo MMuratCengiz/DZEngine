@@ -19,8 +19,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
 #include "DZEngine/AppContext.h"
-#include "DenOfIzGrahics/DenOfIzGrahics.h"
-#include "DenOfIzGraphics/Input/Window.h"
 
 namespace DZEngine
 {
@@ -29,12 +27,29 @@ namespace DZEngine
         AppContext *AppContext;
     };
 
+    struct GameRenderView
+    {
+        ITextureResource *RenderTarget;
+        Viewport          Viewport;
+    };
+
+    struct EditorUpdateDesc
+    {
+        uint32_t          FrameIndex;
+        IFence           *NotifyFence;   // Can be null
+        ISemaphore       *GameSemaphore; // Can be null
+        ITextureResource *RenderTarget;
+    };
+
     class Editor
     {
         AppContext *m_appContext;
 
     public:
-        Editor( EditorDesc editorDesc );
+        explicit Editor( EditorDesc editorDesc );
         ~Editor( );
+        GameRenderView GetGameRenderView( uint32_t frameIndex );
+        void           HandleEvent( const Event &event );
+        void           Update( const EditorUpdateDesc &updateDesc );
     };
 } // namespace DZEngine

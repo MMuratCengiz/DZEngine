@@ -17,7 +17,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "DZEngine/App.h"
-#include "DZEngine/GraphicsContext.h"
+
+#include "DZEngine/DummyGame.h"
+#include "DZEngine/GameRunner.h"
 
 using namespace DZEngine;
 
@@ -34,14 +36,21 @@ App::App( AppDesc appDesc )
 
     const auto graphicsWindowHandle = m_window->GetGraphicsWindowHandle( );
 
-    GraphicsContextDesc graphicsContextDesc{ };
-    graphicsContextDesc.WindowHandle = graphicsWindowHandle;
-    m_graphicsContext                = std::make_unique<GraphicsContext>( graphicsContextDesc );
+    m_game = std::make_unique<DummyGame>( ); // TODO
+
+    GameRunnerDesc gameRunnerDesc{ };
+    gameRunnerDesc.WindowHandle = graphicsWindowHandle;
+    gameRunnerDesc.Game         = m_game.get( );
+
+#ifdef DZ_RUN_MODE_EDITOR
+    m_gameRunner = std::make_unique<EditorGameRunner>( gameRunnerDesc );
+#else
+    m_gameRunner = std::make_unique<GameRunner>( gameRunnerDesc );
+#endif
 }
 
 void App::HandleEvent( const Event &event )
 {
-    m_graphicsContext->HandleEvent( event );
     if ( event.Type == EventType::Quit )
     {
         m_isRunning = false;
@@ -50,12 +59,11 @@ void App::HandleEvent( const Event &event )
     {
         m_isRunning = false;
     }
+    m_gameRunner->HandleEvent( event );
 }
 
 void App::Run( )
 {
-    InitSystems( );
-
     Event       event;
     InputSystem inputSystem{ };
     while ( m_isRunning )
@@ -72,27 +80,12 @@ void App::Run( )
     }
 }
 
-void App::Update( )
+void App::Update( ) const
 {
-    uint32_t nextImage = m_graphicsContext->AcquireNextImage( );
-
-
-
-}
-
-void App::InitSystems( )
-{
+    m_gameRunner->Update( );
 }
 
 App::~App( )
 {
     Engine::Shutdown( );
-}
-
-void App::RunEditor( )
-{
-}
-
-void App::RunGame( )
-{
 }

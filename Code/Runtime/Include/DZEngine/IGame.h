@@ -18,31 +18,29 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "DZEngine/Editor.h"
-#include "DZEngine/IGameRunner.h"
+#include "DenOfIzGraphics/DenOfIzGraphics.h"
+
+using namespace DenOfIz;
 
 namespace DZEngine
 {
-    struct AppDesc
+    struct RenderDesc
     {
+        uint32_t          FrameIndex      = 0;
+        IFence           *NotifyFence     = nullptr; // Can be null
+        ISemaphore       *NotifySemaphore = nullptr; // Can be null
+        ITextureResource *RenderTarget    = nullptr;
+        Viewport          Viewport{ };
     };
 
-    class App
+    class IGame
     {
-        std::unique_ptr<Window>               m_window;
-        std::unique_ptr<GraphicsWindowHandle> m_windowHandle;
-        std::unique_ptr<IGameRunner>          m_gameRunner;
-        std::unique_ptr<IGame>                m_game;
-
-        bool m_isRunning = true;
-
-        std::unique_ptr<Editor> m_editor;
-
     public:
-        explicit App( AppDesc launchDesc );
-        void HandleEvent( const Event &event );
-        void Update( ) const;
-        void Run( );
-        ~App( );
+        virtual ~IGame( )                              = 0;
+        virtual void Init( AppContext *appContext )    = 0;
+        virtual void HandleEvent( const Event &event ) = 0;
+        virtual void Update( )                         = 0;
+        // Return false if didn't render to indicate semaphore will not be singled
+        virtual bool Render( const RenderDesc &renderDesc ) = 0;
     };
 } // namespace DZEngine

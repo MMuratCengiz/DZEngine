@@ -6,4 +6,4 @@ target_sources(DZEditor PRIVATE
         Source/Editor.cpp
 )
 
-target_link_libraries(DZEditor PUBLIC DZCommon)
+target_link_libraries(DZEditor PUBLIC DZRuntime)

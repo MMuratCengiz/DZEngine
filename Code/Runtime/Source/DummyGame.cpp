@@ -16,33 +16,27 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "DZEngine/DummyGame.h"
 
-#include "DZEngine/Editor.h"
-#include "DZEngine/IGameRunner.h"
+using namespace DZEngine;
 
-namespace DZEngine
+void DummyGame::Init( AppContext *appContext )
 {
-    struct AppDesc
-    {
-    };
+}
 
-    class App
-    {
-        std::unique_ptr<Window>               m_window;
-        std::unique_ptr<GraphicsWindowHandle> m_windowHandle;
-        std::unique_ptr<IGameRunner>          m_gameRunner;
-        std::unique_ptr<IGame>                m_game;
+DummyGame::~DummyGame( )
+{
+}
 
-        bool m_isRunning = true;
+void DummyGame::HandleEvent( const Event &event )
+{
+}
 
-        std::unique_ptr<Editor> m_editor;
+void DummyGame::Update( )
+{
+}
 
-    public:
-        explicit App( AppDesc launchDesc );
-        void HandleEvent( const Event &event );
-        void Update( ) const;
-        void Run( );
-        ~App( );
-    };
-} // namespace DZEngine
+bool DummyGame::Render( const RenderDesc &renderDesc )
+{
+    return false; // Dummy game never renders
+}
