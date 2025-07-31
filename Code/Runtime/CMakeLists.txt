@@ -6,6 +6,8 @@ target_include_directories(DZRuntime PUBLIC Include)
 
 target_sources(DZRuntime PRIVATE
         Source/Rendering/RenderLoop.cpp
+        Source/DummyGame.cpp
+        Source/GameRunner.cpp
 )
 
 target_link_libraries(DZRuntime PUBLIC DenOfIz::DenOfIzGraphics flecs::flecs)

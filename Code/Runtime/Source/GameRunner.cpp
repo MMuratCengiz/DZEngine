@@ -57,8 +57,11 @@ void GameRunner::Update( )
     renderDesc.NotifyFence     = frameState.NotifyFence;
     renderDesc.NotifySemaphore = nullptr;
     renderDesc.RenderTarget    = frameState.RenderTarget;
-    renderDesc.Viewport        = { 0.0f, 0.0f, m_windowHandle->GetSurface( ).Width, m_windowHandle->GetSurface( ).Height };
-    m_game->Render( renderDesc );
 
-    m_renderLoop->Present( );
+    const GraphicsWindowSurface surface = m_windowHandle->GetSurface( );
+    renderDesc.Viewport                 = { 0.0f, 0.0f, static_cast<float>( surface.Width ), static_cast<float>( surface.Height ) };
+    if ( m_game->Render( renderDesc ) )
+    {
+        m_renderLoop->Present( );
+    }
 }

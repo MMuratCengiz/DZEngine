@@ -26,10 +26,10 @@ namespace DZEngine
     class DummyGame final : public IGame
     {
     public:
+        ~DummyGame( ) override;
         void Init( AppContext *appContext ) override;
         void HandleEvent( const Event &event ) override;
         void Update( ) override;
         bool Render( const RenderDesc &renderDesc ) override;
-        ~DummyGame( ) override;
     };
 } // namespace DZEngine

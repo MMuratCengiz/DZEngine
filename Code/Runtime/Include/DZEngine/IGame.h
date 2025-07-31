@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include "AppContext.h"
 #include "DenOfIzGraphics/DenOfIzGraphics.h"
 
 using namespace DenOfIz;
@@ -36,7 +37,7 @@ namespace DZEngine
     class IGame
     {
     public:
-        virtual ~IGame( )                              = 0;
+        virtual ~IGame( )                              = default;
         virtual void Init( AppContext *appContext )    = 0;
         virtual void HandleEvent( const Event &event ) = 0;
         virtual void Update( )                         = 0;
