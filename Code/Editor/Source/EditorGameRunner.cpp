@@ -72,7 +72,7 @@ void EditorGameRunner::Update( )
 
     EditorUpdateDesc updateDesc{ };
     updateDesc.FrameIndex    = frameState.FrameIndex;
-    updateDesc.NotifyFence   = frameState.NotifyFence;
+    updateDesc.SignalFence   = frameState.NotifyFence;
     updateDesc.GameSemaphore = gameRenderedSemaphore;
     updateDesc.RenderTarget  = frameState.RenderTarget;
 

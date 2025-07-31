@@ -51,6 +51,7 @@ RenderLoop::RenderLoop( const RenderLoopDesc renderLoopDesc ) : m_windowHandle( 
     m_graphicsContext->GraphicsQueue     = m_graphicsQueue.get( );
     m_graphicsContext->ComputeQueue      = m_computeQueue.get( );
     m_graphicsContext->ResourceTracking  = m_resourceTracking.get( );
+    m_graphicsContext->SwapChain         = m_swapChain.get( );
 
     m_frameFences.resize( MAX_FRAMES_IN_FLIGHT );
     for ( int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++ )

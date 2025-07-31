@@ -39,19 +39,27 @@ namespace DZEngine
     struct EditorUpdateDesc
     {
         uint32_t          FrameIndex;
-        IFence           *NotifyFence;   // Can be null
+        IFence           *SignalFence;   // Can be null
         ISemaphore       *GameSemaphore; // Can be null
         ITextureResource *RenderTarget;
     };
 
     class Editor
     {
-        AppContext *m_appContext;
+        AppContext                    *m_appContext;
+        GraphicsContext               *m_graphicsContext;
+        std::unique_ptr<ImGuiRenderer> m_imguiRenderer;
+        ImFont                        *m_font = nullptr;
+        StepTimer                      m_stepTimer;
 
-        public : explicit Editor( EditorDesc editorDesc );
+        std::unique_ptr<ICommandListPool> m_commandListPool;
+        std::vector<ICommandList *>       m_commandLists;
+
+    public:
+        explicit Editor( EditorDesc editorDesc );
         ~Editor( );
         GameRenderView GetGameRenderView( uint32_t frameIndex );
-        void           HandleEvent( const Event &event );
-        void           Update( const EditorUpdateDesc &updateDesc );
+        void           HandleEvent( const Event &event ) const;
+        void           Update( EditorUpdateDesc updateDesc );
     };
 } // namespace DZEngine

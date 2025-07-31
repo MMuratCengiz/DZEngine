@@ -30,5 +30,6 @@ namespace DZEngine
         ICommandQueue    *GraphicsQueue     = nullptr;
         ICommandQueue    *ComputeQueue      = nullptr;
         ResourceTracking *ResourceTracking  = nullptr;
+        ISwapChain       *SwapChain         = nullptr;
     };
 } // namespace DZEngine

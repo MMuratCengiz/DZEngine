@@ -6,6 +6,12 @@
     "eigen3",
     "flecs",
     "joltphysics",
-    "taskflow"
+    "taskflow",
+    {
+      "name": "imgui",
+      "features": [
+        "docking-experimental"
+      ]
+    }
   ]
 }
