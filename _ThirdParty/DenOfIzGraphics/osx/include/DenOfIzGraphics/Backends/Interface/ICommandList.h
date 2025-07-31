@@ -147,6 +147,15 @@ namespace DenOfIz
         IShaderBindingTable *ShaderBindingTable = nullptr;
     };
 
+    struct DZ_API DrawIndexedIndirectCommand
+    {
+        uint32_t NumIndices;
+        uint32_t NumInstances;
+        uint32_t FirstIndex;
+        int32_t  VertexOffset;
+        uint32_t FirstInstance;
+    };
+
     struct DZ_API CommandListDesc
     {
         QueueType QueueType = QueueType::Graphics;
@@ -192,15 +201,15 @@ namespace DenOfIz
         virtual void CopyBufferToTexture( const CopyBufferToTextureDesc &copyBufferToTexture ) = 0;
         virtual void CopyTextureToBuffer( const CopyTextureToBufferDesc &copyTextureToBuffer ) = 0;
         // --
-        virtual void UpdateTopLevelAS( const UpdateTopLevelASDesc &updateDesc )                       = 0;
-        virtual void BuildTopLevelAS( const BuildTopLevelASDesc &buildTopLevelASDesc )                = 0;
-        virtual void BuildBottomLevelAS( const BuildBottomLevelASDesc &buildBottomLevelASDesc )       = 0;
-        virtual void DispatchRays( const DispatchRaysDesc &dispatchRaysDesc )                         = 0;
-        virtual void Dispatch( uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ )     = 0;
-        virtual void DispatchMesh( uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ ) = 0;
-        virtual void DrawIndirect( IBufferResource *buffer, uint64_t offset, uint32_t drawCount, uint32_t stride ) = 0;
+        virtual void UpdateTopLevelAS( const UpdateTopLevelASDesc &updateDesc )                                           = 0;
+        virtual void BuildTopLevelAS( const BuildTopLevelASDesc &buildTopLevelASDesc )                                    = 0;
+        virtual void BuildBottomLevelAS( const BuildBottomLevelASDesc &buildBottomLevelASDesc )                           = 0;
+        virtual void DispatchRays( const DispatchRaysDesc &dispatchRaysDesc )                                             = 0;
+        virtual void Dispatch( uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ )                         = 0;
+        virtual void DispatchMesh( uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ )                     = 0;
+        virtual void DrawIndirect( IBufferResource *buffer, uint64_t offset, uint32_t drawCount, uint32_t stride )        = 0;
         virtual void DrawIndexedIndirect( IBufferResource *buffer, uint64_t offset, uint32_t drawCount, uint32_t stride ) = 0;
-        virtual void DispatchIndirect( IBufferResource *buffer, uint64_t offset ) = 0;
+        virtual void DispatchIndirect( IBufferResource *buffer, uint64_t offset )                                         = 0;
 
         virtual const QueueType GetQueueType( ) = 0;
     };

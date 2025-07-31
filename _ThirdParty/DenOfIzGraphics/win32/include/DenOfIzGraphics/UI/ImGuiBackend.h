@@ -139,13 +139,13 @@ namespace DenOfIz
         static ImGuiKey KeyCodeToImGuiKey( KeyCode keycode );
     };
 
-    class DenOfIzImGuiContext
+    class ImGuiRenderer
     {
         std::unique_ptr<ImGuiBackend> m_backend{ };
 
     public:
-        DZ_API explicit DenOfIzImGuiContext( const ImGuiBackendDesc &desc );
-        DZ_API ~DenOfIzImGuiContext( );
+        DZ_API explicit ImGuiRenderer( const ImGuiBackendDesc &desc );
+        DZ_API ~ImGuiRenderer( );
 
         DZ_API void ProcessEvent( const Event &event ) const;
         DZ_API void NewFrame( uint32_t width, uint32_t height, float deltaTime ) const;

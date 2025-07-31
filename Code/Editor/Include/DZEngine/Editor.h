@@ -19,6 +19,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
 #include "DZEngine/AppContext.h"
+#include "DenOfIzGraphics/UI/ImGuiBackend.h"
+
+using namespace DenOfIz;
 
 namespace DZEngine
 {
@@ -45,8 +48,7 @@ namespace DZEngine
     {
         AppContext *m_appContext;
 
-    public:
-        explicit Editor( EditorDesc editorDesc );
+        public : explicit Editor( EditorDesc editorDesc );
         ~Editor( );
         GameRenderView GetGameRenderView( uint32_t frameIndex );
         void           HandleEvent( const Event &event );
