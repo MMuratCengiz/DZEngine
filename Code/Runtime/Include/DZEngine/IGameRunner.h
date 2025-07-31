@@ -30,8 +30,8 @@ namespace DZEngine
     class IGameRunner
     {
     public:
+        virtual ~IGameRunner( )                        = default;
         virtual void HandleEvent( const Event &event ) = 0;
         virtual void Update( )                         = 0;
-        virtual ~IGameRunner( )                        = 0;
     };
 } // namespace DZEngine
