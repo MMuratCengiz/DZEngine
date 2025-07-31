@@ -42,6 +42,8 @@ RenderLoop::RenderLoop( const RenderLoopDesc renderLoopDesc ) : m_windowHandle( 
     computeQueue.QueueType = QueueType::Compute;
     m_computeQueue.reset( m_logicalDevice->CreateCommandQueue( computeQueue ) );
 
+    m_resourceTracking = std::make_unique<ResourceTracking>( );
+
     CreateSwapChain( );
 
     m_graphicsContext                    = std::make_unique<GraphicsContext>( );

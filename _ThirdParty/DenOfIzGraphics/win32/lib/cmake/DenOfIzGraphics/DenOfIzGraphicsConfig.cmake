@@ -62,11 +62,6 @@ if (WIN32)
         )
     endif()
     
-    if(MSVC)
-        set_property(TARGET DenOfIz::DenOfIzGraphics APPEND PROPERTY
-            INTERFACE_COMPILE_OPTIONS "/MT$<$<CONFIG:Debug>:d>"
-        )
-    endif()
 elseif (APPLE)
     set_property(TARGET DenOfIz::DenOfIzGraphics APPEND PROPERTY
         INTERFACE_LINK_LIBRARIES 

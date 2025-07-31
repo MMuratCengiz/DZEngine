@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace DZEngine;
 
-GameRunner::GameRunner( const GameRunnerDesc &desc ) : m_game( desc.Game )
+GameRunner::GameRunner( const GameRunnerDesc &desc ) : m_windowHandle( desc.WindowHandle ), m_game( desc.Game )
 {
     RenderLoopDesc renderLoopDesc{ };
     renderLoopDesc.WindowHandle = desc.WindowHandle;
