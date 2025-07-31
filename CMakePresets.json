@@ -29,7 +29,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_CXX_FLAGS": "/W4 /permissive- /Zc:__cplusplus /EHsc /MP -DNOMINMAX /wd\"4267\" /wd\"4244\"",
+        "CMAKE_CXX_FLAGS": "/W4 /permissive- /Zc:__cplusplus /EHsc /MP /utf-8 -DNOMINMAX /wd\"4267\" /wd\"4244\" ",
         "CMAKE_CXX_FLAGS_DEBUG": "/MDd /Zi /Ob0 /Od /RTC1",
         "CMAKE_CXX_FLAGS_RELEASE": "/MD /O2 /Ob2 /DNDEBUG",
         "VCPKG_TARGET_TRIPLET": "x64-windows-static-md"

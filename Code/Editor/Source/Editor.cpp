@@ -33,7 +33,6 @@ Editor::Editor( const EditorDesc editorDesc ) : m_appContext( editorDesc.AppCont
     backendDesc.RenderTargetFormat = Format::B8G8R8A8Unorm;
     backendDesc.NumFrames          = m_graphicsContext->NumFramesInFlight;
     backendDesc.Viewport           = m_graphicsContext->SwapChain->GetViewport( );
-    ImGuiRenderer renderer( backendDesc );
     m_imguiRenderer                = std::make_unique<ImGuiRenderer>( backendDesc );
 
     ImGuiIO &io = ImGui::GetIO( );

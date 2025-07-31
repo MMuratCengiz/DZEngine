@@ -1,4 +1,6 @@
 find_package(flecs CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
 
 add_library(DZRuntime STATIC)
 
@@ -10,4 +12,4 @@ target_sources(DZRuntime PRIVATE
         Source/GameRunner.cpp
 )
 
-target_link_libraries(DZRuntime PUBLIC DenOfIz::DenOfIzGraphics flecs::flecs)
+target_link_libraries(DZRuntime PUBLIC DenOfIz::DenOfIzGraphics flecs::flecs spdlog::spdlog fmt::fmt)

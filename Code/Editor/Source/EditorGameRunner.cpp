@@ -49,6 +49,8 @@ EditorGameRunner::~EditorGameRunner( )
 void EditorGameRunner::HandleEvent( const Event &event )
 {
     m_renderLoop->HandleEvent( event );
+    m_editor->HandleEvent( event );
+    m_game->HandleEvent( event );
 }
 
 void EditorGameRunner::Update( )

@@ -2,6 +2,7 @@
   "name": "dzengine",
   "version": "0.0.1",
   "dependencies": [
+    "fmt",
     "spdlog",
     "eigen3",
     "flecs",

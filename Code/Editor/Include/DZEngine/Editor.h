@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
 #include "DZEngine/AppContext.h"
-#include "DenOfIzGraphics/UI/ImGuiBackend.h"
+#include "ImGuiBackend.h"
 
 using namespace DenOfIz;
 

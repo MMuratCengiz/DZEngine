@@ -61,7 +61,6 @@ if (WIN32)
             IMPORTED_IMPLIB_RELWITHDEBINFO "${PACKAGE_PREFIX_DIR}/lib/DenOfIzGraphics.lib"
         )
     endif()
-    
 elseif (APPLE)
     set_property(TARGET DenOfIz::DenOfIzGraphics APPEND PROPERTY
         INTERFACE_LINK_LIBRARIES 

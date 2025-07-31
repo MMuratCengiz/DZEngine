@@ -34,7 +34,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "DenOfIzGraphics/Input/Event.h"
 #include "DenOfIzGraphics/UI/IClayContext.h"
 
-#include <DirectXMath.h>
+/*
+ * This file is intended to be copied over to your project; this is to avoid double imgui static instances
+ *
+ * To get started, copy the ImGui directory into your project and compile ImGuiBackend.cpp alongside your code, DenOfIz/AssetBrowser has usage example and some default fonts
+ * you can use.
+ *
+ */
 
 namespace DenOfIz
 {
@@ -111,19 +117,18 @@ namespace DenOfIz
         uint32_t                  m_numFrames    = 0;
 
     public:
-        DZ_API explicit ImGuiBackend( const ImGuiBackendDesc &desc );
-        DZ_API ~ImGuiBackend( );
+        explicit ImGuiBackend( const ImGuiBackendDesc &desc );
+        ~ImGuiBackend( );
 
-        DZ_API void            SetViewport( const Viewport &viewport );
-        DZ_API const Viewport &GetViewport( ) const;
-        DZ_API void            NewFrame( ) const;
-        DZ_API void            RenderDrawData( ICommandList *commandList, ImDrawData *drawData, uint32_t frameIndex );
+        void            SetViewport( const Viewport &viewport );
+        const Viewport &GetViewport( ) const;
+        void            RenderDrawData( ICommandList *commandList, ImDrawData *drawData, uint32_t frameIndex );
 
-        DZ_API void        RecreateFonts( );
-        DZ_API ImTextureID AddTexture( ITextureResource *texture );
-        DZ_API void        RemoveTexture( ImTextureID textureId );
+        void        RecreateFonts( );
+        ImTextureID AddTexture( ITextureResource *texture );
+        void        RemoveTexture( ImTextureID textureId );
 
-        DZ_API void ProcessEvent( const Event &event ) const;
+        void ProcessEvent( const Event &event ) const;
 
     private:
         void CreateShaderProgram( );
@@ -144,17 +149,17 @@ namespace DenOfIz
         std::unique_ptr<ImGuiBackend> m_backend{ };
 
     public:
-        DZ_API explicit ImGuiRenderer( const ImGuiBackendDesc &desc );
-        DZ_API ~ImGuiRenderer( );
+        explicit ImGuiRenderer( const ImGuiBackendDesc &desc );
+        ~ImGuiRenderer( );
 
-        DZ_API void ProcessEvent( const Event &event ) const;
-        DZ_API void NewFrame( uint32_t width, uint32_t height, float deltaTime ) const;
-        DZ_API void Render( ITextureResource *renderTarget, ICommandList *commandList, uint32_t frameIndex ) const;
-        DZ_API void SetViewport( Viewport viewport ) const;
-        DZ_API void RecreateFonts( ) const;
+        void ProcessEvent( const Event &event ) const;
+        void NewFrame( uint32_t width, uint32_t height, float deltaTime ) const;
+        void Render( ITextureResource *renderTarget, ICommandList *commandList, uint32_t frameIndex ) const;
+        void SetViewport( Viewport viewport ) const;
+        void RecreateFonts( ) const;
 
-        DZ_API ImTextureID AddTexture( ITextureResource *texture ) const;
-        DZ_API void        RemoveTexture( ImTextureID textureId ) const;
+        ImTextureID AddTexture( ITextureResource *texture ) const;
+        void        RemoveTexture( ImTextureID textureId ) const;
     };
 
     namespace ImGuiUtils
