@@ -58,7 +58,7 @@ namespace DenOfIz
 
         Font               *m_font = nullptr;
         std::vector<Font *> m_fonts;
-        Float_4x4           m_projectionMatrix{ };
+        Float4x4           m_projectionMatrix{ };
 
         std::vector<uint32_t>                   m_validFonts;
         std::vector<std::unique_ptr<TextBatch>> m_textBatches; // index = fontId
@@ -67,7 +67,7 @@ namespace DenOfIz
         DZ_API ~TextRenderer( ) = default;
 
         DZ_API void SetAntiAliasingMode( AntiAliasingMode antiAliasingMode );
-        DZ_API void SetProjectionMatrix( const Float_4x4 &projectionMatrix );
+        DZ_API void SetProjectionMatrix( const Float4x4 &projectionMatrix );
         DZ_API void SetViewport( const Viewport &viewport );
 
         // Font management
@@ -80,7 +80,7 @@ namespace DenOfIz
         DZ_API void AddText( const TextRenderDesc &params ) const;
         DZ_API void EndBatch( ICommandList *commandList ) const;
 
-        DZ_API Float_2 MeasureText( const InteropString &text, const TextRenderDesc &desc ) const;
+        DZ_API Float2 MeasureText( const InteropString &text, const TextRenderDesc &desc ) const;
     };
 
 } // namespace DenOfIz

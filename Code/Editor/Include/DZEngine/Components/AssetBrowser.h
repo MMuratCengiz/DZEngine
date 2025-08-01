@@ -89,11 +89,8 @@ namespace DZEngine
         void RenderToolbar( );
         void RenderNavigationBar( );
         void RenderAssetGrid( );
-        void RenderAssetItem( const AssetItem &item, int index );
         void RenderContextMenu( );
 
-        static const char *GetFileIcon( const AssetItem &item );
-        static ImVec4      GetFileColor( const AssetItem &item );
         static std::string FormatFileSize( size_t bytes );
 
         void NavigateUp( );

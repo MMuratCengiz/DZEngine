@@ -44,16 +44,10 @@ namespace DZEngine
     struct FontConfig
     {
         float VerySmallSize     = 16.0f;
-        float SmallSize         = 20.0f;
-        float MediumSize        = 24.0f;
-        float LargeSize         = 28.0f;
-        float VeryLargeSize     = 32.0f;
-        float IconVerySmallSize = 16.0f;
-        float IconSmallSize     = 20.0f;
-        float IconMediumSize    = 32.0f;
-        float IconLargeSize     = 48.0f;
-        float IconVeryLargeSize = 64.0f;
-        bool  MergeIcons        = true;
+        float SmallSize         = 24.0f;
+        float MediumSize        = 32.0f;
+        float LargeSize         = 40.0f;
+        float VeryLargeSize     = 58.0f;
     };
 
     class ImGuiFonts

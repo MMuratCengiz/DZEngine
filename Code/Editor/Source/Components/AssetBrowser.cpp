@@ -18,17 +18,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "DZEngine/Components/AssetBrowser.h"
 #include <algorithm>
-#include <imgui_internal.h>
+#include <imgui_stdlib.h>
 #include <iomanip>
 #include <sstream>
+#include "DZEngine/Components/AssetTile.h"
 #include "DZEngine/Style/EditorStyle.h"
 #include "DZEngine/Style/ImGuiFonts.h"
 
 using namespace DZEngine;
 
 AssetBrowser::AssetBrowser( ) :
-    m_rootPath( "./build" ), m_currentPath( "./build" ), m_historyIndex( -1 ), m_viewSize( ViewSize::Medium ), m_itemsPerRow( 5 ), m_selectedItem( -1 ), m_showContextMenu( false ),
-    m_showHiddenFiles( false ), m_isOpen( true )
+    m_rootPath( "./build" ), m_currentPath( "./build" ), m_historyIndex( -1 ), m_viewSize( ViewSize::VeryLarge ), m_itemsPerRow( 5 ), m_selectedItem( -1 ),
+    m_showContextMenu( false ), m_showHiddenFiles( false ), m_isOpen( true )
 {
     if ( std::filesystem::exists( m_rootPath ) )
     {
@@ -61,6 +62,8 @@ void AssetBrowser::Render( )
     if ( ImGui::Begin( "Asset Browser", &m_isOpen ) )
     {
         ImGui::PopStyleVar( );
+
+        ImGui::Dummy( ImVec2( 0, 4.0f ) );
 
         RenderToolbar( );
         RenderNavigationBar( );
@@ -119,56 +122,73 @@ void AssetBrowser::RefreshCurrentDirectory( )
 void AssetBrowser::RenderToolbar( )
 {
     EditorStyle::BeginToolbar( );
-    ImGuiFonts::Instance( ).PushFont( FontType::Regular, FontSize::Medium );
+
+    constexpr float margin = 16.0f;
+    ImGui::SetCursorPosX( ImGui::GetCursorPosX( ) + margin );
+
+    ImGuiFonts::Instance( ).PushIconFont( FontSize::VerySmall );
+    const float iconButtonHeight = ImGui::GetFrameHeight( );
 
     if ( ImGui::Button( Icons::ARROW_LEFT ) )
     {
         NavigateBack( );
     }
     ImGui::SameLine( );
-
     if ( ImGui::Button( Icons::HOME ) )
     {
         GoHome( );
     }
     ImGui::SameLine( );
-
     if ( ImGui::Button( Icons::REFRESH ) )
     {
         RefreshCurrentDirectory( );
     }
+    ImGuiFonts::Instance( ).PopIconFont( );
 
-    ImGuiFonts::Instance( ).PopFont( );
+    ImGuiFonts::Instance( ).PushFont( FontType::Regular, FontSize::VerySmall );
+    const float textFrameHeight = ImGui::GetFrameHeight( );
+
     ImGui::SameLine( );
-
-    ImGui::SeparatorEx( ImGuiSeparatorFlags_Vertical );
-    ImGui::SameLine( );
-
-    ImGui::SetNextItemWidth( 200 );
-    char searchBuffer[ 256 ];
-    strncpy( searchBuffer, m_searchFilter.c_str( ), sizeof( searchBuffer ) - 1 );
-    searchBuffer[ sizeof( searchBuffer ) - 1 ] = '\0';
-    if ( ImGui::InputTextWithHint( "##Search", "Search...", searchBuffer, sizeof( searchBuffer ) ) )
+    const float heightDiff = ( iconButtonHeight - textFrameHeight ) * 0.5f;
+    if ( heightDiff > 0 )
     {
-        m_searchFilter = searchBuffer;
+        ImGui::SetCursorPosY( ImGui::GetCursorPosY( ) + heightDiff );
+    }
+
+    constexpr float itemWidth = 250.0f;
+    ImGui::SetNextItemWidth( itemWidth );
+    ImGui::SetCursorPosX( ImGui::GetCursorPosX( ) + margin );
+    if ( ImGui::InputTextWithHint( "##Search", "Search...", &m_searchFilter ) )
+    {
         ScanCurrentDirectory( );
     }
-    ImGui::SameLine( );
 
-    ImGui::SetNextItemWidth( 120 );
+    ImGui::SameLine( );
+    if ( heightDiff > 0 )
+    {
+        ImGui::SetCursorPosY( ImGui::GetCursorPosY( ) + heightDiff );
+    }
+    ImGui::SetNextItemWidth( itemWidth );
+    ImGui::SetCursorPosX( ImGui::GetCursorPosX( ) + margin );
     int currentSize = static_cast<int>( m_viewSize );
     if ( ImGui::Combo( "##ViewSize", &currentSize, VIEW_SIZE_NAMES, 5 ) )
     {
         m_viewSize = static_cast<ViewSize>( currentSize );
     }
 
+    ImGuiFonts::Instance( ).PopFont( );
     EditorStyle::EndToolbar( );
 }
 
 void AssetBrowser::RenderNavigationBar( )
 {
-    ImGuiFonts::Instance( ).PushFont( FontType::Regular, FontSize::Small );
-    ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2( 4, 2 ) );
+    ImGuiFonts::Instance( ).PushFont( FontType::Regular, FontSize::VerySmall );
+    const float navBarHeight = ImGui::GetFrameHeight( );
+    ImGuiFonts::Instance( ).PopFont( );
+
+    ImGui::BeginChild( "##NavigationBar", ImVec2( 0, navBarHeight ), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_HorizontalScrollbar );
+
+    ImGuiFonts::Instance( ).PushFont( FontType::Regular, FontSize::VerySmall );
     ImGui::PushStyleColor( ImGuiCol_Button, ImVec4( 0, 0, 0, 0 ) );
 
     std::string displayPath = m_currentPath;
@@ -191,7 +211,7 @@ void AssetBrowser::RenderNavigationBar( )
         if ( i > 0 )
         {
             ImGui::SameLine( );
-            ImGui::Text( "/" );
+            ImGui::TextUnformatted( "/" );
             ImGui::SameLine( );
         }
 
@@ -207,28 +227,50 @@ void AssetBrowser::RenderNavigationBar( )
     }
 
     ImGui::PopStyleColor( );
-    ImGui::PopStyleVar( );
-    ImGuiFonts::Instance( ).PopFont( );
+    ImGui::PopFont( );
+
+    ImGui::EndChild( );
 }
 
 void AssetBrowser::RenderAssetGrid( )
 {
     ImGui::BeginChild( "AssetGrid", ImVec2( 0, 0 ), false, ImGuiWindowFlags_NoScrollWithMouse );
 
-    const float windowWidth = ImGui::GetContentRegionAvail( ).x;
-    const int   itemSize    = ITEM_SIZES[ static_cast<int>( m_viewSize ) ];
-    m_itemsPerRow           = std::max( 1, static_cast<int>( windowWidth / itemSize ) );
+    const float     windowWidth = ImGui::GetContentRegionAvail( ).x;
+    const int       itemSize    = ITEM_SIZES[ static_cast<int>( m_viewSize ) ];
+    constexpr float spacing     = 8.0f;
+    constexpr float padding     = 12.0f;
+
+    const float availableWidth = windowWidth - padding * 2;
+    m_itemsPerRow              = std::max( 1, static_cast<int>( ( availableWidth + spacing ) / ( itemSize + spacing ) ) );
+
+    ImGui::SetCursorPosX( ImGui::GetCursorPosX( ) + padding );
 
     for ( int i = 0; i < static_cast<int>( m_items.size( ) ); ++i )
     {
         if ( i % m_itemsPerRow != 0 )
         {
-            ImGui::SameLine( );
+            ImGui::SameLine( 0, spacing );
         }
-
-        RenderAssetItem( m_items[ i ], i );
+        else if ( i > 0 )
+        {
+            ImGui::Dummy( ImVec2( 0, spacing * 0.5f ) );
+            ImGui::SetCursorPosX( ImGui::GetCursorPosX( ) + padding );
+        }
+        if ( AssetTile::Render( m_items[ i ], ITEM_SIZES[ static_cast<int>( m_viewSize ) ], m_selectedItem == i, i ) )
+        {
+            m_selectedItem = i;
+        }
+        if ( ImGui::IsItemHovered( ) && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left ) )
+        {
+            if ( m_items[ i ].isDirectory )
+            {
+                NavigateToPath( m_items[ i ].path );
+            }
+        }
     }
 
+    ImGui::Dummy( ImVec2( 0, padding ) );
     if ( ImGui::IsWindowHovered( ) && ImGui::IsMouseClicked( ImGuiMouseButton_Right ) )
     {
         m_showContextMenu = true;
@@ -236,123 +278,6 @@ void AssetBrowser::RenderAssetGrid( )
     }
 
     ImGui::EndChild( );
-}
-
-void AssetBrowser::RenderAssetItem( const AssetItem &item, int index )
-{
-    ImGui::BeginGroup( );
-
-    const bool   isSelected = ( m_selectedItem == index );
-    const int    itemSize   = ITEM_SIZES[ static_cast<int>( m_viewSize ) ];
-    const ImVec2 buttonSize( static_cast<float>( itemSize ), static_cast<float>( itemSize ) );
-
-    if ( isSelected )
-    {
-        ImGui::PushStyleColor( ImGuiCol_Button, ImVec4( 0.3f, 0.5f, 0.8f, 0.8f ) );
-    }
-    else
-    {
-        ImGui::PushStyleColor( ImGuiCol_Button, ImVec4( 0.2f, 0.2f, 0.2f, 0.8f ) );
-    }
-
-    ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 0.3f, 0.3f, 0.3f, 0.9f ) );
-    ImGui::PushStyleColor( ImGuiCol_ButtonActive, ImVec4( 0.4f, 0.4f, 0.4f, 1.0f ) );
-
-    if ( ImGui::Button( ( "##item" + std::to_string( index ) ).c_str( ), buttonSize ) )
-    {
-        m_selectedItem = index;
-
-        if ( item.isDirectory )
-        {
-            NavigateToPath( item.path );
-        }
-    }
-
-    if ( ImGui::IsItemHovered( ) && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left ) )
-    {
-        if ( item.isDirectory )
-        {
-            NavigateToPath( item.path );
-        }
-    }
-
-    ImGui::PopStyleColor( 3 );
-
-    ImDrawList  *drawList  = ImGui::GetWindowDrawList( );
-    const ImVec2 buttonMin = ImGui::GetItemRectMin( );
-    const ImVec2 buttonMax = ImGui::GetItemRectMax( );
-
-    const char  *icon      = GetFileIcon( item );
-    const ImVec4 iconColor = GetFileColor( item );
-
-    FontSize fontSize;
-    switch ( m_viewSize )
-    {
-    case ViewSize::VerySmall:
-        fontSize = FontSize::VerySmall;
-        break;
-    case ViewSize::Small:
-        fontSize = FontSize::Small;
-        break;
-    case ViewSize::Medium:
-        fontSize = FontSize::Medium;
-        break;
-    case ViewSize::Large:
-        fontSize = FontSize::Large;
-        break;
-    case ViewSize::VeryLarge:
-        fontSize = FontSize::VeryLarge;
-        break;
-    }
-
-    ImGuiFonts::Instance( ).PushFont( FontType::Regular, fontSize );
-    ImFont      *font         = ImGui::GetFont( );
-    const ImVec2 iconTextSize = font->CalcTextSizeA( font->FontSize, FLT_MAX, 0.0f, icon );
-
-    const auto iconPos = ImVec2( buttonMin.x + ( buttonSize.x - iconTextSize.x ) * 0.5f, buttonMin.y + ( buttonSize.y - iconTextSize.y ) * 0.5f - 8 );
-
-    drawList->AddText( font, font->FontSize, iconPos, ImGui::ColorConvertFloat4ToU32( iconColor ), icon );
-    ImGuiFonts::Instance( ).PopFont( );
-
-    FontSize textFontSize;
-    switch ( m_viewSize )
-    {
-    case ViewSize::VerySmall:
-        textFontSize = FontSize::VerySmall;
-        break;
-    case ViewSize::Small:
-    case ViewSize::Medium:
-        textFontSize = FontSize::Small;
-        break;
-    case ViewSize::Large:
-        textFontSize = FontSize::Medium;
-        break;
-    case ViewSize::VeryLarge:
-        textFontSize = FontSize::Large;
-        break;
-    }
-
-    ImGuiFonts::Instance( ).PushFont( FontType::Regular, textFontSize );
-    ImFont *textFont = ImGui::GetFont( );
-
-    ImVec2      textSize    = textFont->CalcTextSizeA( textFont->FontSize, FLT_MAX, 0.0f, item.name.c_str( ) );
-    std::string displayName = item.name;
-
-    if ( const float maxTextWidth = buttonSize.x - 8; textSize.x > maxTextWidth )
-    {
-        while ( textSize.x > maxTextWidth && displayName.length( ) > 3 )
-        {
-            displayName = displayName.substr( 0, displayName.length( ) - 4 ) + "...";
-            textSize    = textFont->CalcTextSizeA( textFont->FontSize, FLT_MAX, 0.0f, displayName.c_str( ) );
-        }
-    }
-
-    const auto textPos = ImVec2( buttonMin.x + ( buttonSize.x - textSize.x ) * 0.5f, buttonMax.y + 4 );
-
-    drawList->AddText( textFont, textFont->FontSize, textPos, ImGui::ColorConvertFloat4ToU32( ImVec4( 0.9f, 0.9f, 0.9f, 1.0f ) ), displayName.c_str( ) );
-    ImGuiFonts::Instance( ).PopFont( );
-
-    ImGui::EndGroup( );
 }
 
 void AssetBrowser::RenderContextMenu( )
@@ -380,71 +305,7 @@ void AssetBrowser::RenderContextMenu( )
     }
 }
 
-const char *AssetBrowser::GetFileIcon( const AssetItem &item )
-{
-    if ( item.isDirectory )
-    {
-        return Icons::FOLDER;
-    }
-
-    std::string ext = item.extension;
-    std::ranges::transform( ext, ext.begin( ), ::tolower );
-
-    if ( ext == "png" || ext == "jpg" || ext == "jpeg" || ext == "bmp" || ext == "tga" || ext == "dds" )
-    {
-        return Icons::IMAGE;
-    }
-    if ( ext == "wav" || ext == "mp3" || ext == "ogg" || ext == "flac" )
-    {
-        return Icons::AUDIO;
-    }
-    if ( ext == "mp4" || ext == "avi" || ext == "mov" || ext == "mkv" )
-    {
-        return Icons::VIDEO;
-    }
-    if ( ext == "cpp" || ext == "h" || ext == "cs" || ext == "js" || ext == "py" )
-    {
-        return Icons::CODE;
-    }
-    if ( ext == "obj" || ext == "fbx" || ext == "dae" || ext == "blend" )
-    {
-        return Icons::MESH;
-    }
-    if ( ext == "hlsl" || ext == "glsl" || ext == "shader" )
-    {
-        return Icons::SHADER;
-    }
-
-    return Icons::FILE_ICON;
-}
-
-ImVec4 AssetBrowser::GetFileColor( const AssetItem &item )
-{
-    if ( item.isDirectory )
-    {
-        return ImVec4( 1.0f, 0.8f, 0.2f, 1.0f );
-    }
-
-    std::string ext = item.extension;
-    std::ranges::transform( ext, ext.begin( ), ::tolower );
-
-    if ( ext == "png" || ext == "jpg" || ext == "jpeg" || ext == "bmp" || ext == "tga" || ext == "dds" )
-    {
-        return ImVec4( 0.2f, 0.8f, 0.2f, 1.0f );
-    }
-    if ( ext == "wav" || ext == "mp3" || ext == "ogg" || ext == "flac" )
-    {
-        return ImVec4( 0.8f, 0.2f, 0.8f, 1.0f );
-    }
-    if ( ext == "cpp" || ext == "h" || ext == "cs" || ext == "js" || ext == "py" )
-    {
-        return ImVec4( 0.2f, 0.6f, 0.9f, 1.0f );
-    }
-
-    return ImVec4( 0.7f, 0.7f, 0.7f, 1.0f );
-}
-
-std::string AssetBrowser::FormatFileSize( size_t bytes )
+std::string AssetBrowser::FormatFileSize( const size_t bytes )
 {
     const char *suffixes[]  = { "B", "KB", "MB", "GB", "TB" };
     int         suffixIndex = 0;

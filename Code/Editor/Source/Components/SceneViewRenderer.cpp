@@ -18,6 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "DZEngine/Components/SceneViewRenderer.h"
 #include <array>
+#include <spdlog/spdlog.h>
+
 #include "DenOfIzGraphics/Assets/Import/ShaderImporter.h"
 #include "DenOfIzGraphics/Data/BatchResourceCopy.h"
 #include "DenOfIzGraphics/Utilities/InteropUtilities.h"
@@ -43,19 +45,14 @@ void SceneViewRenderer::UpdateViewport( const Viewport &viewport )
     }
 }
 
-void SceneViewRenderer::Render( ICommandList *commandList, ITextureResource *renderTarget, uint32_t frameIndex )
+void SceneViewRenderer::Render( ICommandList *commandList, const uint32_t frameIndex )
 {
-    if ( !m_pipeline || !renderTarget )
-    {
-        return;
-    }
+    ITextureResource *renderTarget = GetRenderTarget( frameIndex );
 
-    ITextureResource *targetTexture = renderTarget ? renderTarget : GetRenderTexture( frameIndex );
-
-    m_resourceTracking.TransitionTexture( commandList, targetTexture, ResourceUsage::RenderTarget );
+    m_resourceTracking.TransitionTexture( commandList, renderTarget, ResourceUsage::RenderTarget );
 
     RenderingAttachmentDesc attachmentDesc{ };
-    attachmentDesc.Resource = targetTexture;
+    attachmentDesc.Resource = renderTarget;
 
     RenderingDesc renderingDesc{ };
     renderingDesc.RTAttachments.Elements    = &attachmentDesc;
@@ -70,15 +67,16 @@ void SceneViewRenderer::Render( ICommandList *commandList, ITextureResource *ren
 
     commandList->EndRendering( );
 
-    m_resourceTracking.TransitionTexture( commandList, targetTexture, ResourceUsage::ShaderResource );
+    m_resourceTracking.TransitionTexture( commandList, renderTarget, ResourceUsage::ShaderResource );
 }
 
-ITextureResource *SceneViewRenderer::GetRenderTexture( uint32_t frameIndex ) const
+ITextureResource *SceneViewRenderer::GetRenderTarget( const uint32_t frameIndex ) const
 {
     if ( frameIndex < m_renderTargets.size( ) && m_renderTargets[ frameIndex ] )
     {
         return m_renderTargets[ frameIndex ].get( );
     }
+    spdlog::error( "Invalid frame index" );
     return nullptr;
 }
 

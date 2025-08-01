@@ -29,11 +29,11 @@ namespace DenOfIz
     struct DZ_API Joint
     {
         InteropString Name;
-        Float_4x4     InverseBindMatrix;
-        Float_3       LocalTranslation;
-        Float_4       LocalRotationQuat;
-        Float_3       LocalScale;
-        Float_4x4     GlobalTransform;
+        Float4x4     InverseBindMatrix;
+        Float3       LocalTranslation;
+        Float4       LocalRotationQuat;
+        Float3       LocalScale;
+        Float4x4     GlobalTransform;
         uint32_t      Index       = 0;
         int32_t       ParentIndex = 0;
         UInt32Array   ChildIndices;

@@ -85,11 +85,11 @@ namespace DenOfIz
         int32_t       IntValue{ };
         float         FloatValue{ };
         bool          BoolValue{ };
-        Float_2       Vector2Value{ };
-        Float_3       Vector3Value{ };
-        Float_4       Vector4Value{ };
-        Float_4       ColorValue{ };
-        Float_4x4     TransformValue;
+        Float2       Vector2Value{ };
+        Float3       Vector3Value{ };
+        Float4       Vector4Value{ };
+        Float4       ColorValue{ };
+        Float4x4     TransformValue;
     };
 
     struct DZ_API UserPropertyArray

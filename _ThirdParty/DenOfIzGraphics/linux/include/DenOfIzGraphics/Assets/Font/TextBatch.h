@@ -40,7 +40,7 @@ namespace DenOfIz
         InteropString Text;
         float         X                = 0.0f;
         float         Y                = 0.0f;
-        Float_4       Color            = Float_4{ 1.0f, 1.0f, 1.0f, 1.0f };
+        Float4       Color            = Float4{ 1.0f, 1.0f, 1.0f, 1.0f };
         uint16_t      LetterSpacing    = 0;
         uint16_t      LineHeight       = 0;
         bool          HorizontalCenter = false;
@@ -53,9 +53,9 @@ namespace DenOfIz
     {
         struct FontShaderUniforms
         {
-            Float_4x4 Projection;
-            Float_4   TextColor;
-            Float_4   TextureSizeParams; // xy: texture dimensions, z: pixel range, w: unused
+            Float4x4 Projection;
+            Float4   TextColor;
+            Float4   TextureSizeParams; // xy: texture dimensions, z: pixel range, w: unused
         };
 
         TextBatchDesc   m_desc;
@@ -84,7 +84,7 @@ namespace DenOfIz
 
         std::vector<std::unique_ptr<TextLayout>> m_textLayouts;
         uint32_t                                 m_currentTextLayoutIndex = 0;
-        Float_4x4                                m_projectionMatrix{ };
+        Float4x4                                m_projectionMatrix{ };
 
         mutable std::vector<std::unique_ptr<TextLayout>> m_measureTextLayouts;
         mutable uint32_t                                 m_currentMeasureLayoutIndex = 0;
@@ -102,8 +102,8 @@ namespace DenOfIz
         DZ_API void AddText( const AddTextDesc &desc );
         DZ_API void EndBatch( ICommandList *commandList );
 
-        DZ_API void    SetProjectionMatrix( const Float_4x4 &projectionMatrix );
-        DZ_API Float_2 MeasureText( const InteropString &text, const AddTextDesc &desc ) const;
+        DZ_API void    SetProjectionMatrix( const Float4x4 &projectionMatrix );
+        DZ_API Float2 MeasureText( const InteropString &text, const AddTextDesc &desc ) const;
 
     private:
         void UpdateBuffers( );

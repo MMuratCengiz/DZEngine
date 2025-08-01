@@ -80,8 +80,8 @@ namespace DenOfIz
         DZ_API void           SetViewportSize( float width, float height ) const;
         DZ_API ClayDimensions GetViewportSize( ) const;
         DZ_API void           SetDpiScale( float dpiScale ) const;
-        DZ_API void           SetPointerState( Float_2 position, ClayPointerState state ) const;
-        DZ_API void           UpdateScrollContainers( bool enableDragScrolling, Float_2 scrollDelta, float deltaTime ) const;
+        DZ_API void           SetPointerState( Float2 position, ClayPointerState state ) const;
+        DZ_API void           UpdateScrollContainers( bool enableDragScrolling, Float2 scrollDelta, float deltaTime ) const;
         DZ_API void           SetDebugModeEnabled( bool enabled ) const;
         DZ_API bool           IsDebugModeEnabled( ) const;
 
@@ -106,7 +106,7 @@ namespace DenOfIz
         DZ_API CheckboxWidget           *CreateCheckbox( uint32_t id, bool initialChecked = false, const CheckboxStyle &style = { } ) const;
         DZ_API SliderWidget             *CreateSlider( uint32_t id, float initialValue = 0.5f, const SliderStyle &style = { } ) const;
         DZ_API DropdownWidget           *CreateDropdown( uint32_t id, const StringArray &options, const DropdownStyle &style = { } ) const;
-        DZ_API ColorPickerWidget        *CreateColorPicker( uint32_t id, const Float_3 &initialRgb = {}, const ColorPickerStyle &style = { } ) const;
+        DZ_API ColorPickerWidget        *CreateColorPicker( uint32_t id, const Float3 &initialRgb = {}, const ColorPickerStyle &style = { } ) const;
         DZ_API TextFieldWidget          *CreateTextField( uint32_t id, const TextFieldStyle &style = { } ) const;
         DZ_API ResizableContainerWidget *CreateResizableContainer( uint32_t id ) const;
         DZ_API DockableContainerWidget  *CreateDockableContainer( uint32_t id, DockingManager *dockingManager ) const;

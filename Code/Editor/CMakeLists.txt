@@ -12,6 +12,7 @@ target_sources(DZEditor PRIVATE
         Source/Style/EditorStyle.cpp
         Source/Style/ImGuiFonts.cpp
         Source/Components/AssetBrowser.cpp
+        Source/Components/AssetTile.cpp
         Source/Components/SceneViewRenderer.cpp
         Source/Components/WorldEditorView.cpp
 )

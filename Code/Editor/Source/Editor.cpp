@@ -124,22 +124,19 @@ void Editor::Update( EditorUpdateDesc updateDesc )
         m_worldEditorView->Update( );
     }
 
-    if ( ITextureResource *sceneTexture = m_sceneViewRenderer->GetRenderTexture( updateDesc.FrameIndex ) )
-    {
-        ICommandList *viewportCmdList = m_viewportCommandLists[ updateDesc.FrameIndex ];
+    ICommandList *viewportCmdList = m_viewportCommandLists[ updateDesc.FrameIndex ];
 
-        viewportCmdList->Begin( );
-        m_sceneViewRenderer->Render( viewportCmdList, sceneTexture, updateDesc.FrameIndex );
-        viewportCmdList->End( );
+    viewportCmdList->Begin( );
+    m_sceneViewRenderer->Render( viewportCmdList, updateDesc.FrameIndex );
+    viewportCmdList->End( );
 
-        ISemaphore *viewportSemaphore = m_viewportSemaphore.get( );
-        ExecuteCommandListsDesc viewportExecuteDesc{ };
-        viewportExecuteDesc.CommandLists.Elements       = &viewportCmdList;
-        viewportExecuteDesc.CommandLists.NumElements    = 1;
-        viewportExecuteDesc.SignalSemaphores.Elements   = &viewportSemaphore;
-        viewportExecuteDesc.SignalSemaphores.NumElements = 1;
-        m_graphicsContext->GraphicsQueue->ExecuteCommandLists( viewportExecuteDesc );
-    }
+    ISemaphore             *viewportSemaphore = m_viewportSemaphore.get( );
+    ExecuteCommandListsDesc viewportExecuteDesc{ };
+    viewportExecuteDesc.CommandLists.Elements        = &viewportCmdList;
+    viewportExecuteDesc.CommandLists.NumElements     = 1;
+    viewportExecuteDesc.SignalSemaphores.Elements    = &viewportSemaphore;
+    viewportExecuteDesc.SignalSemaphores.NumElements = 1;
+    m_graphicsContext->GraphicsQueue->ExecuteCommandLists( viewportExecuteDesc );
 
     ICommandList *commandList = m_commandLists[ updateDesc.FrameIndex ];
 
@@ -167,17 +164,17 @@ void Editor::Update( EditorUpdateDesc updateDesc )
     {
         executeCommandListsDesc.Signal = updateDesc.SignalFence;
     }
-    
+
     std::vector<ISemaphore *> waitSemaphores;
     if ( updateDesc.GameSemaphore )
     {
         waitSemaphores.push_back( updateDesc.GameSemaphore );
     }
     waitSemaphores.push_back( m_viewportSemaphore.get( ) );
-    
+
     executeCommandListsDesc.WaitSemaphores.Elements    = waitSemaphores.data( );
     executeCommandListsDesc.WaitSemaphores.NumElements = static_cast<uint32_t>( waitSemaphores.size( ) );
-    
+
     m_graphicsContext->GraphicsQueue->ExecuteCommandLists( executeCommandListsDesc );
 }
 
@@ -333,31 +330,18 @@ void Editor::RenderMainUI( uint32_t frameIndex )
         if ( const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail( ); viewportPanelSize.x > 0 && viewportPanelSize.y > 0 && m_sceneViewRenderer )
         {
             Viewport sceneViewport{ };
-            sceneViewport.X                = 0;
-            sceneViewport.Y                = 0;
-            sceneViewport.Width            = viewportPanelSize.x;
-            sceneViewport.Height           = viewportPanelSize.y;
-            static ImVec2 lastViewportSize = { 0, 0 };
-            if ( lastViewportSize.x != viewportPanelSize.x || lastViewportSize.y != viewportPanelSize.y )
+            sceneViewport.X                 = 0;
+            sceneViewport.Y                 = 0;
+            sceneViewport.Width             = viewportPanelSize.x;
+            sceneViewport.Height            = viewportPanelSize.y;
+            ITextureResource *renderTexture = m_sceneViewRenderer->GetRenderTarget( frameIndex );
+            if ( m_sceneViewTextureId == 0 )
             {
-                lastViewportSize = viewportPanelSize;
-                m_sceneViewRenderer->UpdateViewport( sceneViewport );
-                if ( m_sceneViewTextureId != 0 )
-                {
-                    m_imguiRenderer->RemoveTexture( m_sceneViewTextureId );
-                    m_sceneViewTextureId = 0;
-                }
+                m_sceneViewTextureId = m_imguiRenderer->AddTexture( renderTexture );
             }
-            if ( ITextureResource *renderTexture = m_sceneViewRenderer->GetRenderTexture( frameIndex ) )
+            if ( m_sceneViewTextureId != 0 )
             {
-                if ( m_sceneViewTextureId == 0 )
-                {
-                    m_sceneViewTextureId = m_imguiRenderer->AddTexture( renderTexture );
-                }
-                if ( m_sceneViewTextureId != 0 )
-                {
-                    ImGui::Image( m_sceneViewTextureId, viewportPanelSize );
-                }
+                ImGui::Image( m_sceneViewTextureId, viewportPanelSize );
             }
         }
         else
@@ -372,33 +356,15 @@ void Editor::RenderMainUI( uint32_t frameIndex )
     {
         if ( const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail( ); viewportPanelSize.x > 0 && viewportPanelSize.y > 0 && frameIndex < m_gameRenderTargets.size( ) )
         {
-            static ImVec2 lastGameViewportSize = { 0, 0 };
-            if ( lastGameViewportSize.x != viewportPanelSize.x || lastGameViewportSize.y != viewportPanelSize.y )
+            ITextureResource *renderTexture = m_gameRenderTargets[ frameIndex ].get( );
+            if ( m_gameViewTextureId == 0 )
             {
-                lastGameViewportSize  = viewportPanelSize;
-                m_gameViewport.X      = 0;
-                m_gameViewport.Y      = 0;
-                m_gameViewport.Width  = viewportPanelSize.x;
-                m_gameViewport.Height = viewportPanelSize.y;
-                CreateGameRenderTargets( );
-                if ( m_gameViewTextureId != 0 )
-                {
-                    m_imguiRenderer->RemoveTexture( m_gameViewTextureId );
-                    m_gameViewTextureId = 0;
-                }
+                m_gameViewTextureId = m_imguiRenderer->AddTexture( renderTexture );
             }
 
-            if ( ITextureResource *renderTexture = m_gameRenderTargets[ frameIndex ].get( ) )
+            if ( m_gameViewTextureId != 0 )
             {
-                if ( m_gameViewTextureId == 0 )
-                {
-                    m_gameViewTextureId = m_imguiRenderer->AddTexture( renderTexture );
-                }
-
-                if ( m_gameViewTextureId != 0 )
-                {
-                    ImGui::Image( m_gameViewTextureId, viewportPanelSize );
-                }
+                ImGui::Image( m_gameViewTextureId, viewportPanelSize );
             }
         }
         else
@@ -434,7 +400,9 @@ void Editor::SetupDefaultDockingLayout( ) const
 void Editor::CreateGameRenderTargets( )
 {
     if ( m_gameViewport.Width <= 0 || m_gameViewport.Height <= 0 )
+    {
         return;
+    }
 
     m_gameRenderTargets.clear( );
 

@@ -38,7 +38,7 @@ namespace DenOfIz
 
         FontAsset *FontAsset = nullptr;
 
-        Float_4       TextColor   = { 1.0f, 1.0f, 1.0f, 1.0f };
+        Float4       TextColor   = { 1.0f, 1.0f, 1.0f, 1.0f };
         float         RefreshRate = 1.0f;
         uint32_t      FontSize    = 16;
         TextDirection Direction   = TextDirection::Auto;
@@ -54,7 +54,7 @@ namespace DenOfIz
         std::unique_ptr<FontAsset>       m_fontAsset;
         Font                            *m_font = nullptr; // Owned by FontLibrary
         std::unique_ptr<TextRenderer>    m_textRenderer;
-        Float_4x4                        m_projectionMatrix{ };
+        Float4x4                        m_projectionMatrix{ };
 
         StepTimer          m_time;
         double             m_fps         = 0.0;
@@ -68,7 +68,7 @@ namespace DenOfIz
         struct DebugLine
         {
             InteropString Text;
-            Float_4       Color;
+            Float4       Color;
         };
         std::vector<DebugLine> m_customDebugLines;
         uint32_t               m_fontSize;
@@ -79,11 +79,11 @@ namespace DenOfIz
 
         DZ_API void Render( ICommandList *commandList );
         DZ_API void SetViewport( const Viewport &viewport );
-        DZ_API void SetProjectionMatrix( const Float_4x4 &projectionMatrix );
+        DZ_API void SetProjectionMatrix( const Float4x4 &projectionMatrix );
         DZ_API void SetScreenSize( uint32_t width, uint32_t height );
 
         // Add custom debug information
-        DZ_API void AddDebugLine( const InteropString &text, const Float_4 &color = { 1.0f, 1.0f, 1.0f, 1.0f } );
+        DZ_API void AddDebugLine( const InteropString &text, const Float4 &color = { 1.0f, 1.0f, 1.0f, 1.0f } );
         DZ_API void ClearCustomDebugLines( );
 
         DZ_API void SetEnabled( bool enabled );

@@ -34,7 +34,7 @@ namespace DenOfIz
         uint16_t      fontId;
         uint32_t      fontSize;
         TextDirection direction;
-        UInt32_4      scriptTag;
+        UInt4      scriptTag;
 
         bool operator==( const TextShapeCacheKey &other ) const
         {

@@ -28,32 +28,32 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 namespace DenOfIz
 {
-    struct DZ_API Float_2
+    struct DZ_API Float2
     {
         float X;
         float Y;
     };
 
-    struct DZ_API Float_2Array
+    struct DZ_API Float2Array
     {
-        Float_2 *Elements;
+        Float2 *Elements;
         size_t   NumElements;
     };
 
-    struct DZ_API Float_3
+    struct DZ_API Float3
     {
         float X;
         float Y;
         float Z;
     };
 
-    struct DZ_API Float_3Array
+    struct DZ_API Float3Array
     {
-        Float_3 *Elements;
+        Float3 *Elements;
         size_t   NumElements;
     };
 
-    struct DZ_API Float_4
+    struct DZ_API Float4
     {
         float X;
         float Y;
@@ -61,26 +61,26 @@ namespace DenOfIz
         float W;
     };
 
-    struct DZ_API Float_4Array
+    struct DZ_API Float4Array
     {
-        Float_4 *Elements;
+        Float4 *Elements;
         size_t   NumElements;
     };
 
-    struct DZ_API Int16_2
+    struct DZ_API Short2
     {
         int16_t X;
         int16_t Y;
     };
 
-    struct DZ_API Int16_3
+    struct DZ_API Short3
     {
         int16_t X;
         int16_t Y;
         int16_t Z;
     };
 
-    struct DZ_API Int16_4
+    struct DZ_API Short4
     {
         int16_t X;
         int16_t Y;
@@ -88,20 +88,20 @@ namespace DenOfIz
         int16_t W;
     };
 
-    struct DZ_API Int32_2
+    struct DZ_API Int2
     {
         int X;
         int Y;
     };
 
-    struct DZ_API Int32_3
+    struct DZ_API Int3
     {
         int X;
         int Y;
         int Z;
     };
 
-    struct DZ_API Int32_4
+    struct DZ_API Int4
     {
         int X;
         int Y;
@@ -109,20 +109,20 @@ namespace DenOfIz
         int W;
     };
 
-    struct DZ_API UInt16_2
+    struct DZ_API UShort2
     {
         uint16_t X;
         uint16_t Y;
     };
 
-    struct DZ_API UInt16_3
+    struct DZ_API UShort3
     {
         uint16_t X;
         uint16_t Y;
         uint16_t Z;
     };
 
-    struct DZ_API UInt16_4
+    struct DZ_API UShort4
     {
         uint16_t X;
         uint16_t Y;
@@ -130,20 +130,20 @@ namespace DenOfIz
         uint16_t W;
     };
 
-    struct DZ_API UInt32_2
+    struct DZ_API UInt2
     {
         uint32_t X;
         uint32_t Y;
     };
 
-    struct DZ_API UInt32_3
+    struct DZ_API UInt3
     {
         uint32_t X;
         uint32_t Y;
         uint32_t Z;
     };
 
-    struct DZ_API UInt32_4
+    struct DZ_API UInt4
     {
         uint32_t X;
         uint32_t Y;
@@ -151,7 +151,7 @@ namespace DenOfIz
         uint32_t W;
     };
 
-    struct Float_4x4
+    struct Float4x4
     {
         float _11 = 1, _12 = 0, _13 = 0, _14 = 0;
         float _21 = 0, _22 = 1, _23 = 0, _24 = 0;
@@ -183,7 +183,7 @@ namespace DenOfIz
 
     struct DZ_API Float_4x4Array
     {
-        Float_4x4 *Elements;
+        Float4x4 *Elements;
         size_t     NumElements;
     };
 } // namespace DenOfIz

@@ -79,10 +79,10 @@ namespace DenOfIz
         DZ_API DockingMode GetDockingMode( ) const;
         DZ_API void        SetDockedSide( DockingSide side );
         DZ_API DockingSide GetDockedSide( ) const;
-        DZ_API void        SetFloatingPosition( Float_2 position );
-        DZ_API Float_2     GetFloatingPosition( ) const;
-        DZ_API void        SetFloatingSize( Float_2 size );
-        DZ_API Float_2     GetFloatingSize( ) const;
+        DZ_API void        SetFloatingPosition( Float2 position );
+        DZ_API Float2     GetFloatingPosition( ) const;
+        DZ_API void        SetFloatingSize( Float2 size );
+        DZ_API Float2     GetFloatingSize( ) const;
         DZ_API bool        IsClosed( ) const;
         DZ_API void        Close( );
         DZ_API void        Show( );
@@ -114,13 +114,13 @@ namespace DenOfIz
 
         DZ_API void        StartDragging( DockableContainerWidget *container );
         DZ_API void        StopDragging( );
-        DZ_API void        UpdateDraggedContainer( Float_2 mousePos );
-        DZ_API DockingSide GetHoveredDockZone( Float_2 mousePos ) const;
+        DZ_API void        UpdateDraggedContainer( Float2 mousePos );
+        DZ_API DockingSide GetHoveredDockZone( Float2 mousePos ) const;
         DZ_API void        DockContainer( DockableContainerWidget *container, DockingSide side );
         DZ_API void        UndockContainer( DockableContainerWidget *container );
 
     private:
-        void            UpdateDockZones( Float_2 mousePos );
+        void            UpdateDockZones( Float2 mousePos );
         void            RenderDockZones( ) const;
         ClayBoundingBox GetDockZoneBounds( DockingSide side ) const;
     };

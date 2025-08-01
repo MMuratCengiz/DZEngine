@@ -54,8 +54,8 @@ namespace DZEngine
         ~SceneViewRenderer( ) = default;
 
         void              UpdateViewport( const Viewport &viewport );
-        void              Render( ICommandList *commandList, ITextureResource *renderTarget, uint32_t frameIndex );
-        ITextureResource *GetRenderTexture( uint32_t frameIndex ) const;
+        void              Render( ICommandList *commandList, uint32_t frameIndex );
+        ITextureResource *GetRenderTarget( uint32_t frameIndex ) const;
 
     private:
         void      CreateVertexBuffer( );

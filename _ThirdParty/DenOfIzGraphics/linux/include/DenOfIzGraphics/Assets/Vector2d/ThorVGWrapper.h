@@ -237,7 +237,7 @@ namespace DenOfIz
 
         DZ_API void AppendRect( float x, float y, float w, float h, float rx = 0, float ry = 0 ) const;
         DZ_API void AppendCircle( float cx, float cy, float rx, float ry ) const;
-        DZ_API void AppendPath( const Float_2Array &points ) const;
+        DZ_API void AppendPath( const Float2Array &points ) const;
 
         DZ_API void Fill( uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255 ) const;
         DZ_API void Fill( const ThorVGGradient *gradient ) const;

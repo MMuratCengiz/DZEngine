@@ -38,18 +38,13 @@ ImGuiFonts &ImGuiFonts::Instance( )
 
 void ImGuiFonts::Initialize( const FontConfig &config )
 {
-    const float dpiScale = 1.5f; // Todo
-    m_config             = config;
+    constexpr float dpiScale = 1.5f; // Todo
+    m_config                 = config;
     m_config.VerySmallSize *= dpiScale;
     m_config.SmallSize *= dpiScale;
     m_config.MediumSize *= dpiScale;
     m_config.LargeSize *= dpiScale;
     m_config.VeryLargeSize *= dpiScale;
-    m_config.IconVerySmallSize *= dpiScale;
-    m_config.IconSmallSize *= dpiScale;
-    m_config.IconMediumSize *= dpiScale;
-    m_config.IconLargeSize *= dpiScale;
-    m_config.IconVeryLargeSize *= dpiScale;
     m_initialized = true;
 }
 
@@ -72,73 +67,35 @@ void ImGuiFonts::LoadFonts( )
         auto *fontVerySmall = io.Fonts->AddFontFromMemoryTTF( JetbrainsMonoImGui_data, JetbrainsMonoImGui_size, m_config.VerySmallSize, &fontConfig );
         m_fonts[ GetFontKey( FontType::Regular, FontSize::VerySmall ) ] = fontVerySmall;
 
-        if ( m_config.MergeIcons )
-        {
-            fontConfig.MergeMode  = true;
-            fontConfig.SizePixels = m_config.VerySmallSize;
-            io.Fonts->AddFontFromMemoryTTF( FontAwesome_data, FontAwesome_size, m_config.IconVerySmallSize, &fontConfig, icon_ranges );
-        }
-
         fontConfig.MergeMode = false;
         auto *fontSmall      = io.Fonts->AddFontFromMemoryTTF( JetbrainsMonoImGui_data, JetbrainsMonoImGui_size, m_config.SmallSize, &fontConfig );
         m_fonts[ GetFontKey( FontType::Regular, FontSize::Small ) ] = fontSmall;
-
-        if ( m_config.MergeIcons )
-        {
-            fontConfig.MergeMode  = true;
-            fontConfig.SizePixels = m_config.SmallSize;
-            io.Fonts->AddFontFromMemoryTTF( FontAwesome_data, FontAwesome_size, m_config.IconSmallSize, &fontConfig, icon_ranges );
-        }
 
         fontConfig.MergeMode = false;
         auto *fontMedium     = io.Fonts->AddFontFromMemoryTTF( JetbrainsMonoImGui_data, JetbrainsMonoImGui_size, m_config.MediumSize, &fontConfig );
         m_fonts[ GetFontKey( FontType::Regular, FontSize::Medium ) ] = fontMedium;
         m_defaultFont                                                = fontMedium;
 
-        if ( m_config.MergeIcons )
-        {
-            fontConfig.MergeMode  = true;
-            fontConfig.SizePixels = m_config.MediumSize;
-            io.Fonts->AddFontFromMemoryTTF( FontAwesome_data, FontAwesome_size, m_config.IconMediumSize, &fontConfig, icon_ranges );
-        }
-
         fontConfig.MergeMode = false;
         auto *fontLarge      = io.Fonts->AddFontFromMemoryTTF( JetbrainsMonoImGui_data, JetbrainsMonoImGui_size, m_config.LargeSize, &fontConfig );
         m_fonts[ GetFontKey( FontType::Regular, FontSize::Large ) ] = fontLarge;
 
-        if ( m_config.MergeIcons )
-        {
-            fontConfig.MergeMode  = true;
-            fontConfig.SizePixels = m_config.LargeSize;
-            io.Fonts->AddFontFromMemoryTTF( FontAwesome_data, FontAwesome_size, m_config.IconLargeSize, &fontConfig, icon_ranges );
-        }
-
         fontConfig.MergeMode = false;
         auto *fontVeryLarge  = io.Fonts->AddFontFromMemoryTTF( JetbrainsMonoImGui_data, JetbrainsMonoImGui_size, m_config.VeryLargeSize, &fontConfig );
         m_fonts[ GetFontKey( FontType::Regular, FontSize::VeryLarge ) ] = fontVeryLarge;
-
-        if ( m_config.MergeIcons )
-        {
-            fontConfig.MergeMode  = true;
-            fontConfig.SizePixels = m_config.VeryLargeSize;
-            io.Fonts->AddFontFromMemoryTTF( FontAwesome_data, FontAwesome_size, m_config.IconVeryLargeSize, &fontConfig, icon_ranges );
-        }
     }
 
-    if ( !m_config.MergeIcons )
+    ImFontConfig iconConfig;
+    iconConfig.FontDataOwnedByAtlas = false;
+
+    const float        iconSizes[] = { m_config.VerySmallSize, m_config.SmallSize, m_config.MediumSize, m_config.LargeSize, m_config.VeryLargeSize };
+    constexpr FontSize fontSizes[] = { FontSize::VerySmall, FontSize::Small, FontSize::Medium, FontSize::Large, FontSize::VeryLarge };
+
+    for ( int i = 0; i < 5; ++i )
     {
-        ImFontConfig iconConfig;
-        iconConfig.FontDataOwnedByAtlas = false;
-
-        const float        iconSizes[] = { m_config.IconVerySmallSize, m_config.IconSmallSize, m_config.IconMediumSize, m_config.IconLargeSize, m_config.IconVeryLargeSize };
-        constexpr FontSize fontSizes[] = { FontSize::VerySmall, FontSize::Small, FontSize::Medium, FontSize::Large, FontSize::VeryLarge };
-
-        for ( int i = 0; i < 5; ++i )
-        {
-            iconConfig.SizePixels = iconSizes[ i ];
-            auto *iconFont        = io.Fonts->AddFontFromMemoryTTF( FontAwesome_data, FontAwesome_size, iconSizes[ i ], &iconConfig, icon_ranges );
-            m_fonts[ GetFontKey( FontType::Icon, fontSizes[ i ] ) ] = iconFont;
-        }
+        iconConfig.SizePixels                                   = iconSizes[ i ];
+        auto *iconFont                                          = io.Fonts->AddFontFromMemoryTTF( FontAwesome_data, FontAwesome_size, iconSizes[ i ], &iconConfig, icon_ranges );
+        m_fonts[ GetFontKey( FontType::Icon, fontSizes[ i ] ) ] = iconFont;
     }
 
     io.Fonts->Build( );

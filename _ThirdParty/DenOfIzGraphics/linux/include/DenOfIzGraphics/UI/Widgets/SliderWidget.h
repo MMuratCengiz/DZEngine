@@ -30,7 +30,7 @@ namespace DenOfIz
         bool        m_isDragging   = false;
         bool        m_valueChanged = false;
         SliderStyle m_style;
-        Float_2     m_lastMousePos;
+        Float2     m_lastMousePos;
 
     public:
         DZ_API SliderWidget( IClayContext *clayContext, uint32_t id, float initialValue = 0.5f, const SliderStyle &style = { } );

@@ -63,12 +63,12 @@ namespace DenOfIz
     // Not all the fields here have values, it is configured VertexEnabledAttributes
     struct DZ_API MeshVertex
     {
-        Float_4      Position{ };
-        Float_4      Normal{ };
-        Float_2Array UVs;
-        Float_4Array Colors;
-        Float_4      Tangent{ };
-        Float_4      Bitangent{ };
+        Float4      Position{ };
+        Float4      Normal{ };
+        Float2Array UVs;
+        Float4Array Colors;
+        Float4      Tangent{ };
+        Float4      Bitangent{ };
         UInt32Array  BlendIndices;    // Variable number of bone indices
         FloatArray   BoneWeights;     // Variable number of bone weights
     };
@@ -88,9 +88,9 @@ namespace DenOfIz
 
     struct DZ_API MorphTargetDelta
     {
-        Float_4 Position;
-        Float_4 Normal;
-        Float_4 Tangent;
+        Float4 Position;
+        Float4 Normal;
+        Float4 Tangent;
     };
 
     struct DZ_API MorphTargetDeltaArray
@@ -123,20 +123,20 @@ namespace DenOfIz
 
     struct DZ_API BoxBoundingVolume
     {
-        Float_3 Min;
-        Float_3 Max;
+        Float3 Min;
+        Float3 Max;
     };
 
     struct DZ_API SphereBoundingVolume
     {
-        Float_3 Center;
+        Float3 Center;
         float   Radius;
     };
 
     struct DZ_API CapsuleBoundingVolume
     {
-        Float_3 Start;
-        Float_3 End;
+        Float3 Start;
+        Float3 End;
         float   Radius;
     };
 
@@ -192,8 +192,8 @@ namespace DenOfIz
         uint64_t            NumIndices = 0;
         IndexType           IndexType  = IndexType::Uint32;
         AssetDataStream     IndexStream{ };
-        Float_3             MinBounds{ 0.0f, 0.0f, 0.0f };
-        Float_3             MaxBounds{ 0.0f, 0.0f, 0.0f };
+        Float3             MinBounds{ 0.0f, 0.0f, 0.0f };
+        Float3             MaxBounds{ 0.0f, 0.0f, 0.0f };
         AssetUri            MaterialRef{ };
         BoundingVolumeArray BoundingVolumes;
     };
@@ -207,9 +207,9 @@ namespace DenOfIz
     struct DZ_API JointData
     {
         InteropString Name;
-        Float_4x4     InverseBindMatrix;
-        Float_4x4     LocalTransform;
-        Float_4x4     GlobalTransform;
+        Float4x4     InverseBindMatrix;
+        Float4x4     LocalTransform;
+        Float4x4     GlobalTransform;
         int32_t       ParentIndex = -1;
         UInt32Array   ChildIndices;
     };

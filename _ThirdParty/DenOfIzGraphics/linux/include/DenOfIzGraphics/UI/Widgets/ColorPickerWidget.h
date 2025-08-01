@@ -28,28 +28,28 @@ namespace DenOfIz
 
     class ColorPickerWidget : public Widget
     {
-        Float_3          m_hsv                = Float_3{ 0.0f, 1.0f, 1.0f };
-        Float_3          m_rgb                = Float_3{ 1.0f, 0.0f, 0.0f };
+        Float3          m_hsv                = Float3{ 0.0f, 1.0f, 1.0f };
+        Float3          m_rgb                = Float3{ 1.0f, 0.0f, 0.0f };
         bool             m_isExpanded         = false;
         bool             m_colorChanged       = false;
         bool             m_isDraggingWheel    = false;
         bool             m_isDraggingValueBar = false;
         ColorPickerStyle m_style;
-        Float_2          m_lastMousePos;
+        Float2          m_lastMousePos;
 
     public:
-        DZ_API ColorPickerWidget( IClayContext *clayContext, uint32_t id, const Float_3 &initialRgb = { }, const ColorPickerStyle &style = { } );
+        DZ_API ColorPickerWidget( IClayContext *clayContext, uint32_t id, const Float3 &initialRgb = { }, const ColorPickerStyle &style = { } );
 
         DZ_API void Update( float deltaTime ) override;
         DZ_API void CreateLayoutElement( ) override;
         DZ_API void Render( const ClayBoundingBox &boundingBox, IRenderBatch *renderBatch ) override;
         DZ_API void HandleEvent( const Event &event ) override;
 
-        DZ_API Float_3 GetRGB( ) const;
-        DZ_API Float_3 GetHSV( ) const;
+        DZ_API Float3 GetRGB( ) const;
+        DZ_API Float3 GetHSV( ) const;
 
-        DZ_API void SetRGB( const Float_3 &rgb );
-        DZ_API void SetHSV( const Float_3 &hsv );
+        DZ_API void SetRGB( const Float3 &rgb );
+        DZ_API void SetHSV( const Float3 &hsv );
 
         DZ_API bool WasColorChanged( ) const;
         DZ_API void ClearColorChangedEvent( );
@@ -62,8 +62,8 @@ namespace DenOfIz
     private:
         void    UpdateFromMouseWheel( float mouseX, float mouseY );
         void    UpdateFromMouseValueBar( float mouseY );
-        Float_3 HSVToRGB( const Float_3 &hsv ) const;
-        Float_3 RGBToHSV( const Float_3 &rgb ) const;
+        Float3 HSVToRGB( const Float3 &hsv ) const;
+        Float3 RGBToHSV( const Float3 &rgb ) const;
     };
 
 } // namespace DenOfIz

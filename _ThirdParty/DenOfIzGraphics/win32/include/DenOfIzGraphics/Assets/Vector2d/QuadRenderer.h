@@ -45,43 +45,43 @@ namespace DenOfIz
     {
         uint32_t MaterialId   = 0;
         uint32_t TextureIndex = 0; // Index into the bindless texture array
-        Float_4  Color        = { 1.0f, 1.0f, 1.0f, 1.0f };
+        Float4  Color        = { 1.0f, 1.0f, 1.0f, 1.0f };
     };
 
     struct DZ_API QuadDataDesc
     {
         uint32_t QuadId         = 0;
-        Float_2  Position       = { 0.0f, 0.0f };
-        Float_2  Size           = { 100.0f, 100.0f };
+        Float2  Position       = { 0.0f, 0.0f };
+        Float2  Size           = { 100.0f, 100.0f };
         uint32_t TextureIndex   = 0; // Index into the bindless texture array
-        Float_4  Color          = { 1.0f, 1.0f, 1.0f, 1.0f };
+        Float4  Color          = { 1.0f, 1.0f, 1.0f, 1.0f };
         float    Rotation       = 0.0f;
-        Float_2  RotationCenter = { 0.0f, 0.0f };
-        Float_2  Scale          = { 1.0f, 1.0f };
-        Float_2  UV0            = { 0.0f, 0.0f };
-        Float_2  UV1            = { 1.0f, 1.0f };
+        Float2  RotationCenter = { 0.0f, 0.0f };
+        Float2  Scale          = { 1.0f, 1.0f };
+        Float2  UV0            = { 0.0f, 0.0f };
+        Float2  UV1            = { 1.0f, 1.0f };
     };
 
     class QuadRenderer
     {
         struct QuadVertex
         {
-            Float_3 Position;
-            Float_2 TexCoord;
+            Float3 Position;
+            Float2 TexCoord;
         };
 
         struct QuadInstance
         {
-            Float_4x4 Transform;
-            Float_4   UVScaleOffset; // xy: scale, zw: offset
+            Float4x4 Transform;
+            Float4   UVScaleOffset; // xy: scale, zw: offset
             uint32_t  TextureIndex;
-            Float_4   Color;
-            Float_3   _Pad0;
+            Float4   Color;
+            Float3   _Pad0;
         };
 
         struct FrameConstants
         {
-            Float_4x4 Projection;
+            Float4x4 Projection;
         };
 
         QuadRendererDesc m_desc;
@@ -110,7 +110,7 @@ namespace DenOfIz
         std::unique_ptr<IBufferResource>  m_constantsBuffer;
         std::unique_ptr<ITextureResource> m_nullTexture;
 
-        Float_4x4 m_projectionMatrix;
+        Float4x4 m_projectionMatrix;
 
     public:
         DZ_API explicit QuadRenderer( const QuadRendererDesc &desc );
@@ -133,7 +133,7 @@ namespace DenOfIz
         void      CreateShaderResources( );
         void      CreateStaticQuadGeometry( );
         void      UpdateTextureBindings( uint32_t frameIndex ) const;
-        Float_4x4 CalculateTransform( const QuadDataDesc &desc ) const;
+        Float4x4 CalculateTransform( const QuadDataDesc &desc ) const;
     };
 
 } // namespace DenOfIz

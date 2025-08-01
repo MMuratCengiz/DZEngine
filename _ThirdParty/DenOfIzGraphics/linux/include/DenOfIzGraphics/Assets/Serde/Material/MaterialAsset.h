@@ -40,10 +40,10 @@ namespace DenOfIz
         AssetUri EmissiveMapRef;
         AssetUri OcclusionMapRef;
 
-        Float_4 BaseColorFactor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        Float4 BaseColorFactor = { 1.0f, 1.0f, 1.0f, 1.0f };
         float   MetallicFactor  = 0.0f;
         float   RoughnessFactor = 0.0f;
-        Float_3 EmissiveFactor  = { 0.0f, 0.0f, 0.0f };
+        Float3 EmissiveFactor  = { 0.0f, 0.0f, 0.0f };
 
         bool AlphaBlend  = false;
         bool DoubleSided = false;

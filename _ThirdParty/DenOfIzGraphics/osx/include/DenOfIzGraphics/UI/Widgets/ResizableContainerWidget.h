@@ -43,7 +43,7 @@ namespace DenOfIz
         ResizableContainerStyle     m_style;
         bool                        m_sizeChanged = false;
         bool                        m_contentOpen = false;
-        Float_2                     m_position = { 600.0f, 100.0f }; // Default position
+        Float2                     m_position = { 600.0f, 100.0f }; // Default position
 
     public:
         DZ_API ResizableContainerWidget( IClayContext *clayContext, uint32_t id );
@@ -57,14 +57,14 @@ namespace DenOfIz
         DZ_API void CloseElement( );
 
         DZ_API void    SetSize( float width, float height );
-        DZ_API Float_2 GetSize( ) const;
+        DZ_API Float2 GetSize( ) const;
         DZ_API bool    WasSizeChanged( ) const;
         DZ_API void    ClearSizeChangedEvent( );
 
         DZ_API const ResizableContainerStyle &GetStyle( ) const;
         
-        DZ_API void    SetPosition( const Float_2 &position );
-        DZ_API Float_2 GetPosition( ) const;
+        DZ_API void    SetPosition( const Float2 &position );
+        DZ_API Float2 GetPosition( ) const;
 
     private:
         ResizeDirection GetResizeDirectionAtPoint( float x, float y ) const;

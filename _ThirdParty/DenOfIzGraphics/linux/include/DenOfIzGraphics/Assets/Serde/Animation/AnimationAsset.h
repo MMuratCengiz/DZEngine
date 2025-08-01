@@ -28,7 +28,7 @@ namespace DenOfIz
     struct DZ_API PositionKey
     {
         float   Timestamp; // Time in seconds
-        Float_3 Value;
+        Float3 Value;
     };
 
     struct DZ_API PositionKeyArray
@@ -40,7 +40,7 @@ namespace DenOfIz
     struct DZ_API RotationKey
     {
         float   Timestamp; // Time in seconds
-        Float_4 Value;     // Quaternion
+        Float4 Value;     // Quaternion
     };
 
     struct DZ_API RotationKeyArray
@@ -52,7 +52,7 @@ namespace DenOfIz
     struct DZ_API ScaleKey
     {
         float   Timestamp;
-        Float_3 Value;
+        Float3 Value;
     };
 
     struct DZ_API ScaleKeyArray

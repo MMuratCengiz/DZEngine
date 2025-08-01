@@ -26,9 +26,9 @@ namespace DenOfIz
 {
     struct DZ_API UIVertex
     {
-        Float_3  Position; // Z used for depth test
-        Float_2  TexCoord;
-        Float_4  Color;
+        Float3  Position; // Z used for depth test
+        Float2  TexCoord;
+        Float4  Color;
         uint32_t TextureIndex; // For bindless textures
     };
 

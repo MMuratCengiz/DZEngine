@@ -61,8 +61,8 @@ namespace DenOfIz
         uint32_t      MipLevels = 1;
         InteropString DebugName;
         // This doesn't clear the color directly, it simply hints some backends to prepare
-        Float_4 ClearColorHint = Float_4{ 0.0f, 0.0f, 0.0f, 1.0f };
-        Float_2 ClearDepthStencilHint = Float_2{ 1.0f, 0.0f };
+        Float4 ClearColorHint = Float4{ 0.0f, 0.0f, 0.0f, 1.0f };
+        Float2 ClearDepthStencilHint = Float2{ 1.0f, 0.0f };
     };
 
     class DZ_API ITextureResource

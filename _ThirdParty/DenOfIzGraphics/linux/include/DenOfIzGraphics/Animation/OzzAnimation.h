@@ -76,19 +76,19 @@ namespace DenOfIz
     struct DZ_API IkTwoBoneJobResult
     {
         bool    Success{ false };
-        Float_4 StartJointCorrection{ };
-        Float_4 MidJointCorrection{ };
+        Float4 StartJointCorrection{ };
+        Float4 MidJointCorrection{ };
         bool    Reached{ };
     };
 
     struct DZ_API IkTwoBoneJobDesc
     {
-        Float_4x4 StartJointMatrix{ };
-        Float_4x4 MidJointMatrix{ };
-        Float_4x4 EndJointMatrix{ };
-        Float_3   Target{ 0, 0, 1 };
-        Float_3   PoleVector{ 0, 0, 1 };
-        Float_3   MidAxis{ 0, 0, 1 };
+        Float4x4 StartJointMatrix{ };
+        Float4x4 MidJointMatrix{ };
+        Float4x4 EndJointMatrix{ };
+        Float3   Target{ 0, 0, 1 };
+        Float3   PoleVector{ 0, 0, 1 };
+        Float3   MidAxis{ 0, 0, 1 };
         float     Weight     = 0;
         float     TwistAngle = 0;
         float     Soften     = 0;
@@ -97,16 +97,16 @@ namespace DenOfIz
     struct DZ_API IkAimJobResult
     {
         bool    Success{ false };
-        Float_4 JointCorrection{ };
+        Float4 JointCorrection{ };
     };
 
     struct DZ_API IkAimJobDesc
     {
         OzzContext *Context    = nullptr;
         int         JointIndex = -1;
-        Float_3     Target{ 0, 0, 1 };
-        Float_3     Forward{ 0, 0, 1 };
-        Float_3     Up{ 0, 1, 0 };
+        Float3     Target{ 0, 0, 1 };
+        Float3     Forward{ 0, 0, 1 };
+        Float3     Up{ 0, 1, 0 };
         float       Weight = 1.0f;
     };
 
@@ -122,10 +122,10 @@ namespace DenOfIz
     {
         bool                    Success{ false };
         float                   FloatValue{ 0.0f };
-        Float_2                 Float2Value{ };
-        Float_3                 Float3Value{ };
-        Float_4                 Float4Value{ };
-        Float_4                 QuaternionValue{ };
+        Float2                 Float2Value{ };
+        Float3                 Float3Value{ };
+        Float4                 Float4Value{ };
+        Float4                 QuaternionValue{ };
         TrackSamplingResultType Type{ TrackSamplingResultType::Float };
     };
     struct DZ_API TrackSamplingJobDesc
@@ -170,9 +170,9 @@ namespace DenOfIz
         DZ_API static void UnloadAnimation( OzzContext *context );
 
         DZ_API static void LoadTrack( const FloatArray &keys, float duration, OzzContext *context );
-        DZ_API static void LoadTrack( const Float_2Array &keys, const FloatArray &timestamps, OzzContext *context );
-        DZ_API static void LoadTrack( const Float_3Array &keys, const FloatArray &timestamps, OzzContext *context );
-        DZ_API static void LoadTrack( const Float_4Array &keys, const FloatArray &timestamps, OzzContext *context );
+        DZ_API static void LoadTrack( const Float2Array &keys, const FloatArray &timestamps, OzzContext *context );
+        DZ_API static void LoadTrack( const Float3Array &keys, const FloatArray &timestamps, OzzContext *context );
+        DZ_API static void LoadTrack( const Float4Array &keys, const FloatArray &timestamps, OzzContext *context );
 
         DZ_API [[nodiscard]] bool           RunSamplingJob( const SamplingJobDesc &desc ) const;
         DZ_API [[nodiscard]] bool           RunBlendingJob( const BlendingJobDesc &desc ) const;

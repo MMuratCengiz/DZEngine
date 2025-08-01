@@ -124,9 +124,9 @@ namespace DenOfIz
         {
         }
 
-        Float_4 ToFloat4( ) const
+        Float4 ToFloat4( ) const
         {
-            return Float_4{ R / 255.0f, G / 255.0f, B / 255.0f, A / 255.0f };
+            return Float4{ R / 255.0f, G / 255.0f, B / 255.0f, A / 255.0f };
         }
     };
 
@@ -300,7 +300,7 @@ namespace DenOfIz
 
     struct DZ_API ClayFloatingDesc
     {
-        Float_2                 Offset;
+        Float2                 Offset;
         ClayDimensions          Expand;
         float                   ZIndex;
         uint32_t                ParentId;
@@ -550,8 +550,8 @@ namespace DenOfIz
 
     struct DZ_API ClayColorPickerState
     {
-        Float_3 Hsv                  = Float_3{ 0.0f, 1.0f, 1.0f };
-        Float_3 Rgb                  = Float_3{ 1.0f, 0.0f, 0.0f };
+        Float3 Hsv                  = Float3{ 0.0f, 1.0f, 1.0f };
+        Float3 Rgb                  = Float3{ 1.0f, 0.0f, 0.0f };
         bool    IsColorWheelDragging = false;
         bool    IsValueBarDragging   = false;
         bool    IsExpanded           = false;
@@ -581,9 +581,9 @@ namespace DenOfIz
         float   Height          = 200.0f;
         bool    IsResizing      = false;
         uint8_t ResizeDirection = 0; // ResizeDirection::None
-        Float_2 ResizeStartPos  = Float_2{ 0.0f, 0.0f };
-        Float_2 InitialSize     = Float_2{ 0.0f, 0.0f };
-        Float_2 InitialPosition = Float_2{ 0.0f, 0.0f };
+        Float2 ResizeStartPos  = Float2{ 0.0f, 0.0f };
+        Float2 InitialSize     = Float2{ 0.0f, 0.0f };
+        Float2 InitialPosition = Float2{ 0.0f, 0.0f };
     };
 
     struct DZ_API ClayResizableContainerDesc
@@ -621,11 +621,11 @@ namespace DenOfIz
         uint8_t  Mode             = 0; // DockingMode::Floating
         uint8_t  DockedSide       = 0; // DockingSide::None
         uint32_t ParentDockId     = 0;
-        Float_2  FloatingPosition = Float_2{ 100.0f, 100.0f };
-        Float_2  FloatingSize     = Float_2{ 300.0f, 200.0f };
+        Float2  FloatingPosition = Float2{ 100.0f, 100.0f };
+        Float2  FloatingSize     = Float2{ 300.0f, 200.0f };
         bool     IsDragging       = false;
-        Float_2  DragStartPos     = Float_2{ 0.0f, 0.0f };
-        Float_2  DragOffset       = Float_2{ 0.0f, 0.0f };
+        Float2  DragStartPos     = Float2{ 0.0f, 0.0f };
+        Float2  DragOffset       = Float2{ 0.0f, 0.0f };
         bool     ShowDockZones    = false;
         uint8_t  HoveredDockZone  = 0; // DockingSide::None
         int32_t  TabIndex         = -1;

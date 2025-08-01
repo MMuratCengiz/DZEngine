@@ -32,11 +32,11 @@ namespace DenOfIz
 
     struct DZ_API GlyphVertex
     {
-        Float_2 Position{ };
-        Float_2 UV{ };
-        Float_4 Color{ };
+        Float2 Position{ };
+        Float2 UV{ };
+        Float4 Color{ };
 
-        GlyphVertex( const Float_2 &position, const Float_2 &uv, const Float_4 &color ) : Position( position ), UV( uv ), Color( color )
+        GlyphVertex( const Float2 &position, const Float2 &uv, const Float4 &color ) : Position( position ), UV( uv ), Color( color )
         {
         }
 
@@ -59,15 +59,15 @@ namespace DenOfIz
     struct DZ_API ShapeTextDesc
     {
         InteropString Text;                              // UTF-8 encoded string
-        UInt32_4      HbScriptTag{ 'L', 'a', 't', 'n' }; // Language identifier, refer to hb_script_t
+        UInt4      HbScriptTag{ 'L', 'a', 't', 'n' }; // Language identifier, refer to hb_script_t
         TextDirection Direction = TextDirection::LeftToRight;
         uint32_t      FontSize  = 36;
     };
 
     struct DZ_API GenerateTextVerticesDesc
     {
-        Float_2 StartPosition{ 0.0f, 0.0f };
-        Float_4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
+        Float2 StartPosition{ 0.0f, 0.0f };
+        Float4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
 
         GlyphVertex *OutVertices;
         uint32_t    *OutIndices;
@@ -104,7 +104,7 @@ namespace DenOfIz
         InteropString m_lastShapedText;
         uint32_t      m_lastFontSize  = 0;
         TextDirection m_lastDirection = TextDirection::Auto;
-        UInt32_4      m_lastScriptTag{ 0, 0, 0, 0 };
+        UInt4      m_lastScriptTag{ 0, 0, 0, 0 };
 
     public:
         DZ_API explicit TextLayout( const TextLayoutDesc &desc );
@@ -114,7 +114,7 @@ namespace DenOfIz
         DZ_API void  GenerateTextVertices( const GenerateTextVerticesDesc &generateDesc ) const;
         DZ_API TextVertexAllocationInfo GetVertexAllocationInfo( ) const;
 
-        DZ_API Float_2 GetTextSize( ) const;
+        DZ_API Float2 GetTextSize( ) const;
         DZ_API float   GetTextWidth( ) const;
         DZ_API float   GetTextHeight( ) const;
 
