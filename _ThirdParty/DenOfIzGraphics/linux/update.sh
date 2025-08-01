@@ -6,9 +6,9 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-cp -r install/Install_Linux/include/* ../TheKindlingScript/_ThirdParty/DenOfIzGraphics/win32/include/
-cp -r install/Install_Linux/include/* ../TheKindlingScript/_ThirdParty/DenOfIzGraphics/osx/include/
-cp -r install/Install_Linux/include/* ../TheKindlingScript/_ThirdParty/DenOfIzGraphics/linux/include/
-cp -r install/Install_Linux/lib/* ../TheKindlingScript/_ThirdParty/DenOfIzGraphics/linux/lib/
+cp -r install/Install_Linux/include/* ../DZEngine/_ThirdParty/DenOfIzGraphics/win32/include/
+cp -r install/Install_Linux/include/* ../DZEngine/_ThirdParty/DenOfIzGraphics/osx/include/
+cp -r install/Install_Linux/include/* ../DZEngine/_ThirdParty/DenOfIzGraphics/linux/include/
+cp -r install/Install_Linux/lib/* ../DZEngine/_ThirdParty/DenOfIzGraphics/linux/lib/
 
 echo "DenOfIz updated successfully"
