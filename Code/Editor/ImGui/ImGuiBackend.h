@@ -59,8 +59,8 @@ namespace DenOfIz
     {
         struct ImGuiUniforms
         {
-            Float_4x4 Projection;
-            Float_4   ScreenSize;
+            Float4x4 Projection;
+            Float4   ScreenSize;
         };
 
         struct PixelConstants
@@ -108,8 +108,8 @@ namespace DenOfIz
         std::unique_ptr<ITextureResource>         m_nullTexture{ };
         bool                                      m_texturesDirty = true;
 
-        Viewport  m_viewport;
-        Float_4x4 m_projectionMatrix{ };
+        Viewport m_viewport;
+        Float4x4 m_projectionMatrix{ };
 
         std::unique_ptr<ISampler> m_linearSampler{ };
         uint32_t                  m_nextFrame    = 0;
