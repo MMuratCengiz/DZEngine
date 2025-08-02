@@ -37,7 +37,7 @@ namespace DenOfIz
     struct DZ_API Float2Array
     {
         Float2 *Elements;
-        size_t   NumElements;
+        size_t  NumElements;
     };
 
     struct DZ_API Float3
@@ -50,7 +50,7 @@ namespace DenOfIz
     struct DZ_API Float3Array
     {
         Float3 *Elements;
-        size_t   NumElements;
+        size_t  NumElements;
     };
 
     struct DZ_API Float4
@@ -61,10 +61,12 @@ namespace DenOfIz
         float W;
     };
 
+    typedef Float4 Quaternion;
+
     struct DZ_API Float4Array
     {
         Float4 *Elements;
-        size_t   NumElements;
+        size_t  NumElements;
     };
 
     struct DZ_API Short2
@@ -184,6 +186,6 @@ namespace DenOfIz
     struct DZ_API Float_4x4Array
     {
         Float4x4 *Elements;
-        size_t     NumElements;
+        size_t    NumElements;
     };
 } // namespace DenOfIz
