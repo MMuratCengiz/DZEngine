@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "IBufferResource.h"
 #include "IFence.h"
 #include "IPipeline.h"
+#include "IQueryPool.h"
 #include "IResourceBindGroup.h"
 #include "ITextureResource.h"
 #include "PipelineBarrierDesc.h"
@@ -44,7 +45,7 @@ namespace DenOfIz
         float ClearColor[ 4 ]{ 0.0f, 0.0f, 0.0f, 1.0f };
         float ClearDepthStencil[ 2 ]{ 1.0f, 0.0f };
 
-        void SetClearColor( float r, float g, float b, float a )
+        void SetClearColor( const float r, const float g, const float b, const float a )
         {
             ClearColor[ 0 ] = r;
             ClearColor[ 1 ] = g;
@@ -52,7 +53,7 @@ namespace DenOfIz
             ClearColor[ 3 ] = a;
         }
 
-        void SetClearDepthStencil( float depth, float stencil )
+        void SetClearDepthStencil( const float depth, const float stencil )
         {
             ClearDepthStencil[ 0 ] = depth;
             ClearDepthStencil[ 1 ] = stencil;
@@ -210,6 +211,15 @@ namespace DenOfIz
         virtual void DrawIndirect( IBufferResource *buffer, uint64_t offset, uint32_t drawCount, uint32_t stride )        = 0;
         virtual void DrawIndexedIndirect( IBufferResource *buffer, uint64_t offset, uint32_t drawCount, uint32_t stride ) = 0;
         virtual void DispatchIndirect( IBufferResource *buffer, uint64_t offset )                                         = 0;
+
+        virtual void BeginDebugMarker( float r, float g, float b, StringView name )  = 0;
+        virtual void EndDebugMarker( )                                               = 0;
+        virtual void InsertDebugMarker( float r, float g, float b, StringView name ) = 0;
+
+        virtual void BeginQuery( IQueryPool *queryPool, const QueryDesc &queryDesc )                 = 0;
+        virtual void EndQuery( IQueryPool *queryPool, const QueryDesc &queryDesc )                   = 0;
+        virtual void ResolveQuery( IQueryPool *queryPool, uint32_t startQuery, uint32_t queryCount ) = 0;
+        virtual void ResetQuery( IQueryPool *queryPool, uint32_t startQuery, uint32_t queryCount )   = 0;
 
         virtual const QueueType GetQueueType( ) = 0;
     };

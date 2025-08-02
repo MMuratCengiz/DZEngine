@@ -9,6 +9,7 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
 set_property(TARGET DenOfIz::DenOfIzGraphics APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
 set_target_properties(DenOfIz::DenOfIzGraphics PROPERTIES
   IMPORTED_IMPLIB_DEBUG "${_IMPORT_PREFIX}/lib/DenOfIzGraphics.lib"
+  IMPORTED_LINK_DEPENDENT_LIBRARIES_DEBUG "Microsoft::WinPixEventRuntime"
   IMPORTED_LOCATION_DEBUG "${_IMPORT_PREFIX}/bin/DenOfIzGraphics.dll"
   )
 

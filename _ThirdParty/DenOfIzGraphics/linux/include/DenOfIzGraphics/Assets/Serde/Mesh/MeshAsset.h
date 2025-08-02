@@ -69,8 +69,8 @@ namespace DenOfIz
         Float4Array Colors;
         Float4      Tangent{ };
         Float4      Bitangent{ };
-        UInt32Array  BlendIndices;    // Variable number of bone indices
-        FloatArray   BoneWeights;     // Variable number of bone weights
+        UInt32Array BlendIndices; // Variable number of bone indices
+        FloatArray  BoneWeights;  // Variable number of bone weights
     };
 
     struct DZ_API MeshVertexArray
@@ -117,8 +117,7 @@ namespace DenOfIz
         uint32_t         NumUVAttributes       = 2;
         UVChannelArray   UVChannels;
         ColorFormatArray ColorFormats;
-        uint32_t         MaxBoneInfluences = 4;  // Maximum bone influences per vertex
-        uint32_t         ActualMaxBoneInfluences = 4; // Actual max found in the mesh data
+        uint32_t         NumBoneInfluences = 4;
     };
 
     struct DZ_API BoxBoundingVolume
@@ -130,14 +129,14 @@ namespace DenOfIz
     struct DZ_API SphereBoundingVolume
     {
         Float3 Center;
-        float   Radius;
+        float  Radius;
     };
 
     struct DZ_API CapsuleBoundingVolume
     {
         Float3 Start;
         Float3 End;
-        float   Radius;
+        float  Radius;
     };
 
     struct DZ_API ConvexHullBoundingVolume
@@ -192,8 +191,8 @@ namespace DenOfIz
         uint64_t            NumIndices = 0;
         IndexType           IndexType  = IndexType::Uint32;
         AssetDataStream     IndexStream{ };
-        Float3             MinBounds{ 0.0f, 0.0f, 0.0f };
-        Float3             MaxBounds{ 0.0f, 0.0f, 0.0f };
+        Float3              MinBounds{ 0.0f, 0.0f, 0.0f };
+        Float3              MaxBounds{ 0.0f, 0.0f, 0.0f };
         AssetUri            MaterialRef{ };
         BoundingVolumeArray BoundingVolumes;
     };
@@ -207,9 +206,9 @@ namespace DenOfIz
     struct DZ_API JointData
     {
         InteropString Name;
-        Float4x4     InverseBindMatrix;
-        Float4x4     LocalTransform;
-        Float4x4     GlobalTransform;
+        Float4x4      InverseBindMatrix;
+        Float4x4      LocalTransform;
+        Float4x4      GlobalTransform;
         int32_t       ParentIndex = -1;
         UInt32Array   ChildIndices;
     };

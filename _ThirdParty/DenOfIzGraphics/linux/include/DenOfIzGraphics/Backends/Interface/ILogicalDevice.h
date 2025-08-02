@@ -28,6 +28,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "ISemaphore.h"
 #include "ISwapChain.h"
 #include "ITextureResource.h"
+#include "IQueryPool.h"
 #include "RayTracing/ILocalRootSignature.h"
 #include "RayTracing/IShaderBindingTable.h"
 #include "RayTracing/IShaderLocalData.h"
@@ -76,6 +77,7 @@ namespace DenOfIz
         virtual IBufferResource    *CreateBufferResource( const BufferDesc &desc )               = 0;
         virtual ITextureResource   *CreateTextureResource( const TextureDesc &desc )             = 0;
         virtual ISampler           *CreateSampler( const SamplerDesc &desc )                     = 0;
+        virtual IQueryPool         *CreateQueryPool( const QueryPoolDesc &desc )                 = 0;
         // RayTracing:
         virtual ITopLevelAS         *CreateTopLevelAS( const TopLevelASDesc &desc )                 = 0;
         virtual IBottomLevelAS      *CreateBottomLevelAS( const BottomLevelASDesc &desc )           = 0;

@@ -401,6 +401,84 @@ namespace DenOfIz
         Copy
     };
 
+    enum class QueryType
+    {
+        Occlusion,
+        PipelineStatistics,
+        Timestamp
+    };
+
+    namespace QueryPipelineStatisticFlags
+    {
+        constexpr uint32_t None                      = 0;
+        constexpr uint32_t InputAssemblyVertices     = 1 << 0;
+        constexpr uint32_t InputAssemblyPrimitives   = 1 << 1;
+        constexpr uint32_t VertexShaderInvocations   = 1 << 2;
+        constexpr uint32_t GeometryShaderInvocations = 1 << 3;
+        constexpr uint32_t GeometryShaderPrimitives  = 1 << 4;
+        constexpr uint32_t ClippingInvocations       = 1 << 5;
+        constexpr uint32_t ClippingPrimitives        = 1 << 6;
+        constexpr uint32_t PixelShaderInvocations    = 1 << 7;
+        constexpr uint32_t HullShaderInvocations     = 1 << 8;
+        constexpr uint32_t DomainShaderInvocations   = 1 << 9;
+        constexpr uint32_t ComputeShaderInvocations  = 1 << 10;
+    } // namespace QueryPipelineStatisticFlags
+
+    namespace PipelineStageFlags
+    {
+        constexpr uint32_t None                       = 0;
+        constexpr uint32_t TopOfPipe                  = 1 << 0;
+        constexpr uint32_t DrawIndirect               = 1 << 1;
+        constexpr uint32_t VertexInput                = 1 << 2;
+        constexpr uint32_t VertexShader               = 1 << 3;
+        constexpr uint32_t HullShader                 = 1 << 4;
+        constexpr uint32_t DomainShader               = 1 << 5;
+        constexpr uint32_t GeometryShader             = 1 << 6;
+        constexpr uint32_t PixelShader                = 1 << 7;
+        constexpr uint32_t EarlyFragmentTests         = 1 << 8;
+        constexpr uint32_t LateFragmentTests          = 1 << 9;
+        constexpr uint32_t ColorAttachmentOutput      = 1 << 10;
+        constexpr uint32_t ComputeShader              = 1 << 11;
+        constexpr uint32_t Transfer                   = 1 << 12;
+        constexpr uint32_t BottomOfPipe               = 1 << 13;
+        constexpr uint32_t Host                       = 1 << 14;
+        constexpr uint32_t AllGraphics                = 1 << 15;
+        constexpr uint32_t AllCommands                = 1 << 16;
+        constexpr uint32_t RayTracingShader           = 1 << 17;
+        constexpr uint32_t AccelerationStructureBuild = 1 << 18;
+        constexpr uint32_t TaskShader                 = 1 << 19;
+        constexpr uint32_t MeshShader                 = 1 << 20;
+    } // namespace PipelineStageFlags
+
+    struct DZ_API PipelineStatisticsData
+    {
+        uint64_t InputAssemblyVertices;
+        uint64_t InputAssemblyPrimitives;
+        uint64_t VertexShaderInvocations;
+        uint64_t GeometryShaderInvocations;
+        uint64_t GeometryShaderPrimitives;
+        uint64_t ClippingInvocations;
+        uint64_t ClippingPrimitives;
+        uint64_t PixelShaderInvocations;
+        uint64_t HullShaderInvocations;
+        uint64_t DomainShaderInvocations;
+        uint64_t ComputeShaderInvocations;
+    };
+
+    struct DZ_API QueryDesc
+    {
+        uint32_t Index = 0;
+    };
+
+    struct DZ_API QueryData
+    {
+        bool                   Valid           = false;
+        uint64_t               BeginTimestamp  = 0;
+        uint64_t               EndTimestamp    = 0;
+        uint64_t               OcclusionCounts = 0;
+        PipelineStatisticsData PipelineStats{ };
+    };
+
     struct DZ_API DeviceConstants
     {
         uint32_t StorageBufferAlignment;
@@ -427,6 +505,7 @@ namespace DenOfIz
         bool ShaderFloat16;
         bool TiledResources;
         bool MultiDrawIndirect;
+        bool QueryStatistics;
     };
 
     struct DZ_API PhysicalDeviceProperties
