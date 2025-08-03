@@ -39,4 +39,6 @@ AGameRunner::AGameRunner( const GameRunnerDesc &desc ) : m_windowHandle( desc.Wi
     m_appContext->AssetBatcher = m_assetBatcher.get( );
 
     m_game->Init( m_appContext.get( ) );
+
+    m_world->GetWorld( ).set_ctx( m_appContext.get( ) );
 }
