@@ -19,10 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
 #include <flecs.h>
-#include <memory>
 #include <string>
-
-#include "DZEngine/Assets/SceneAssets.h"
 #include "DZEngine/Rendering/GraphicsContext.h"
 
 namespace DZEngine
@@ -42,11 +39,10 @@ namespace DZEngine
     {
         friend class World;
 
-        std::string                  m_name;
-        flecs::entity                m_root;
-        flecs::entity                m_pipeline;
-        std::unique_ptr<SceneAssets> m_assets;
-        flecs::world                *m_world;
+        std::string   m_name;
+        flecs::entity m_root;
+        flecs::entity m_pipeline;
+        flecs::world *m_world;
 
     public:
         explicit Scene( const SceneDesc &desc );
@@ -58,8 +54,6 @@ namespace DZEngine
         void Clear( ) const;
 
         const std::string &GetName( ) const;
-        SceneAssets       *GetAssets( );
-        const SceneAssets *GetAssets( ) const;
         flecs::entity      GetRoot( ) const;
     };
 } // namespace DZEngine

@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DZEngine/Assets/MeshPool.h"
+#include "DZEngine/Assets/MeshBatch.h"
 
 #include <glm/common.hpp>
 #include <glm/vec3.hpp>
@@ -27,7 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace DZEngine;
 
-MeshPool::MeshPool( const MeshPoolDesc &desc ) : m_logicalDevice( desc.LogicalDevice )
+MeshBatch::MeshBatch( const MeshPoolDesc &desc ) : m_logicalDevice( desc.LogicalDevice )
 {
     if ( !m_logicalDevice )
     {
@@ -54,16 +54,39 @@ MeshPool::MeshPool( const MeshPoolDesc &desc ) : m_logicalDevice( desc.LogicalDe
     m_meshes.resize( 1024 );
 }
 
-GPUMesh MeshPool::AddMesh( BinaryReader &reader )
+void MeshBatch::BeginUpdate( )
+{
+    if ( !m_batchResourceCopy )
+    {
+        m_batchResourceCopy = std::make_unique<BatchResourceCopy>( m_logicalDevice );
+    }
+    m_batchResourceCopy->Begin( );
+}
+
+void MeshBatch::EndUpdate( ISemaphore *onComplete )
+{
+    if ( !m_batchResourceCopy )
+    {
+        spdlog::error( "BeginUpdate not called" );
+        return;
+    }
+    m_batchResourceCopy->Submit( onComplete );
+    if ( !onComplete )
+    {
+        m_batchResourceCopy.reset( );
+    }
+}
+
+GPUMesh MeshBatch::AddMesh( BinaryReader &reader, const std::vector<std::string> &aliases )
 {
     MeshAssetReaderDesc meshReaderDesc{ };
     meshReaderDesc.Reader = &reader;
-    MeshAssetReader            meshAssetReader( meshReaderDesc );
-    std::unique_ptr<MeshAsset> meshAsset( meshAssetReader.Read( ) );
+    MeshAssetReader                  meshAssetReader( meshReaderDesc );
+    const std::unique_ptr<MeshAsset> meshAsset( meshAssetReader.Read( ) );
 
-    auto  &meshAssetData = m_meshDataStorage.emplace_back( std::make_unique<MeshAssetData>( MeshAssetData::LoadFromMeshAsset( *meshAsset ) ) );
-    size_t vertexOffset  = m_nextVertexOffset;
-    size_t indexOffset   = m_nextIndexOffset;
+    const auto  &meshAssetData = m_meshDataStorage.emplace_back( std::make_unique<MeshAssetData>( MeshAssetData::LoadFromMeshAsset( *meshAsset ) ) );
+    const size_t vertexOffset  = m_nextVertexOffset;
+    const size_t indexOffset   = m_nextIndexOffset;
     {
         std::lock_guard lock( m_newMeshLock );
         m_nextVertexOffset = m_nextVertexOffset + meshAssetData->GetTotalNumVertices( ) * meshAssetData->GetVertexNumBytes( );
@@ -73,12 +96,14 @@ GPUMesh MeshPool::AddMesh( BinaryReader &reader )
     GPUMesh &newGPUMesh = m_meshes.emplace_back( GPUMesh{ } );
     newGPUMesh.Metadata = meshAssetData.get( );
 
-    BatchResourceCopy batchCopy( m_logicalDevice );
-    batchCopy.Begin( );
-
     for ( uint32_t meshIndex = 0; meshIndex < meshAsset->SubMeshes.NumElements; ++meshIndex )
     {
-        size_t handleId = NextHandle( );
+        std::string alias = meshAssetData->SubMeshes[ meshIndex ].Name;
+        if ( meshIndex < aliases.size( ) )
+        {
+            alias = aliases[ meshIndex ];
+        }
+        const size_t handleId = NextHandle( alias );
 
         auto &gpuSubMesh    = newGPUMesh.SubMeshes.emplace_back( );
         gpuSubMesh.Handle   = MeshHandle( handleId );
@@ -92,7 +117,7 @@ GPUMesh MeshPool::AddMesh( BinaryReader &reader )
         vertexLoadDesc.DstBuffer       = m_vertexBuffer.get( );
         vertexLoadDesc.DstBufferOffset = vertexOffset;
         vertexLoadDesc.Reader          = &reader;
-        batchCopy.LoadAssetStreamToBuffer( vertexLoadDesc );
+        m_batchResourceCopy->LoadAssetStreamToBuffer( vertexLoadDesc );
 
         gpuSubMesh.VertexBuffer.Buffer   = m_vertexBuffer.get( );
         gpuSubMesh.VertexBuffer.Offset   = vertexOffset;
@@ -105,7 +130,7 @@ GPUMesh MeshPool::AddMesh( BinaryReader &reader )
             indexLoadDesc.DstBuffer       = m_indexBuffer.get( );
             indexLoadDesc.DstBufferOffset = indexOffset;
             indexLoadDesc.Reader          = &reader;
-            batchCopy.LoadAssetStreamToBuffer( indexLoadDesc );
+            m_batchResourceCopy->LoadAssetStreamToBuffer( indexLoadDesc );
 
             gpuSubMesh.IndexBuffer.Buffer   = m_indexBuffer.get( );
             gpuSubMesh.IndexBuffer.Offset   = indexOffset;
@@ -115,11 +140,10 @@ GPUMesh MeshPool::AddMesh( BinaryReader &reader )
         m_subMeshes[ handleId ] = gpuSubMesh;
     }
 
-    batchCopy.Submit( );
     return newGPUMesh;
 }
 
-GPUMesh MeshPool::AddGeometry( const GeometryData *geometry, const Float4 &color )
+GPUMesh MeshBatch::AddGeometry( const GeometryData *geometry, std::string alias )
 {
     if ( !geometry )
     {
@@ -164,8 +188,7 @@ GPUMesh MeshPool::AddGeometry( const GeometryData *geometry, const Float4 &color
         vertex.TexCoord.X = geoVertex.TextureCoordinate.U;
         vertex.TexCoord.Y = geoVertex.TextureCoordinate.V;
 
-        vertex.Color = { color.X, color.Y, color.Z, color.W };
-
+        vertex.Color   = { 1.0f, 1.0f, 1.0f, 1.0f };
         vertex.Tangent = { 0.0f, 0.0f, 0.0f, 0.0f };
 
         vertices.push_back( vertex );
@@ -187,14 +210,11 @@ GPUMesh MeshPool::AddGeometry( const GeometryData *geometry, const Float4 &color
         m_nextIndexOffset  = m_nextIndexOffset + numIndexBytes;
     }
 
-    BatchResourceCopy batchCopy( m_logicalDevice );
-    batchCopy.Begin( );
-
     CopyToGpuBufferDesc vertexCopyDesc{ };
     vertexCopyDesc.DstBuffer       = m_vertexBuffer.get( );
     vertexCopyDesc.DstBufferOffset = vertexOffset;
     vertexCopyDesc.Data            = { reinterpret_cast<const Byte *>( vertices.data( ) ), numVertexBytes };
-    batchCopy.CopyToGPUBuffer( vertexCopyDesc );
+    m_batchResourceCopy->CopyToGPUBuffer( vertexCopyDesc );
 
     if ( numIndices > 0 )
     {
@@ -202,10 +222,8 @@ GPUMesh MeshPool::AddGeometry( const GeometryData *geometry, const Float4 &color
         indexCopyDesc.DstBuffer       = m_indexBuffer.get( );
         indexCopyDesc.DstBufferOffset = indexOffset;
         indexCopyDesc.Data            = { reinterpret_cast<const Byte *>( geometryData.Indices.Elements ), numIndexBytes };
-        batchCopy.CopyToGPUBuffer( indexCopyDesc );
+        m_batchResourceCopy->CopyToGPUBuffer( indexCopyDesc );
     }
-
-    batchCopy.Submit( );
 
     auto &meshAssetData                                 = m_meshDataStorage.emplace_back( std::make_unique<MeshAssetData>( MeshAssetData{ } ) );
     newGPUMesh.Metadata                                 = meshAssetData.get( );
@@ -221,7 +239,7 @@ GPUMesh MeshPool::AddGeometry( const GeometryData *geometry, const Float4 &color
 
     GPUSubMesh &subMesh = newGPUMesh.SubMeshes.emplace_back( );
 
-    size_t handle                 = NextHandle( );
+    size_t handle                 = NextHandle( alias );
     subMesh.Handle                = MeshHandle( handle );
     subMesh.VertexBuffer.Buffer   = m_vertexBuffer.get( );
     subMesh.VertexBuffer.Offset   = vertexOffset;
@@ -242,7 +260,7 @@ GPUMesh MeshPool::AddGeometry( const GeometryData *geometry, const Float4 &color
     return newGPUMesh;
 }
 
-GPUSubMesh MeshPool::GetSubMesh( const MeshHandle handle ) const
+GPUSubMesh MeshBatch::GetSubMesh( const MeshHandle handle ) const
 {
     if ( handle.Id >= m_meshes.size( ) )
     {
@@ -252,17 +270,17 @@ GPUSubMesh MeshPool::GetSubMesh( const MeshHandle handle ) const
     return m_subMeshes[ handle.Id ];
 }
 
-GPUBufferView MeshPool::GetVertexBuffer( ) const
+GPUBufferView MeshBatch::GetVertexBuffer( ) const
 {
     return GPUBufferView{ .Buffer = m_vertexBuffer.get( ), .NumBytes = m_nextVertexOffset, .Offset = 0 };
 }
 
-GPUBufferView MeshPool::GetIndexBuffer( ) const
+GPUBufferView MeshBatch::GetIndexBuffer( ) const
 {
     return GPUBufferView{ .Buffer = m_indexBuffer.get( ), .NumBytes = m_nextIndexOffset, .Offset = 0 };
 }
 
-size_t MeshPool::NextHandle( )
+size_t MeshBatch::NextHandle( const std::string &alias )
 {
     std::lock_guard lock( m_newMeshLock );
     m_nextHandle++;
@@ -270,5 +288,6 @@ size_t MeshPool::NextHandle( )
     {
         m_subMeshes.resize( m_nextHandle + 1 );
     }
+    m_aliases[ alias ] = MeshHandle( m_nextHandle );
     return m_nextHandle;
 }

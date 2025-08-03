@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <memory>
 
-#include "DZEngine/Assets/MeshPool.h"
+#include "DZEngine/Assets/MeshBatch.h"
 #include "DenOfIzGraphics/DenOfIzGraphics.h"
 
 using namespace DenOfIz;
@@ -50,7 +50,7 @@ namespace DZEngine
 
         ResourceTracking m_resourceTracking{ };
 
-        std::unique_ptr<MeshPool> m_meshPool;
+        std::unique_ptr<MeshBatch> m_meshBatch;
 
     public:
         explicit SceneViewRenderer( const SceneViewRendererDesc &desc );

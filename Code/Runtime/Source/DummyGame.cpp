@@ -31,6 +31,8 @@ void DummyGame::Init( AppContext *appContext )
     m_logicalDevice    = appContext->GraphicsContext->LogicalDevice;
     m_resourceTracking = appContext->GraphicsContext->ResourceTracking;
 
+    // Scene* scene = m_appContext->World->CreateScene( "Playground" );
+
     CreateVertexBuffer( );
     CreateShaderProgram( );
     CreatePipeline( );

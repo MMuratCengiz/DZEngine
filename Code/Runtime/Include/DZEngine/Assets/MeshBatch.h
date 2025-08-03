@@ -47,7 +47,7 @@ namespace DZEngine
         std::vector<GPUSubMesh> SubMeshes;
     };
 
-    class MeshPool
+    class MeshBatch
     {
         ILogicalDevice *m_logicalDevice;
 
@@ -66,17 +66,26 @@ namespace DZEngine
         std::vector<GPUMesh>    m_meshes;
         std::vector<GPUSubMesh> m_subMeshes;
 
+        std::unordered_map<std::string, MeshHandle> m_aliases;
+        std::unique_ptr<BatchResourceCopy> m_batchResourceCopy;
+
     public:
-        explicit MeshPool( const MeshPoolDesc &desc );
+        explicit MeshBatch( const MeshPoolDesc &desc );
 
-        GPUMesh    AddMesh( BinaryReader &reader );
-        GPUMesh    AddGeometry( const GeometryData *geometry, const Float4 &color = { 1.0f, 1.0f, 1.0f, 1.0f } );
-        GPUSubMesh GetSubMesh( MeshHandle handle ) const;
+        void BeginUpdate( );
+        void EndUpdate( ISemaphore* onComplete = nullptr ); // nullptr will block execution
 
-        GPUBufferView GetVertexBuffer( ) const;
-        GPUBufferView GetIndexBuffer( ) const;
+        GPUMesh AddMesh( BinaryReader &reader, const std::vector<std::string>& aliases = { /*Index matches submesh index*/ } );
+        GPUMesh AddGeometry( const GeometryData *geometry, std::string alias = "" );
+
+        [[nodiscard]] GPUSubMesh    GetSubMesh( MeshHandle handle ) const;
+        [[nodiscard]] GPUBufferView GetVertexBuffer( ) const;
+        [[nodiscard]] GPUBufferView GetIndexBuffer( ) const;
+
+        GPUMesh    GetMesh( std::string alias );
+        GPUSubMesh GetSubMesh( std::string alias, size_t subMeshIndex );
 
     private:
-        size_t NextHandle( );
+        size_t NextHandle( const std::string &alias );
     };
 } // namespace DZEngine

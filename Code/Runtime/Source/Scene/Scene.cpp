@@ -25,10 +25,6 @@ Scene::Scene( const SceneDesc &desc ) : m_world( desc.World )
     m_name     = desc.Name;
     m_root     = desc.World->entity( desc.Name.c_str( ) );
     m_pipeline = desc.World->pipeline( ).with<ActiveScene>( ).build( );
-
-    SceneAssetsDesc sceneAssetsDesc{ };
-    sceneAssetsDesc.LogicalDevice = desc.GraphicsContext->LogicalDevice;
-    m_assets                        = std::make_unique<SceneAssets>( sceneAssetsDesc );
 }
 
 Scene::~Scene( )
@@ -70,16 +66,6 @@ void Scene::Clear( ) const
 const std::string &Scene::GetName( ) const
 {
     return m_name;
-}
-
-SceneAssets *Scene::GetAssets( )
-{
-    return m_assets.get( );
-}
-
-const SceneAssets *Scene::GetAssets( ) const
-{
-    return m_assets.get( );
 }
 
 flecs::entity Scene::GetRoot( ) const

@@ -7,9 +7,9 @@ add_library(DZRuntime STATIC)
 target_include_directories(DZRuntime PUBLIC Include)
 
 target_sources(DZRuntime PRIVATE
+        Source/Assets/AssetBatcher.cpp
         Source/Assets/MeshAssetData.cpp
-        Source/Assets/MeshPool.cpp
-        Source/Assets/SceneAssets.cpp
+        Source/Assets/MeshBatch.cpp
         Source/Input/InputSystem.cpp
         Source/Rendering/RenderLoop.cpp
         Source/Scene/Scene.cpp

@@ -62,8 +62,8 @@ void SceneViewRenderer::Render( ICommandList *commandList, const uint32_t frameI
     commandList->BindViewport( m_viewport.X, m_viewport.Y, m_viewport.Width, m_viewport.Height );
     commandList->BindScissorRect( m_viewport.X, m_viewport.Y, m_viewport.Width, m_viewport.Height );
     commandList->BindPipeline( m_pipeline.get( ) );
-    commandList->BindVertexBuffer( m_meshPool->GetVertexBuffer( ).Buffer );
-    commandList->BindIndexBuffer( m_meshPool->GetIndexBuffer( ).Buffer, IndexType::Uint32 );
+    commandList->BindVertexBuffer( m_meshBatch->GetVertexBuffer( ).Buffer );
+    commandList->BindIndexBuffer( m_meshBatch->GetIndexBuffer( ).Buffer, IndexType::Uint32 );
     commandList->DrawIndexed( 36, 1, 0, 0 );
 
     commandList->EndRendering( );
@@ -85,7 +85,8 @@ void SceneViewRenderer::CreateVertexBuffer( )
 {
     MeshPoolDesc meshPoolDesc{ };
     meshPoolDesc.LogicalDevice = m_logicalDevice;
-    m_meshPool                 = std::make_unique<MeshPool>( meshPoolDesc );
+    m_meshBatch                = std::make_unique<MeshBatch>( meshPoolDesc );
+    m_meshBatch->BeginUpdate( );
 
     BoxDesc boxDesc{ };
     boxDesc.BuildDesc = 0;
@@ -94,14 +95,15 @@ void SceneViewRenderer::CreateVertexBuffer( )
     boxDesc.Depth     = 1.0f;
 
     const auto box = std::unique_ptr<GeometryData>( Geometry::BuildBox( boxDesc ) );
-    m_meshPool->AddGeometry( box.get( ) );
+    m_meshBatch->AddGeometry( box.get( ) );
 
     SphereDesc sphereDesc{ };
     sphereDesc.BuildDesc    = 0;
     sphereDesc.Diameter     = 1.0f;
     sphereDesc.Tessellation = 24.0f;
     const auto sphere       = std::unique_ptr<GeometryData>( Geometry::BuildSphere( sphereDesc ) );
-    m_meshPool->AddGeometry( sphere.get( ) );
+    m_meshBatch->AddGeometry( sphere.get( ) );
+    m_meshBatch->EndUpdate( );
 }
 
 void SceneViewRenderer::CreateShaderProgram( )
