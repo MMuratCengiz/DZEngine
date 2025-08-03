@@ -59,7 +59,7 @@ void MeshPool::AddMesh( MeshHandle handle, BinaryReader &reader )
     MeshAssetReader            meshAssetReader( meshReaderDesc );
     std::unique_ptr<MeshAsset> meshAsset( meshAssetReader.Read( ) );
 
-    if ( m_entries.size( ) < handle.Id )
+    if ( m_entries.size( ) <= handle.Id )
     {
         m_entries.resize( handle.Id + 1 );
     }
@@ -69,8 +69,8 @@ void MeshPool::AddMesh( MeshHandle handle, BinaryReader &reader )
     size_t indexOffset   = m_nextIndexOffset;
     {
         std::lock_guard lock( m_newMeshLock );
-        m_nextVertexOffset = m_nextVertexOffset + meshAssetData->GetTotalNumVertices( ) * meshAssetData->GetVertexNumBytes( ) + 255 & ~255;
-        m_nextIndexOffset  = m_nextIndexOffset + meshAssetData->GetTotalNumIndices( ) * sizeof( uint32_t ) + 255 & ~255;
+        m_nextVertexOffset = m_nextVertexOffset + meshAssetData->GetTotalNumVertices( ) * meshAssetData->GetVertexNumBytes( );
+        m_nextIndexOffset  = m_nextIndexOffset + meshAssetData->GetTotalNumIndices( ) * sizeof( uint32_t );
     }
 
     GPUMesh &newGPUMesh = m_entries[ handle.Id ];
@@ -81,9 +81,10 @@ void MeshPool::AddMesh( MeshHandle handle, BinaryReader &reader )
 
     for ( uint32_t meshIndex = 0; meshIndex < meshAsset->SubMeshes.NumElements; ++meshIndex )
     {
-        auto &gpuSubMesh = newGPUMesh.SubMeshes.emplace_back( );
+        auto &gpuSubMesh    = newGPUMesh.SubMeshes.emplace_back( );
+        gpuSubMesh.Metadata = &meshAssetData->SubMeshes[ meshIndex ];
 
-        const auto &subMesh     = meshAsset->SubMeshes.Elements[ meshIndex ];
+        auto       &subMesh     = meshAsset->SubMeshes.Elements[ meshIndex ];
         std::string subMeshName = subMesh.Name.Get( );
 
         LoadAssetStreamToBufferDesc vertexLoadDesc;
@@ -93,9 +94,9 @@ void MeshPool::AddMesh( MeshHandle handle, BinaryReader &reader )
         vertexLoadDesc.Reader          = &reader;
         batchCopy.LoadAssetStreamToBuffer( vertexLoadDesc );
 
-        gpuSubMesh.VertexBuffer->Buffer   = m_vertexBuffer.get( );
-        gpuSubMesh.VertexBuffer->Offset   = vertexOffset;
-        gpuSubMesh.VertexBuffer->NumBytes = subMesh.VertexStream.NumBytes;
+        gpuSubMesh.VertexBuffer.Buffer   = m_vertexBuffer.get( );
+        gpuSubMesh.VertexBuffer.Offset   = vertexOffset;
+        gpuSubMesh.VertexBuffer.NumBytes = subMesh.VertexStream.NumBytes;
 
         if ( subMesh.IndexStream.NumBytes > 0 )
         {
@@ -106,9 +107,9 @@ void MeshPool::AddMesh( MeshHandle handle, BinaryReader &reader )
             indexLoadDesc.Reader          = &reader;
             batchCopy.LoadAssetStreamToBuffer( indexLoadDesc );
 
-            gpuSubMesh.IndexBuffer->Buffer   = m_indexBuffer.get( );
-            gpuSubMesh.IndexBuffer->Offset   = indexOffset;
-            gpuSubMesh.IndexBuffer->NumBytes = subMesh.IndexStream.NumBytes;
+            gpuSubMesh.IndexBuffer.Buffer   = m_indexBuffer.get( );
+            gpuSubMesh.IndexBuffer.Offset   = indexOffset;
+            gpuSubMesh.IndexBuffer.NumBytes = subMesh.IndexStream.NumBytes;
         }
     }
 
@@ -123,7 +124,7 @@ void MeshPool::AddGeometry( MeshHandle handle, const GeometryData *geometry, con
         return;
     }
 
-    if ( m_entries.size( ) < handle.Id )
+    if ( m_entries.size( ) <= handle.Id )
     {
         m_entries.resize( handle.Id + 1 );
     }
@@ -183,8 +184,8 @@ void MeshPool::AddGeometry( MeshHandle handle, const GeometryData *geometry, con
     size_t indexOffset  = m_nextIndexOffset;
     {
         std::lock_guard lock( m_newMeshLock );
-        m_nextVertexOffset = m_nextVertexOffset + numVertexBytes + 255 & ~255;
-        m_nextIndexOffset  = m_nextIndexOffset + numIndexBytes + 255 & ~255;
+        m_nextVertexOffset = m_nextVertexOffset + numVertexBytes;
+        m_nextIndexOffset  = m_nextIndexOffset + numIndexBytes;
     }
 
     BatchResourceCopy batchCopy( m_logicalDevice );
@@ -207,6 +208,8 @@ void MeshPool::AddGeometry( MeshHandle handle, const GeometryData *geometry, con
 
     batchCopy.Submit( );
 
+    auto &meshAssetData                                 = m_meshDataStorage.emplace_back( std::make_unique<MeshAssetData>( MeshAssetData{ } ) );
+    newGPUMesh.Metadata                                 = meshAssetData.get( );
     newGPUMesh.Metadata->Name                           = "MeshPool Geometry";
     newGPUMesh.Metadata->EnabledAttributes.Position     = true;
     newGPUMesh.Metadata->EnabledAttributes.Normal       = true;
@@ -217,17 +220,28 @@ void MeshPool::AddGeometry( MeshHandle handle, const GeometryData *geometry, con
     newGPUMesh.Metadata->EnabledAttributes.BlendIndices = false;
     newGPUMesh.Metadata->EnabledAttributes.BlendWeights = false;
 
-    GPUSubMesh &subMesh            = newGPUMesh.SubMeshes.emplace_back( );
-    subMesh.VertexBuffer->Buffer   = m_vertexBuffer.get( );
-    subMesh.VertexBuffer->Offset   = vertexOffset;
-    subMesh.VertexBuffer->NumBytes = numVertexBytes;
-    subMesh.IndexBuffer->Buffer    = m_indexBuffer.get( );
-    subMesh.IndexBuffer->Offset    = indexOffset;
-    subMesh.IndexBuffer->NumBytes  = numIndexBytes;
+    GPUSubMesh &subMesh           = newGPUMesh.SubMeshes.emplace_back( );
+    subMesh.VertexBuffer.Buffer   = m_vertexBuffer.get( );
+    subMesh.VertexBuffer.Offset   = vertexOffset;
+    subMesh.VertexBuffer.NumBytes = numVertexBytes;
+    subMesh.IndexBuffer.Buffer    = m_indexBuffer.get( );
+    subMesh.IndexBuffer.Offset    = indexOffset;
+    subMesh.IndexBuffer.NumBytes  = numIndexBytes;
 
+    subMesh.Metadata              = &meshAssetData->SubMeshes.emplace_back( );
     subMesh.Metadata->NumVertices = numVertices;
     subMesh.Metadata->NumIndices  = numIndices;
     subMesh.Metadata->IndexType   = IndexType::Uint32;
     subMesh.Metadata->MinBounds   = { minBounds.x, minBounds.y, minBounds.z };
     subMesh.Metadata->MaxBounds   = { maxBounds.x, maxBounds.y, maxBounds.z };
+}
+
+GPUBufferView MeshPool::GetVertexBuffer( ) const
+{
+    return GPUBufferView{ .Buffer = m_vertexBuffer.get( ), .NumBytes = m_nextVertexOffset, .Offset = 0 };
+}
+
+GPUBufferView MeshPool::GetIndexBuffer( ) const
+{
+    return GPUBufferView{ .Buffer = m_indexBuffer.get( ), .NumBytes = m_nextIndexOffset, .Offset = 0 };
 }

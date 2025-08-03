@@ -62,8 +62,9 @@ void SceneViewRenderer::Render( ICommandList *commandList, const uint32_t frameI
     commandList->BindViewport( m_viewport.X, m_viewport.Y, m_viewport.Width, m_viewport.Height );
     commandList->BindScissorRect( m_viewport.X, m_viewport.Y, m_viewport.Width, m_viewport.Height );
     commandList->BindPipeline( m_pipeline.get( ) );
-    commandList->BindVertexBuffer( m_vertexBuffer.get( ) );
-    commandList->Draw( 3, 1, 0, 0 );
+    commandList->BindVertexBuffer( m_meshPool->GetVertexBuffer( ).Buffer );
+    commandList->BindIndexBuffer( m_meshPool->GetIndexBuffer( ).Buffer, IndexType::Uint32 );
+    commandList->DrawIndexed( 36, 1, 0, 0 );
 
     commandList->EndRendering( );
 
@@ -82,26 +83,25 @@ ITextureResource *SceneViewRenderer::GetRenderTarget( const uint32_t frameIndex 
 
 void SceneViewRenderer::CreateVertexBuffer( )
 {
-    constexpr std::array vertices = { 0.0f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
+    MeshPoolDesc meshPoolDesc{ };
+    meshPoolDesc.LogicalDevice = m_logicalDevice;
+    m_meshPool                 = std::make_unique<MeshPool>( meshPoolDesc );
 
-    BufferDesc bufferDesc{ };
-    bufferDesc.Descriptor = ResourceDescriptor::VertexBuffer;
-    bufferDesc.NumBytes   = vertices.size( ) * sizeof( float );
-    bufferDesc.DebugName  = "SceneViewTriangleVertexBuffer";
+    BoxDesc boxDesc{ };
+    boxDesc.BuildDesc = 0;
+    boxDesc.Width     = 1.0f;
+    boxDesc.Height    = 1.0f;
+    boxDesc.Depth     = 1.0f;
 
-    m_vertexBuffer = std::unique_ptr<IBufferResource>( m_logicalDevice->CreateBufferResource( bufferDesc ) );
+    const auto box = std::unique_ptr<GeometryData>( Geometry::BuildBox( boxDesc ) );
+    m_meshPool->AddGeometry( MeshHandle( 0 ), box.get( ) );
 
-    BatchResourceCopy batchCopy( m_logicalDevice );
-    batchCopy.Begin( );
-
-    CopyToGpuBufferDesc copyDesc{ };
-    copyDesc.DstBuffer        = m_vertexBuffer.get( );
-    copyDesc.Data.Elements    = reinterpret_cast<const Byte *>( &vertices[ 0 ] );
-    copyDesc.Data.NumElements = sizeof( vertices );
-    batchCopy.CopyToGPUBuffer( copyDesc );
-    batchCopy.Submit( );
-
-    m_resourceTracking.TrackBuffer( m_vertexBuffer.get( ), ResourceUsage::VertexAndConstantBuffer );
+    SphereDesc sphereDesc{ };
+    sphereDesc.BuildDesc    = 0;
+    sphereDesc.Diameter     = 1.0f;
+    sphereDesc.Tessellation = 24.0f;
+    const auto sphere       = std::unique_ptr<GeometryData>( Geometry::BuildSphere( sphereDesc ) );
+    m_meshPool->AddGeometry( MeshHandle( 1 ), sphere.get( ) );
 }
 
 void SceneViewRenderer::CreateShaderProgram( )
@@ -121,7 +121,7 @@ void SceneViewRenderer::CreateShaderProgram( )
     ShaderProgramDesc shaderProgramDesc{ };
     shaderProgramDesc.ShaderStages.Elements    = shaderStages.data( );
     shaderProgramDesc.ShaderStages.NumElements = shaderStages.size( );
-    m_shaderProgram                            = std::unique_ptr<ShaderProgram>( ShaderImporter::ImportCached( shaderProgramDesc ) );
+    m_shaderProgram                            = std::make_unique<ShaderProgram>( shaderProgramDesc );
 
     std::free( vertexShaderDesc.Data.Elements );
     std::free( pixelShaderDesc.Data.Elements );
@@ -187,8 +187,11 @@ ByteArray SceneViewRenderer::GetVertexShader( ) const
     const auto shaderCode = R"(
         struct VSInput
         {
-            float3 Position : POSITION;
-            float4 Color : COLOR;
+            float4 Position : POSITION;
+            float4 Normal : NORMAL;
+            float2 TexCoord : TEXCOORD0;
+            float4 Color : COLOR0;
+            float4 Tangent : TANGENT0;
         };
 
         struct PSInput
@@ -200,7 +203,7 @@ ByteArray SceneViewRenderer::GetVertexShader( ) const
         PSInput VSMain(VSInput input)
         {
             PSInput output;
-            output.Position = float4(input.Position, 1.0);
+            output.Position = input.Position;
             output.Color = input.Color;
             return output;
         }

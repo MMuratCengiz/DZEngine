@@ -134,7 +134,7 @@ void WorldEditorView::CreateShaderProgram( )
     ShaderProgramDesc shaderProgramDesc{ };
     shaderProgramDesc.ShaderStages.Elements    = shaderStages.data( );
     shaderProgramDesc.ShaderStages.NumElements = shaderStages.size( );
-    m_shaderProgram                            = std::unique_ptr<ShaderProgram>( ShaderImporter::ImportCached( shaderProgramDesc ) );
+    m_shaderProgram                            = std::make_unique<ShaderProgram>( shaderProgramDesc );
 
     std::free( vertexShaderDesc.Data.Elements );
     std::free( pixelShaderDesc.Data.Elements );

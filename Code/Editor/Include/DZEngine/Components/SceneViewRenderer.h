@@ -19,6 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
 #include <memory>
+
+#include "DZEngine/Assets/MeshPool.h"
 #include "DenOfIzGraphics/DenOfIzGraphics.h"
 
 using namespace DenOfIz;
@@ -38,7 +40,6 @@ namespace DZEngine
         Viewport        m_viewport{ };
         uint32_t        m_numFramesInFlight = 3;
 
-        std::unique_ptr<IBufferResource> m_vertexBuffer;
         std::unique_ptr<ShaderProgram>   m_shaderProgram;
         std::unique_ptr<IInputLayout>    m_inputLayout;
         std::unique_ptr<IRootSignature>  m_rootSignature;
@@ -48,6 +49,8 @@ namespace DZEngine
         std::vector<std::unique_ptr<ITextureResource>> m_depthTextures;
 
         ResourceTracking m_resourceTracking{ };
+
+        std::unique_ptr<MeshPool> m_meshPool;
 
     public:
         explicit SceneViewRenderer( const SceneViewRendererDesc &desc );

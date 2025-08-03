@@ -35,9 +35,9 @@ namespace DZEngine
 
     struct GPUSubMesh
     {
-        SubMeshData   *Metadata;
-        GPUBufferView *VertexBuffer;
-        GPUBufferView *IndexBuffer;
+        SubMeshData  *Metadata;
+        GPUBufferView VertexBuffer;
+        GPUBufferView IndexBuffer;
     };
 
     struct GPUMesh
@@ -65,6 +65,9 @@ namespace DZEngine
         explicit MeshPool( const MeshPoolDesc &desc );
 
         void AddMesh( MeshHandle handle, BinaryReader &reader );
-        void AddGeometry( MeshHandle handle, const GeometryData *geometry, const Float4& color = { 1.0f, 1.0f, 1.0f, 1.0f } );
+        void AddGeometry( MeshHandle handle, const GeometryData *geometry, const Float4 &color = { 1.0f, 1.0f, 1.0f, 1.0f } );
+
+        GPUBufferView GetVertexBuffer( ) const;
+        GPUBufferView GetIndexBuffer( ) const;
     };
 } // namespace DZEngine
