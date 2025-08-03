@@ -18,14 +18,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "Rendering/GraphicsContext.h"
-#include "Scene/World.h"
+#include <memory>
+#include "MeshPool.h"
 
 namespace DZEngine
 {
-    struct AppContext
+    struct SceneAssetsDesc
     {
-        GraphicsContext *GraphicsContext;
-        World           *World;
+        ILogicalDevice *LogicalDevice;
+    };
+
+    class SceneAssets
+    {
+        std::unique_ptr<MeshPool> m_meshPool;
+
+    public:
+        explicit SceneAssets( const SceneAssetsDesc &desc );
+        ~SceneAssets( ) = default;
+
+        MeshPool       *GetMeshPool( );
+        const MeshPool *GetMeshPool( ) const;
     };
 } // namespace DZEngine

@@ -16,16 +16,20 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "DZEngine/Assets/SceneAssets.h"
 
-#include "Rendering/GraphicsContext.h"
-#include "Scene/World.h"
+using namespace DZEngine;
 
-namespace DZEngine
+SceneAssets::SceneAssets( const SceneAssetsDesc &desc )
 {
-    struct AppContext
-    {
-        GraphicsContext *GraphicsContext;
-        World           *World;
-    };
-} // namespace DZEngine
+}
+
+MeshPool *SceneAssets::GetMeshPool( )
+{
+    return m_meshPool.get( );
+}
+
+const MeshPool *SceneAssets::GetMeshPool( ) const
+{
+    return m_meshPool.get( );
+}
