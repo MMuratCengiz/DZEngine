@@ -24,6 +24,7 @@ namespace DZEngine
 {
     struct MeshComponent
     {
+        size_t     BatchId;
         MeshHandle Handle;
     };
 } // namespace DZEngine
