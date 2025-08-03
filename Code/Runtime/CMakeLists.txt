@@ -7,6 +7,8 @@ add_library(DZRuntime STATIC)
 target_include_directories(DZRuntime PUBLIC Include)
 
 target_sources(DZRuntime PRIVATE
+        Source/Assets/MeshAssetData.cpp
+        Source/Assets/MeshPool.cpp
         Source/Rendering/RenderLoop.cpp
         Source/DummyGame.cpp
         Source/GameRunner.cpp
