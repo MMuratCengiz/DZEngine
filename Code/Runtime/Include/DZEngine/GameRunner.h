@@ -22,6 +22,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "DZEngine/IGameRunner.h"
 #include "Rendering/GraphicsContext.h"
 #include "Rendering/RenderLoop.h"
+#include "Scene/World.h"
+#include <memory>
 
 namespace DZEngine
 {
@@ -32,6 +34,7 @@ namespace DZEngine
         GraphicsContext                         *m_graphicsContext;
         std::unique_ptr<RenderLoop>              m_renderLoop;
         std::unique_ptr<AppContext>              m_appContext;
+        std::unique_ptr<World>                   m_world;
 
     public:
         explicit GameRunner( const GameRunnerDesc &desc );

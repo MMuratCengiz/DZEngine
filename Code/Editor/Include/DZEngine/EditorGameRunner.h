@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "DZEngine/IGameRunner.h"
 #include "DZEngine/Rendering/RenderLoop.h"
+#include "DZEngine/Scene/World.h"
 #include "Editor.h"
 
 namespace DZEngine
@@ -31,6 +32,7 @@ namespace DZEngine
         std::unique_ptr<RenderLoop>              m_renderLoop;
         std::unique_ptr<Editor>                  m_editor;
         std::unique_ptr<AppContext>              m_appContext;
+        std::unique_ptr<World>                   m_world;
         std::vector<std::unique_ptr<ISemaphore>> m_renderCompleteSemaphores;
 
     public:

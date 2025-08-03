@@ -27,8 +27,13 @@ GameRunner::GameRunner( const GameRunnerDesc &desc ) : m_windowHandle( desc.Wind
     m_renderLoop                = std::make_unique<RenderLoop>( renderLoopDesc );
     m_graphicsContext           = m_renderLoop->GetGraphicsContext( );
 
+    WorldDesc worldDesc{ };
+    worldDesc.GraphicsContext = m_graphicsContext;
+    m_world                   = std::make_unique<World>( worldDesc );
+
     m_appContext                  = std::make_unique<AppContext>( );
     m_appContext->GraphicsContext = m_graphicsContext;
+    m_appContext->World           = m_world.get( );
     m_game->Init( m_appContext.get( ) );
 }
 
@@ -44,6 +49,7 @@ void GameRunner::HandleEvent( const Event &event )
 
 void GameRunner::Update( )
 {
+    m_world->Progress( );
     m_game->Update( );
 
     const FrameState frameState = m_renderLoop->NextFrame( );

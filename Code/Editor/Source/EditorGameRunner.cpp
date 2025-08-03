@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "DZEngine/EditorGameRunner.h"
+#include "../Include/DZEngine/Systems/SceneViewCameraSystem.h"
 
 using namespace DZEngine;
 
@@ -29,6 +30,14 @@ EditorGameRunner::EditorGameRunner( const GameRunnerDesc &desc ) : m_game( desc.
 
     m_appContext                  = std::make_unique<AppContext>( );
     m_appContext->GraphicsContext = m_graphicsContext;
+    
+    WorldDesc worldDesc{ };
+    worldDesc.GraphicsContext = m_graphicsContext;
+    m_world                   = std::make_unique<World>( worldDesc );
+    m_appContext->World       = m_world.get( );
+    
+    SceneViewCameraSystem::Register( m_world->GetWorld( ) );
+    
     m_game->Init( m_appContext.get( ) );
 
     EditorDesc editorDesc{ };
@@ -51,6 +60,7 @@ void EditorGameRunner::HandleEvent( const Event &event )
 {
     m_renderLoop->HandleEvent( event );
     m_editor->HandleEvent( event );
+    m_world->HandleEvent( event );
     m_game->HandleEvent( event );
 }
 
@@ -61,7 +71,7 @@ void EditorGameRunner::Update( )
     {
         return;
     }
-
+    m_world->Progress( );
     const GameRenderView gameRenderView = m_editor->GetGameRenderView( frameState.FrameIndex );
 
     RenderDesc renderDesc{ };
