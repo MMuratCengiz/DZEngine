@@ -9,7 +9,10 @@ target_include_directories(DZRuntime PUBLIC Include)
 target_sources(DZRuntime PRIVATE
         Source/Assets/MeshAssetData.cpp
         Source/Assets/MeshPool.cpp
+        Source/Assets/SceneAssets.cpp
         Source/Rendering/RenderLoop.cpp
+        Source/Scene/Scene.cpp
+        Source/Scene/World.cpp
         Source/DummyGame.cpp
         Source/GameRunner.cpp
 )
