@@ -83,7 +83,7 @@ ITextureResource *SceneViewRenderer::GetRenderTarget( const uint32_t frameIndex 
 
 void SceneViewRenderer::CreateVertexBuffer( )
 {
-    MeshPoolDesc meshPoolDesc{ };
+    MeshBatchDesc meshPoolDesc{ };
     meshPoolDesc.LogicalDevice = m_logicalDevice;
     m_meshBatch                = std::make_unique<MeshBatch>( meshPoolDesc );
     m_meshBatch->BeginUpdate( );

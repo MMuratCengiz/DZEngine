@@ -27,7 +27,7 @@ namespace DZEngine
     /// For large worlds you may want to create multiple batches, each resource type is batched into their pertinent batch class, for example, meshes are batched into MeshBatch
     /// Textures are batched into TextureBatch. These classes actually directly create their resources in the GPU.
     ///
-    /// Batches are not loaded until you call `Load( batchId )`, this allows you to batch scenes before you need to load them, such as in large open world systems.
+    /// Batches need to explicit
     ///
     /// WIP, currently only MeshBatch is implemented
     struct AssetBatcherDesc
@@ -39,23 +39,26 @@ namespace DZEngine
     {
         struct AssetBatch
         {
-            std::vector<std::function<void( )>> MeshRequests;
-            std::unique_ptr<MeshBatch>          MeshBatch;
+            std::unique_ptr<MeshBatch> MeshBatch;
         };
 
-        GraphicsContext        *m_graphicsContext;
-        std::vector<AssetBatch> m_batches;
+        GraphicsContext *m_graphicsContext;
+
+        std::mutex                               m_addBatchMutex;
+        std::vector<std::unique_ptr<AssetBatch>> m_batches;
+        std::unordered_map<std::string, size_t>  m_batchAliases;
 
     public:
         explicit AssetBatcher( const AssetBatcherDesc &desc );
-        ~AssetBatcher( );
+        ~AssetBatcher( ) = default;
 
-        size_t NewBatch( );
+        size_t AddBatch( const std::string &alias );
 
-        void              AddMesh( size_t batchId, BinaryReader& reader );
-        void              AddGeometry( );
-        std::future<bool> Load( size_t batchId );
+        void BeginBatchUpdate( size_t batchId ) const;
+        void EndBatchUpdate( size_t batchId ) const;
+        void AddMesh( size_t batchId, BinaryReader &reader, const std::vector<std::string> &submeshAliases = { } ) const;
+        void AddGeometry( size_t batchId, const GeometryData *data, const std::string &alias ) const;
 
-        MeshBatch const *Mesh( size_t batchId );
+        MeshBatch const *Mesh( size_t batchId ) const;
     };
 } // namespace DZEngine

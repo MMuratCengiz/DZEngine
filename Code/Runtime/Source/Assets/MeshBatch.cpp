@@ -27,7 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace DZEngine;
 
-MeshBatch::MeshBatch( const MeshPoolDesc &desc ) : m_logicalDevice( desc.LogicalDevice )
+MeshBatch::MeshBatch( const MeshBatchDesc &desc ) : m_logicalDevice( desc.LogicalDevice )
 {
     if ( !m_logicalDevice )
     {

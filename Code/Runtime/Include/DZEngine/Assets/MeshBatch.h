@@ -25,7 +25,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 namespace DZEngine
 {
-    struct MeshPoolDesc
+    struct MeshBatchDesc
     {
         ILogicalDevice *LogicalDevice;
 
@@ -71,7 +71,7 @@ namespace DZEngine
         std::unique_ptr<BatchResourceCopy>          m_batchResourceCopy;
 
     public:
-        explicit MeshBatch( const MeshPoolDesc &desc );
+        explicit MeshBatch( const MeshBatchDesc &desc );
 
         void BeginUpdate( );
         void EndUpdate( ISemaphore *onComplete = nullptr ); // nullptr will block execution
