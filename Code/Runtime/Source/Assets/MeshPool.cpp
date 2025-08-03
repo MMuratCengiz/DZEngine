@@ -50,19 +50,16 @@ MeshPool::MeshPool( const MeshPoolDesc &desc ) : m_logicalDevice( desc.LogicalDe
     indexBufferDesc.Usages     = ResourceUsage::CopyDst;
     indexBufferDesc.DebugName  = "Mesh Pool Index Buffer";
     m_indexBuffer              = std::unique_ptr<IBufferResource>( m_logicalDevice->CreateBufferResource( indexBufferDesc ) );
+
+    m_meshes.resize( 1024 );
 }
 
-void MeshPool::AddMesh( MeshHandle handle, BinaryReader &reader )
+GPUMesh MeshPool::AddMesh( BinaryReader &reader )
 {
     MeshAssetReaderDesc meshReaderDesc{ };
     meshReaderDesc.Reader = &reader;
     MeshAssetReader            meshAssetReader( meshReaderDesc );
     std::unique_ptr<MeshAsset> meshAsset( meshAssetReader.Read( ) );
-
-    if ( m_entries.size( ) <= handle.Id )
-    {
-        m_entries.resize( handle.Id + 1 );
-    }
 
     auto  &meshAssetData = m_meshDataStorage.emplace_back( std::make_unique<MeshAssetData>( MeshAssetData::LoadFromMeshAsset( *meshAsset ) ) );
     size_t vertexOffset  = m_nextVertexOffset;
@@ -73,7 +70,7 @@ void MeshPool::AddMesh( MeshHandle handle, BinaryReader &reader )
         m_nextIndexOffset  = m_nextIndexOffset + meshAssetData->GetTotalNumIndices( ) * sizeof( uint32_t );
     }
 
-    GPUMesh &newGPUMesh = m_entries[ handle.Id ];
+    GPUMesh &newGPUMesh = m_meshes.emplace_back( GPUMesh{ } );
     newGPUMesh.Metadata = meshAssetData.get( );
 
     BatchResourceCopy batchCopy( m_logicalDevice );
@@ -81,7 +78,10 @@ void MeshPool::AddMesh( MeshHandle handle, BinaryReader &reader )
 
     for ( uint32_t meshIndex = 0; meshIndex < meshAsset->SubMeshes.NumElements; ++meshIndex )
     {
+        size_t handleId = NextHandle( );
+
         auto &gpuSubMesh    = newGPUMesh.SubMeshes.emplace_back( );
+        gpuSubMesh.Handle   = MeshHandle( handleId );
         gpuSubMesh.Metadata = &meshAssetData->SubMeshes[ meshIndex ];
 
         auto       &subMesh     = meshAsset->SubMeshes.Elements[ meshIndex ];
@@ -111,24 +111,23 @@ void MeshPool::AddMesh( MeshHandle handle, BinaryReader &reader )
             gpuSubMesh.IndexBuffer.Offset   = indexOffset;
             gpuSubMesh.IndexBuffer.NumBytes = subMesh.IndexStream.NumBytes;
         }
+
+        m_subMeshes[ handleId ] = gpuSubMesh;
     }
 
     batchCopy.Submit( );
+    return newGPUMesh;
 }
 
-void MeshPool::AddGeometry( MeshHandle handle, const GeometryData *geometry, const Float4 &color )
+GPUMesh MeshPool::AddGeometry( const GeometryData *geometry, const Float4 &color )
 {
     if ( !geometry )
     {
         spdlog::error( "AddGeometry: geometry is required" );
-        return;
+        return GPUMesh{ };
     }
 
-    if ( m_entries.size( ) <= handle.Id )
-    {
-        m_entries.resize( handle.Id + 1 );
-    }
-    GPUMesh &newGPUMesh = m_entries[ handle.Id ];
+    GPUMesh &newGPUMesh = m_meshes.emplace_back( GPUMesh{ } );
 
     const auto &geometryData = *geometry;
 
@@ -138,7 +137,7 @@ void MeshPool::AddGeometry( MeshHandle handle, const GeometryData *geometry, con
     if ( numVertices == 0 )
     {
         spdlog::error( "LoadGeometry: No vertices in geometry data" );
-        return;
+        return GPUMesh{ };
     }
 
     std::vector<StaticMeshVertex> vertices;
@@ -220,7 +219,10 @@ void MeshPool::AddGeometry( MeshHandle handle, const GeometryData *geometry, con
     newGPUMesh.Metadata->EnabledAttributes.BlendIndices = false;
     newGPUMesh.Metadata->EnabledAttributes.BlendWeights = false;
 
-    GPUSubMesh &subMesh           = newGPUMesh.SubMeshes.emplace_back( );
+    GPUSubMesh &subMesh = newGPUMesh.SubMeshes.emplace_back( );
+
+    size_t handle                 = NextHandle( );
+    subMesh.Handle                = MeshHandle( handle );
     subMesh.VertexBuffer.Buffer   = m_vertexBuffer.get( );
     subMesh.VertexBuffer.Offset   = vertexOffset;
     subMesh.VertexBuffer.NumBytes = numVertexBytes;
@@ -234,6 +236,20 @@ void MeshPool::AddGeometry( MeshHandle handle, const GeometryData *geometry, con
     subMesh.Metadata->IndexType   = IndexType::Uint32;
     subMesh.Metadata->MinBounds   = { minBounds.x, minBounds.y, minBounds.z };
     subMesh.Metadata->MaxBounds   = { maxBounds.x, maxBounds.y, maxBounds.z };
+
+    m_subMeshes[ handle ] = subMesh;
+
+    return newGPUMesh;
+}
+
+GPUSubMesh MeshPool::GetSubMesh( const MeshHandle handle ) const
+{
+    if ( handle.Id >= m_meshes.size( ) )
+    {
+        spdlog::error( "GetSubMesh: Invalid handle" );
+        return GPUSubMesh{ };
+    }
+    return m_subMeshes[ handle.Id ];
 }
 
 GPUBufferView MeshPool::GetVertexBuffer( ) const
@@ -244,4 +260,15 @@ GPUBufferView MeshPool::GetVertexBuffer( ) const
 GPUBufferView MeshPool::GetIndexBuffer( ) const
 {
     return GPUBufferView{ .Buffer = m_indexBuffer.get( ), .NumBytes = m_nextIndexOffset, .Offset = 0 };
+}
+
+size_t MeshPool::NextHandle( )
+{
+    std::lock_guard lock( m_newMeshLock );
+    m_nextHandle++;
+    if ( m_nextHandle >= m_subMeshes.size( ) )
+    {
+        m_subMeshes.resize( m_nextHandle + 1 );
+    }
+    return m_nextHandle;
 }

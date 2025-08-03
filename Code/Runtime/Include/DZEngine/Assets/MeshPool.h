@@ -35,6 +35,7 @@ namespace DZEngine
 
     struct GPUSubMesh
     {
+        MeshHandle    Handle;
         SubMeshData  *Metadata;
         GPUBufferView VertexBuffer;
         GPUBufferView IndexBuffer;
@@ -58,16 +59,24 @@ namespace DZEngine
 
         std::vector<std::unique_ptr<MeshAssetData>> m_meshDataStorage;
 
-        std::mutex           m_newMeshLock;
-        std::vector<GPUMesh> m_entries;
+        std::mutex m_nextHandleLock;
+        size_t     m_nextHandle = 0;
+
+        std::mutex              m_newMeshLock;
+        std::vector<GPUMesh>    m_meshes;
+        std::vector<GPUSubMesh> m_subMeshes;
 
     public:
         explicit MeshPool( const MeshPoolDesc &desc );
 
-        void AddMesh( MeshHandle handle, BinaryReader &reader );
-        void AddGeometry( MeshHandle handle, const GeometryData *geometry, const Float4 &color = { 1.0f, 1.0f, 1.0f, 1.0f } );
+        GPUMesh    AddMesh( BinaryReader &reader );
+        GPUMesh    AddGeometry( const GeometryData *geometry, const Float4 &color = { 1.0f, 1.0f, 1.0f, 1.0f } );
+        GPUSubMesh GetSubMesh( MeshHandle handle ) const;
 
         GPUBufferView GetVertexBuffer( ) const;
         GPUBufferView GetIndexBuffer( ) const;
+
+    private:
+        size_t NextHandle( );
     };
 } // namespace DZEngine
