@@ -21,24 +21,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace DZEngine;
 
-EditorGameRunner::EditorGameRunner( const GameRunnerDesc &desc ) : m_game( desc.Game )
+EditorGameRunner::EditorGameRunner( const GameRunnerDesc &desc ) : AGameRunner( desc )
 {
-    RenderLoopDesc renderLoopDesc{ };
-    renderLoopDesc.WindowHandle = desc.Window->GetGraphicsWindowHandle( );
-    m_renderLoop                = std::make_unique<RenderLoop>( renderLoopDesc );
-    m_graphicsContext           = m_renderLoop->GetGraphicsContext( );
-
-    m_appContext                  = std::make_unique<AppContext>( );
-    m_appContext->GraphicsContext = m_graphicsContext;
-    
-    WorldDesc worldDesc{ };
-    worldDesc.GraphicsContext = m_graphicsContext;
-    m_world                   = std::make_unique<World>( worldDesc );
-    m_appContext->World       = m_world.get( );
-    
     SceneViewCameraSystem::Register( m_world->GetWorld( ) );
-    
-    m_game->Init( m_appContext.get( ) );
 
     EditorDesc editorDesc{ };
     editorDesc.AppContext = m_appContext.get( );

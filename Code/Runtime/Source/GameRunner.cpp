@@ -20,21 +20,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace DZEngine;
 
-GameRunner::GameRunner( const GameRunnerDesc &desc ) : m_windowHandle( desc.Window->GetGraphicsWindowHandle( ) ), m_game( desc.Game )
+GameRunner::GameRunner( const GameRunnerDesc &desc ) : AGameRunner( desc )
 {
-    RenderLoopDesc renderLoopDesc{ };
-    renderLoopDesc.WindowHandle = m_windowHandle;
-    m_renderLoop                = std::make_unique<RenderLoop>( renderLoopDesc );
-    m_graphicsContext           = m_renderLoop->GetGraphicsContext( );
-
-    WorldDesc worldDesc{ };
-    worldDesc.GraphicsContext = m_graphicsContext;
-    m_world                   = std::make_unique<World>( worldDesc );
-
-    m_appContext                  = std::make_unique<AppContext>( );
-    m_appContext->GraphicsContext = m_graphicsContext;
-    m_appContext->World           = m_world.get( );
-    m_game->Init( m_appContext.get( ) );
 }
 
 GameRunner::~GameRunner( )

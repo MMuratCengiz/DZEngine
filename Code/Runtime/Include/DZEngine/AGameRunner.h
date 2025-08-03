@@ -17,7 +17,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
+
 #include "IGame.h"
+#include "Rendering/RenderLoop.h"
 
 namespace DZEngine
 {
@@ -27,10 +29,22 @@ namespace DZEngine
         IGame  *Game;
     };
 
-    class IGameRunner
+    // Abstract game runner since context initialization is mostly common
+    class AGameRunner
     {
+    protected:
+        GraphicsWindowHandle         *m_windowHandle;
+        IGame                        *m_game;
+        GraphicsContext              *m_graphicsContext;
+        std::unique_ptr<RenderLoop>   m_renderLoop;
+        std::unique_ptr<AssetBatcher> m_assetBatcher;
+        std::unique_ptr<AppContext>   m_appContext;
+        std::unique_ptr<World>        m_world;
+
     public:
-        virtual ~IGameRunner( )                        = default;
+        explicit AGameRunner( const GameRunnerDesc &desc );
+
+        virtual ~AGameRunner( )                        = default;
         virtual void HandleEvent( const Event &event ) = 0;
         virtual void Update( )                         = 0;
     };

@@ -18,24 +18,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include <memory>
 #include "AppContext.h"
-#include "DZEngine/IGameRunner.h"
+#include "DZEngine/AGameRunner.h"
 #include "Rendering/GraphicsContext.h"
 #include "Rendering/RenderLoop.h"
 #include "Scene/World.h"
-#include <memory>
 
 namespace DZEngine
 {
-    class GameRunner final : public IGameRunner
+    class GameRunner final : public AGameRunner
     {
-        GraphicsWindowHandle                    *m_windowHandle;
-        IGame                                   *m_game;
-        GraphicsContext                         *m_graphicsContext;
-        std::unique_ptr<RenderLoop>              m_renderLoop;
-        std::unique_ptr<AppContext>              m_appContext;
-        std::unique_ptr<World>                   m_world;
-
     public:
         explicit GameRunner( const GameRunnerDesc &desc );
         ~GameRunner( ) override;

@@ -15,6 +15,7 @@ target_sources(DZRuntime PRIVATE
         Source/Scene/Scene.cpp
         Source/Scene/World.cpp
         Source/Utilities/MathConverter.cpp
+        Source/AGameRunner.cpp
         Source/DummyGame.cpp
         Source/GameRunner.cpp
 )

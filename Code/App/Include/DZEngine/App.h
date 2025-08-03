@@ -18,8 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include "DZEngine/AGameRunner.h"
 #include "DZEngine/Editor.h"
-#include "DZEngine/IGameRunner.h"
 
 namespace DZEngine
 {
@@ -31,7 +31,7 @@ namespace DZEngine
     {
         std::unique_ptr<Window>               m_window;
         std::unique_ptr<GraphicsWindowHandle> m_windowHandle;
-        std::unique_ptr<IGameRunner>          m_gameRunner;
+        std::unique_ptr<AGameRunner>          m_gameRunner;
         std::unique_ptr<IGame>                m_game;
 
         bool m_isRunning = true;

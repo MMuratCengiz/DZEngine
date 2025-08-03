@@ -27,5 +27,6 @@ namespace DZEngine
     {
         GraphicsContext *GraphicsContext;
         World           *World;
+        AssetBatcher    *AssetBatcher;
     };
 } // namespace DZEngine
