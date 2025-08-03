@@ -94,14 +94,14 @@ void SceneViewRenderer::CreateVertexBuffer( )
     boxDesc.Depth     = 1.0f;
 
     const auto box = std::unique_ptr<GeometryData>( Geometry::BuildBox( boxDesc ) );
-    m_meshPool->AddGeometry( MeshHandle( 0 ), box.get( ) );
+    m_meshPool->AddGeometry( box.get( ) );
 
     SphereDesc sphereDesc{ };
     sphereDesc.BuildDesc    = 0;
     sphereDesc.Diameter     = 1.0f;
     sphereDesc.Tessellation = 24.0f;
     const auto sphere       = std::unique_ptr<GeometryData>( Geometry::BuildSphere( sphereDesc ) );
-    m_meshPool->AddGeometry( MeshHandle( 1 ), sphere.get( ) );
+    m_meshPool->AddGeometry( sphere.get( ) );
 }
 
 void SceneViewRenderer::CreateShaderProgram( )
