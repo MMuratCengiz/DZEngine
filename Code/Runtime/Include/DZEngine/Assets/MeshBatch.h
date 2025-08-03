@@ -67,23 +67,24 @@ namespace DZEngine
         std::vector<GPUSubMesh> m_subMeshes;
 
         std::unordered_map<std::string, MeshHandle> m_aliases;
-        std::unique_ptr<BatchResourceCopy> m_batchResourceCopy;
+        std::unordered_map<std::string, size_t>     m_parentMeshes;
+        std::unique_ptr<BatchResourceCopy>          m_batchResourceCopy;
 
     public:
         explicit MeshBatch( const MeshPoolDesc &desc );
 
         void BeginUpdate( );
-        void EndUpdate( ISemaphore* onComplete = nullptr ); // nullptr will block execution
+        void EndUpdate( ISemaphore *onComplete = nullptr ); // nullptr will block execution
 
-        GPUMesh AddMesh( BinaryReader &reader, const std::vector<std::string>& aliases = { /*Index matches submesh index*/ } );
+        GPUMesh AddMesh( BinaryReader &reader, const std::vector<std::string> &aliases = { /*Index matches submesh index*/ } );
         GPUMesh AddGeometry( const GeometryData *geometry, std::string alias = "" );
 
         [[nodiscard]] GPUSubMesh    GetSubMesh( MeshHandle handle ) const;
         [[nodiscard]] GPUBufferView GetVertexBuffer( ) const;
         [[nodiscard]] GPUBufferView GetIndexBuffer( ) const;
 
-        GPUMesh    GetMesh( std::string alias );
-        GPUSubMesh GetSubMesh( std::string alias, size_t subMeshIndex );
+        GPUMesh    GetParentMesh( const std::string &subMeshAlias );
+        GPUSubMesh GetSubMesh( const std::string &alias );
 
     private:
         size_t NextHandle( const std::string &alias );

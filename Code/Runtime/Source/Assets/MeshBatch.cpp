@@ -93,8 +93,9 @@ GPUMesh MeshBatch::AddMesh( BinaryReader &reader, const std::vector<std::string>
         m_nextIndexOffset  = m_nextIndexOffset + meshAssetData->GetTotalNumIndices( ) * sizeof( uint32_t );
     }
 
-    GPUMesh &newGPUMesh = m_meshes.emplace_back( GPUMesh{ } );
-    newGPUMesh.Metadata = meshAssetData.get( );
+    const size_t parentMeshIndex = m_meshes.size( );
+    GPUMesh     &newGPUMesh      = m_meshes.emplace_back( GPUMesh{ } );
+    newGPUMesh.Metadata          = meshAssetData.get( );
 
     for ( uint32_t meshIndex = 0; meshIndex < meshAsset->SubMeshes.NumElements; ++meshIndex )
     {
@@ -103,7 +104,8 @@ GPUMesh MeshBatch::AddMesh( BinaryReader &reader, const std::vector<std::string>
         {
             alias = aliases[ meshIndex ];
         }
-        const size_t handleId = NextHandle( alias );
+        const size_t handleId   = NextHandle( alias );
+        m_parentMeshes[ alias ] = parentMeshIndex;
 
         auto &gpuSubMesh    = newGPUMesh.SubMeshes.emplace_back( );
         gpuSubMesh.Handle   = MeshHandle( handleId );
@@ -151,7 +153,9 @@ GPUMesh MeshBatch::AddGeometry( const GeometryData *geometry, std::string alias 
         return GPUMesh{ };
     }
 
-    GPUMesh &newGPUMesh = m_meshes.emplace_back( GPUMesh{ } );
+    const size_t parentMeshIndex = m_meshes.size( );
+    GPUMesh     &newGPUMesh      = m_meshes.emplace_back( GPUMesh{ } );
+    m_parentMeshes[ alias ]      = parentMeshIndex;
 
     const auto &geometryData = *geometry;
 
@@ -278,6 +282,26 @@ GPUBufferView MeshBatch::GetVertexBuffer( ) const
 GPUBufferView MeshBatch::GetIndexBuffer( ) const
 {
     return GPUBufferView{ .Buffer = m_indexBuffer.get( ), .NumBytes = m_nextIndexOffset, .Offset = 0 };
+}
+
+GPUMesh MeshBatch::GetParentMesh( const std::string &subMeshAlias )
+{
+    if ( !m_parentMeshes.contains( subMeshAlias ) )
+    {
+        spdlog::error( "GetMesh: Invalid alias" );
+        return GPUMesh{ };
+    }
+    return m_meshes[ m_parentMeshes[ subMeshAlias ] ];
+}
+
+GPUSubMesh MeshBatch::GetSubMesh( const std::string &alias )
+{
+    if ( !m_aliases.contains( alias ) )
+    {
+        spdlog::error( "GetMesh: Invalid alias" );
+        return GPUSubMesh{ };
+    }
+    return m_subMeshes[ m_aliases[ alias ].Id ];
 }
 
 size_t MeshBatch::NextHandle( const std::string &alias )
