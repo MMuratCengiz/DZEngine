@@ -5,7 +5,6 @@
 #include "DZEngine/AppContext.h"
 #include "DZEngine/Components/AssetBrowser.h"
 #include "DZEngine/Components/SceneViewRenderer.h"
-#include "DZEngine/Components/WorldEditorView.h"
 #include "DZEngine/Style/EditorStyle.h"
 #include "ImGuiBackend.h"
 
@@ -50,7 +49,6 @@ namespace DZEngine
 
         std::unique_ptr<AssetBrowser>      m_assetBrowser;
         std::unique_ptr<SceneViewRenderer> m_sceneViewRenderer;
-        std::unique_ptr<WorldEditorView>   m_worldEditorView;
         bool                               m_showDemoWindow     = false;
         bool                               m_firstFrame         = true;
         ImGuiID                            m_dockspaceId        = 0;

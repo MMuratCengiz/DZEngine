@@ -49,12 +49,6 @@ Editor::Editor( const EditorDesc editorDesc ) : m_appContext( editorDesc.AppCont
     sceneViewDesc.NumFramesInFlight = m_graphicsContext->NumFramesInFlight;
     m_sceneViewRenderer             = std::make_unique<SceneViewRenderer>( sceneViewDesc );
 
-    WorldEditorViewDesc worldEditorDesc{ };
-    worldEditorDesc.LogicalDevice     = m_graphicsContext->LogicalDevice;
-    worldEditorDesc.Viewport          = m_graphicsContext->SwapChain->GetViewport( );
-    worldEditorDesc.NumFramesInFlight = m_graphicsContext->NumFramesInFlight;
-    m_worldEditorView                 = std::make_unique<WorldEditorView>( worldEditorDesc );
-
     m_gameViewport = m_graphicsContext->SwapChain->GetViewport( );
     CreateGameRenderTargets( );
 
@@ -118,11 +112,6 @@ void Editor::HandleEvent( const Event &event ) const
 void Editor::Update( EditorUpdateDesc updateDesc )
 {
     m_stepTimer.Tick( );
-
-    if ( m_worldEditorView )
-    {
-        m_worldEditorView->Update( );
-    }
 
     ICommandList *viewportCmdList = m_viewportCommandLists[ updateDesc.FrameIndex ];
 
