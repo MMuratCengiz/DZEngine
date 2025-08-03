@@ -18,16 +18,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <DenOfIzGraphics/Utilities/InteropMath.h>
-
-using namespace DenOfIz;
+#include <flecs.h>
+#include "DZEngine/Components/InputStateComponent.h"
+#include "DenOfIzGraphics/Input/Event.h"
 
 namespace DZEngine
 {
-    struct TransformComponent
+    class InputSystem
     {
-        Float3     Position{ 0.0f, 0.0f, 0.0f };
-        Quaternion Rotation{ 0.0f, 0.0f, 0.0f, 1.0f };
-        Float3     Scale{ 1.0f, 1.0f, 1.0f };
+    public:
+        static void Register( const flecs::world &world );
+        static void HandleEvent( const flecs::world &world, const Event &event );
+
+    private:
+        static void UpdateInputState( InputStateComponent &input, const Event &event );
     };
 } // namespace DZEngine

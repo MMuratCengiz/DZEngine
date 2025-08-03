@@ -26,6 +26,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "DZEngine/Rendering/GraphicsContext.h"
 #include "DZEngine/Scene/Scene.h"
 #include "DenOfIzGraphics/Utilities/StepTimer.h"
+#include "DenOfIzGraphics/Input/Event.h"
 
 namespace DZEngine
 {
@@ -57,7 +58,8 @@ namespace DZEngine
 
         flecs::world       &GetWorld( );
         const flecs::world &GetWorld( ) const;
-
+        
+        void HandleEvent( const DenOfIz::Event &event );
         void Progress( );
 
         template <typename T>

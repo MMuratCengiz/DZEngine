@@ -18,16 +18,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <DenOfIzGraphics/Utilities/InteropMath.h>
+#include <unordered_set>
+#include "DenOfIzGraphics/Input/InputData.h"
+#include "DenOfIzGraphics/Utilities/InteropMath.h"
 
 using namespace DenOfIz;
 
 namespace DZEngine
 {
-    struct TransformComponent
+    struct InputStateComponent
     {
-        Float3     Position{ 0.0f, 0.0f, 0.0f };
-        Quaternion Rotation{ 0.0f, 0.0f, 0.0f, 1.0f };
-        Float3     Scale{ 1.0f, 1.0f, 1.0f };
+        Float2                          MousePosition;
+        Float2                          MouseDelta;
+        Float2                          MouseWheel;
+        std::unordered_set<KeyCode>     PressedKeys;
+        std::unordered_set<MouseButton> PressedMouseButtons;
+        bool                            MouseCaptured = false;
     };
 } // namespace DZEngine

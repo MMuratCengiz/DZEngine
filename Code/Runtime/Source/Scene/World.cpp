@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "DZEngine/Scene/World.h"
+#include "DZEngine/Input/InputSystem.h"
 
 #include <spdlog/spdlog.h>
 
@@ -26,6 +27,9 @@ World::World( const WorldDesc &desc ) : m_graphicsContext( desc.GraphicsContext 
 {
     m_world.component<ActiveScene>( ).add( flecs::Exclusive );
     SetupSceneObservers( );
+    
+    // Register input system
+    InputSystem::Register( m_world );
 }
 
 World::~World( )
@@ -142,6 +146,11 @@ flecs::world &World::GetWorld( )
 const flecs::world &World::GetWorld( ) const
 {
     return m_world;
+}
+
+void World::HandleEvent( const DenOfIz::Event &event )
+{
+    InputSystem::HandleEvent( m_world, event );
 }
 
 void World::Progress( )

@@ -18,16 +18,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <DenOfIzGraphics/Utilities/InteropMath.h>
+#include <flecs.h>
+#include "DenOfIzGraphics/Utilities/InteropMath.h"
 
 using namespace DenOfIz;
 
 namespace DZEngine
 {
-    struct TransformComponent
+    class SceneViewCameraSystem
     {
-        Float3     Position{ 0.0f, 0.0f, 0.0f };
-        Quaternion Rotation{ 0.0f, 0.0f, 0.0f, 1.0f };
-        Float3     Scale{ 1.0f, 1.0f, 1.0f };
+    public:
+        static void Register( const flecs::world &world );
+
+        static Float4x4 CreateViewMatrix( const Float3 &position, float yaw, float pitch );
+        static Float4x4 CreateProjectionMatrix( float fov, float aspectRatio, float nearPlane, float farPlane );
     };
 } // namespace DZEngine

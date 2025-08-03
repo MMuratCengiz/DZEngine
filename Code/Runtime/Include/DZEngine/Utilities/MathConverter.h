@@ -19,15 +19,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
 #include <DenOfIzGraphics/Utilities/InteropMath.h>
-
-using namespace DenOfIz;
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace DZEngine
 {
-    struct TransformComponent
+    class MathConverter
     {
-        Float3     Position{ 0.0f, 0.0f, 0.0f };
-        Quaternion Rotation{ 0.0f, 0.0f, 0.0f, 1.0f };
-        Float3     Scale{ 1.0f, 1.0f, 1.0f };
+    public:
+        static glm::vec3           ToGlm( const DenOfIz::Float3 &interopVec3 );
+        static DenOfIz::Float3     ToInterop( const glm::vec3 &glmVec3 );
+        static glm::vec4           ToGlm( const DenOfIz::Float4 &float4 );
+        static DenOfIz::Float4     ToInterop( const glm::vec4 &glmVec4 );
+        static glm::mat4           ToGlm( const DenOfIz::Float4x4 &interopMat4 );
+        static DenOfIz::Float4x4   ToInterop( const glm::mat4 &glmMat4 );
+        static DenOfIz::Quaternion ToInterop( const glm::quat &glmQuat );
     };
 } // namespace DZEngine

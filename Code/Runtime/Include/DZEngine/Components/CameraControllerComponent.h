@@ -18,16 +18,26 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <DenOfIzGraphics/Utilities/InteropMath.h>
+#include "DenOfIzGraphics/Utilities/InteropMath.h"
 
 using namespace DenOfIz;
 
 namespace DZEngine
 {
-    struct TransformComponent
+    struct CameraControllerComponent
     {
-        Float3     Position{ 0.0f, 0.0f, 0.0f };
-        Quaternion Rotation{ 0.0f, 0.0f, 0.0f, 1.0f };
-        Float3     Scale{ 1.0f, 1.0f, 1.0f };
+        float MoveSpeed   = 10.0f;
+        float LookSpeed   = 0.005f;
+        float ScrollSpeed = 0.1f;
+
+        Float3 Velocity = { 0, 0, 0 };
+        float  Yaw      = 0.0f;
+        float  Pitch    = 0.0f;
+
+        float MinPitch = -1.396f; // ~-80 degrees
+        float MaxPitch = 1.396f;  // ~80 degrees
+
+        bool EnableMovement = true;
+        bool EnableRotation = true;
     };
 } // namespace DZEngine
