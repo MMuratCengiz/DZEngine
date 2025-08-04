@@ -18,6 +18,7 @@ target_sources(DZRuntime PRIVATE
         Source/Assets/SkeletonBatch.cpp
         Source/Assets/MaterialBatch.cpp
         Source/Input/InputSystem.cpp
+        Source/Rendering/GPUDriven/GPUDrivenBinding.cpp
         Source/Rendering/GPUDriven/GPUDrivenDataUpload.cpp
         Source/Rendering/GPUDriven/GPUDrivenRenderer.cpp
         Source/Rendering/GPUDriven/GPUDrivenRootSig.cpp

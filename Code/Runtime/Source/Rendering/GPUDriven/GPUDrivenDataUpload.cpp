@@ -50,7 +50,8 @@ GPUDrivenDataUpload::GPUDrivenDataUpload( const GPUDrivenDataUploadDesc &uploadD
         poolDesc.CommandQueue    = m_copyQueue.get( );
         poolDesc.NumCommandLists = 6;
 
-        m_frames[ i ]->CommandListPool = std::unique_ptr<ICommandListPool>( m_logicalDevice->CreateCommandListPool( { m_copyQueue.get( ) } ) );
+        m_frames[ i ]->OnComplete      = std::unique_ptr<ISemaphore>( m_logicalDevice->CreateSemaphore( ) );
+        m_frames[ i ]->CommandListPool = std::unique_ptr<ICommandListPool>( m_logicalDevice->CreateCommandListPool( poolDesc ) );
         m_frames[ i ]->CommandLists    = m_frames[ i ]->CommandListPool->GetCommandLists( );
     }
 
@@ -125,7 +126,7 @@ GPUDrivenDataUpload::GPUDrivenDataUpload( const GPUDrivenDataUploadDesc &uploadD
     }
 }
 
-void GPUDrivenDataUpload::UpdateFrame( ISemaphore *onComplete, const uint32_t frameIndex ) const
+ISemaphore *GPUDrivenDataUpload::UpdateFrame( const uint32_t frameIndex ) const
 {
     UpdateStagingBuffer( frameIndex );
     UpdateGlobalDataBuffer( frameIndex );
@@ -202,7 +203,8 @@ void GPUDrivenDataUpload::UpdateFrame( ISemaphore *onComplete, const uint32_t fr
     commandList->CopyBufferRegion( copyRegionDesc );
     commandList->End( );
 
-    Submit( onComplete, commandLists );
+    Submit( frameData->OnComplete.get( ), commandLists );
+    return frameData->OnComplete.get( );
 }
 
 void GPUDrivenDataUpload::UpdateStagingBuffer( const uint32_t frameIndex ) const
@@ -372,11 +374,12 @@ void GPUDrivenDataUpload::UpdateStagingBuffer( const uint32_t frameIndex ) const
 
             const auto meshIt                = meshHandleToId.find( mesh.Handle );
             objectData[ objectIndex ].MeshID = meshIt != meshHandleToId.end( ) ? meshIt->second : 0;
-
-            const GPUSubMesh           gpuSubMesh     = m_assets->Mesh( mesh.BatchId )->GetSubMesh( mesh.Handle );
-            const SphereBoundingVolume boundingVolume = gpuSubMesh.Metadata->BoundingVolumes[ 0 ].Sphere;
-            objectData[ objectIndex ].BoundingSphere  = { boundingVolume.Center.X, boundingVolume.Center.Y, boundingVolume.Center.Z, boundingVolume.Radius };
-            uint32_t flags                            = 0;
+            if ( const GPUSubMesh gpuSubMesh = m_assets->Mesh( mesh.BatchId )->GetSubMesh( mesh.Handle ); gpuSubMesh.Metadata->BoundingVolumes.size( ) > 0 )
+            {
+                const SphereBoundingVolume boundingVolume = gpuSubMesh.Metadata->BoundingVolumes[ 0 ].Sphere;
+                objectData[ objectIndex ].BoundingSphere  = { boundingVolume.Center.X, boundingVolume.Center.Y, boundingVolume.Center.Z, boundingVolume.Radius };
+            }
+            uint32_t flags = 0;
             if ( renderable.CastShadows )
             {
                 flags |= 1;
@@ -416,7 +419,7 @@ void GPUDrivenDataUpload::UpdateStagingBuffer( const uint32_t frameIndex ) const
         indirectData[ i ].VertexOffset  = 0;
         indirectData[ i ].FirstInstance = drawArgsData[ i ].InstanceOffset;
     }
-    
+
     m_frames[ frameIndex ]->NumDraws = drawArgsIndex;
 }
 

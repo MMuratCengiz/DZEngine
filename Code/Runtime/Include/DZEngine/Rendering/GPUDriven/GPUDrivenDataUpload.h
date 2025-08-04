@@ -73,16 +73,17 @@ namespace DZEngine
 
             size_t InstanceBufferNumBytes;
             size_t InstanceBufferOffset;
-            
+
             size_t DrawArgsBufferNumBytes;
             size_t DrawArgsBufferOffset;
-            
+
             size_t IndirectBufferNumBytes;
             size_t IndirectBufferOffset;
         };
 
         struct FrameData
         {
+            std::unique_ptr<ISemaphore>       OnComplete;
             std::unique_ptr<ICommandListPool> CommandListPool;
             ICommandListArray                 CommandLists;
 
@@ -97,7 +98,7 @@ namespace DZEngine
             std::unique_ptr<IBufferResource> InstanceBuffer; // g_InstanceBuffer;
             std::unique_ptr<IBufferResource> DrawArgsBuffer; // g_DrawArgsBuffer;
             std::unique_ptr<IBufferResource> IndirectBuffer; // Indirect draw commands
-            
+
             uint32_t NumDraws = 0;
         };
 
@@ -106,7 +107,7 @@ namespace DZEngine
 
     public:
         explicit GPUDrivenDataUpload( const GPUDrivenDataUploadDesc &uploadDesc );
-        void             UpdateFrame( ISemaphore *onComplete, uint32_t frameIndex ) const;
+        ISemaphore      *UpdateFrame( uint32_t frameIndex ) const;
         void             UpdateStagingBuffer( uint32_t frameIndex ) const;
         void             UpdateGlobalDataBuffer( uint32_t frameIndex ) const;
         void             Submit( ISemaphore *onComplete, const ICommandListArray &commandListsToSubmit ) const;

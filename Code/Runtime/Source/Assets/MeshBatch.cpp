@@ -295,14 +295,14 @@ GPUMesh MeshBatch::GetParentMesh( const std::string &subMeshAlias )
     return m_meshes[ m_parentMeshes[ subMeshAlias ] ];
 }
 
-GPUSubMesh MeshBatch::GetSubMesh( const std::string &alias )
+GPUSubMesh MeshBatch::GetSubMesh( const std::string &alias ) const
 {
     if ( !m_aliases.contains( alias ) )
     {
         spdlog::error( "GetMesh: Invalid alias" );
         return GPUSubMesh{ };
     }
-    return m_subMeshes[ m_aliases[ alias ].Id ];
+    return m_subMeshes[ m_aliases.at( alias ).Id ];
 }
 
 size_t MeshBatch::NextHandle( const std::string &alias )

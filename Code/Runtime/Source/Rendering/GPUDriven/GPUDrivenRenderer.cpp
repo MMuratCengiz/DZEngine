@@ -34,6 +34,8 @@ GPUDrivenRenderer::GPUDrivenRenderer( const RendererDesc &rendererDesc )
 
     for ( int i = 0; i < m_assetBatcher->NumBatches( ); ++i )
     {
+        m_batches[ i ] = std::make_unique<BatchData>( );
+
         GPUDrivenDataUploadDesc uploadDesc{ };
         uploadDesc.GraphicsContext = m_graphicsContext;
         uploadDesc.Assets          = m_assetBatcher;
@@ -55,13 +57,18 @@ GPUDrivenRenderer::GPUDrivenRenderer( const RendererDesc &rendererDesc )
 
 void GPUDrivenRenderer::RenderFrame( const RenderFrameDesc &renderFrame )
 {
+    std::vector<ISemaphore *> waitSemaphores{ };
+
     for ( int i = 0; i < m_assetBatcher->NumBatches( ); ++i )
     {
         const auto &binding = m_batches[ i ]->DataBinding;
         binding->Update( renderFrame.FrameIndex );
+
+        const auto &dataUpload = m_batches[ i ]->DataUpload;
+        waitSemaphores.push_back( dataUpload->UpdateFrame( renderFrame.FrameIndex ) );
     }
 
-    const auto cmdList = m_commandLists[ renderFrame.FrameIndex ];
+    auto cmdList = m_commandLists[ renderFrame.FrameIndex ];
     cmdList->Begin( );
 
     for ( int i = 0; i < m_assetBatcher->NumBatches( ); ++i )
@@ -87,17 +94,23 @@ void GPUDrivenRenderer::RenderFrame( const RenderFrameDesc &renderFrame )
         cmdList->BindResourceGroup( binding->GetTexturesBinding( renderFrame.FrameIndex ) );
 
         const auto buffers = m_batches[ i ]->DataUpload->GetBuffers( renderFrame.FrameIndex );
-        const uint32_t drawCount = m_batches[ i ]->DataUpload->GetNumDraws( renderFrame.FrameIndex );
-        
-        if ( drawCount > 0 )
+
+        if ( const uint32_t numDraws = m_batches[ i ]->DataUpload->GetNumDraws( renderFrame.FrameIndex ); numDraws > 0 )
         {
-            cmdList->DrawIndexedIndirect( buffers.IndirectBuffer, 0, drawCount, sizeof( DrawIndexedIndirectCommand ) );
+            cmdList->DrawIndexedIndirect( buffers.IndirectBuffer, 0, numDraws, sizeof( DrawIndexedIndirectCommand ) );
         }
 
         cmdList->EndRendering( );
     }
 
     cmdList->End( );
+
+    ExecuteCommandListsDesc executeDesc{ };
+    executeDesc.CommandLists.Elements      = &cmdList;
+    executeDesc.CommandLists.NumElements   = 1;
+    executeDesc.WaitSemaphores.Elements    = waitSemaphores.data( );
+    executeDesc.WaitSemaphores.NumElements = waitSemaphores.size( );
+    m_commandQueue->ExecuteCommandLists( executeDesc );
 }
 
 void GPUDrivenRenderer::InitTestPipeline( )
@@ -105,14 +118,16 @@ void GPUDrivenRenderer::InitTestPipeline( )
     std::array<ShaderStageDesc, 2> shaderStages{ };
 
     ShaderStageDesc vertShaderStageDesc{ };
-    vertShaderStageDesc.Stage = ShaderStage::Vertex;
-    vertShaderStageDesc.Path  = "_Assets/Engine/Shaders/GPUDriven/UberShader.vs.hlsl";
-    shaderStages[ 0 ]         = vertShaderStageDesc;
+    vertShaderStageDesc.Stage      = ShaderStage::Vertex;
+    vertShaderStageDesc.Path       = "_Assets/Engine/Shaders/GPUDriven/UberShader.vs.hlsl";
+    vertShaderStageDesc.EntryPoint = "VSMain";
+    shaderStages[ 0 ]              = vertShaderStageDesc;
 
     ShaderStageDesc pixShaderStageDesc{ };
-    pixShaderStageDesc.Stage = ShaderStage::Pixel;
-    pixShaderStageDesc.Path  = "_Assets/Engine/Shaders/GPUDriven/UberShader.ps.hlsl";
-    shaderStages[ 1 ]        = pixShaderStageDesc;
+    pixShaderStageDesc.Stage      = ShaderStage::Pixel;
+    pixShaderStageDesc.Path       = "_Assets/Engine/Shaders/GPUDriven/UberShader.ps.hlsl";
+    pixShaderStageDesc.EntryPoint = "PSMain";
+    shaderStages[ 1 ]             = pixShaderStageDesc;
 
     ShaderProgramDesc shaderProgramDesc{ };
     shaderProgramDesc.ShaderStages.Elements    = shaderStages.data( );

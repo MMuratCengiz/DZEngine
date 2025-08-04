@@ -44,7 +44,7 @@ Editor::Editor( const EditorDesc editorDesc ) : m_appContext( editorDesc.AppCont
     m_assetBrowser = std::make_unique<AssetBrowser>( );
 
     SceneViewRendererDesc sceneViewDesc{ };
-    sceneViewDesc.LogicalDevice     = m_graphicsContext->LogicalDevice;
+    sceneViewDesc.AppContext        = m_appContext;
     sceneViewDesc.Viewport          = m_graphicsContext->SwapChain->GetViewport( );
     sceneViewDesc.NumFramesInFlight = m_graphicsContext->NumFramesInFlight;
     m_sceneViewRenderer             = std::make_unique<SceneViewRenderer>( sceneViewDesc );

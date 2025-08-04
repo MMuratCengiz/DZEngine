@@ -24,6 +24,7 @@ using namespace DZEngine;
 AssetBatcher::AssetBatcher( const AssetBatcherDesc &desc ) : m_graphicsContext( desc.GraphicsContext ), m_assetBundle( desc.AssetBundle ), m_assetRegistry( desc.AssetRegistry )
 {
     m_batches.reserve( 1024 );
+    AddBatch( "Default" );
 }
 
 size_t AssetBatcher::AddBatch( const std::string &alias )

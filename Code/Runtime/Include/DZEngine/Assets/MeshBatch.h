@@ -84,7 +84,7 @@ namespace DZEngine
         [[nodiscard]] GPUBufferView GetIndexBuffer( ) const;
 
         GPUMesh    GetParentMesh( const std::string &subMeshAlias );
-        GPUSubMesh GetSubMesh( const std::string &alias );
+        GPUSubMesh GetSubMesh( const std::string &alias ) const;
 
     private:
         size_t NextHandle( const std::string &alias );

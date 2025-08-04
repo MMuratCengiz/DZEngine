@@ -48,6 +48,11 @@ GPUDrivenBinding::GPUDrivenBinding( const GPUDrivenBindingDesc &bindingDesc )
     m_batchId         = bindingDesc.BatchId;
 
     m_frameBindings.resize( m_numFrames );
+    for ( int i = 0; i < m_numFrames; ++i )
+    {
+        m_frameBindings[ i ] = std::make_unique<FrameBinding>( );
+    }
+
     CreateSamplersBinding( );
     CreateBuffersBinding( );
     CreateTexturesBinding( );
