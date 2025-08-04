@@ -36,8 +36,8 @@ void InputSystem::Register( const flecs::world &world )
 
 void InputSystem::HandleEvent( const flecs::world &world, const Event &event )
 {
-    auto input = world.get_mut<InputStateComponent>( );
-    UpdateInputState( input, event );
+    auto input = world.get_ref<InputStateComponent>( );
+    UpdateInputState( *input.get(), event );
 }
 
 void InputSystem::UpdateInputState( InputStateComponent &input, const Event &event )
