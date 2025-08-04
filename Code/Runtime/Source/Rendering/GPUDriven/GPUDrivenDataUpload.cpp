@@ -20,6 +20,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <cmath>
 #include <flecs.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include "DZEngine/Assets/StaticMeshVertex.h"
 #include "DZEngine/Components/CameraComponent.h"
 #include "DZEngine/Components/Graphics/MaterialComponent.h"
@@ -351,13 +353,15 @@ void GPUDrivenDataUpload::UpdateStagingBuffer( const uint32_t frameIndex ) const
                 return;
             }
 
-            const glm::vec3 scale    = MathConverter::ToGlm( transform.Scale );
-            const glm::vec3 position = MathConverter::ToGlm( transform.Position );
-            const glm::vec4 rotation = MathConverter::ToGlm( transform.Rotation );
-            auto            model    = glm::mat4x4( 1.0f );
-            model                    = glm::translate( model, position );
-            model                    = glm::rotate( model, rotation.w, glm::vec3( rotation.x, rotation.y, rotation.z ) );
-            model                    = glm::scale( model, scale );
+            const glm::vec3 scale       = MathConverter::ToGlm( transform.Scale );
+            const glm::vec3 position    = MathConverter::ToGlm( transform.Position );
+            const glm::vec4 rotationVec = MathConverter::ToGlm( transform.Rotation );
+            const auto      rotation    = glm::quat( rotationVec.w, rotationVec.x, rotationVec.y, rotationVec.z );
+
+            auto model = glm::mat4x4( 1.0f );
+            model      = glm::translate( model, position );
+            model      = model * glm::mat4_cast( rotation );
+            model      = glm::scale( model, scale );
 
             objectData[ objectIndex ].ModelMatrix = MathConverter::ToInterop( model );
 
@@ -399,25 +403,72 @@ void GPUDrivenDataUpload::UpdateStagingBuffer( const uint32_t frameIndex ) const
             instanceIndex++;
         } );
 
-    uint32_t drawArgsIndex = 0;
-    if ( objectIndex > 0 && meshIndex > 0 )
+    struct MeshInstanceGroup
     {
-        drawArgsData[ drawArgsIndex ].MeshID         = 0;
-        drawArgsData[ drawArgsIndex ].MaterialID     = 0;
-        drawArgsData[ drawArgsIndex ].InstanceOffset = 0;
-        drawArgsData[ drawArgsIndex ].InstanceCount  = objectIndex;
+        uint32_t              meshId;
+        uint32_t              materialId;
+        std::vector<uint32_t> instanceIndices;
+    };
+
+    std::unordered_map<uint32_t, MeshInstanceGroup> meshGroups;
+    for ( uint32_t i = 0; i < objectIndex; ++i )
+    {
+        const uint32_t meshId     = objectData[ i ].MeshID;
+        const uint32_t materialId = objectData[ i ].MaterialID;
+
+        auto &group = meshGroups[ meshId ];
+        if ( group.instanceIndices.empty( ) )
+        {
+            group.meshId     = meshId;
+            group.materialId = materialId;
+        }
+        group.instanceIndices.push_back( i );
+    }
+
+    uint32_t drawArgsIndex         = 0;
+    uint32_t currentInstanceOffset = 0;
+    for ( const auto &group : meshGroups | std::views::values )
+    {
+        if ( drawArgsIndex >= m_uploadDesc.MaxObjects )
+        {
+            break;
+        }
+        drawArgsData[ drawArgsIndex ].MeshID         = group.meshId;
+        drawArgsData[ drawArgsIndex ].MaterialID     = group.materialId;
+        drawArgsData[ drawArgsIndex ].InstanceOffset = currentInstanceOffset;
+        drawArgsData[ drawArgsIndex ].InstanceCount  = static_cast<uint32_t>( group.instanceIndices.size( ) );
+
+        for ( uint32_t instanceIdx = 0; instanceIdx < group.instanceIndices.size( ); ++instanceIdx )
+        {
+            const uint32_t originalInstanceIndex = group.instanceIndices[ instanceIdx ];
+            if ( currentInstanceOffset + instanceIdx < m_uploadDesc.MaxObjects )
+            {
+                instanceData[ currentInstanceOffset + instanceIdx ] = instanceData[ originalInstanceIndex ];
+            }
+        }
+
+        currentInstanceOffset += static_cast<uint32_t>( group.instanceIndices.size( ) );
         drawArgsIndex++;
     }
 
     for ( uint32_t i = 0; i < drawArgsIndex; ++i )
     {
-        const uint32_t meshId = drawArgsData[ i ].MeshID;
-
-        indirectData[ i ].NumIndices    = meshId < meshIndex ? meshData[ meshId ].IndexCount : 0;
-        indirectData[ i ].NumInstances  = drawArgsData[ i ].InstanceCount;
-        indirectData[ i ].FirstIndex    = 0;
-        indirectData[ i ].VertexOffset  = 0;
-        indirectData[ i ].FirstInstance = drawArgsData[ i ].InstanceOffset;
+        if ( const uint32_t meshId = drawArgsData[ i ].MeshID; meshId < meshIndex && meshData[ meshId ].IndexCount > 0 )
+        {
+            indirectData[ i ].NumIndices    = meshData[ meshId ].IndexCount;
+            indirectData[ i ].NumInstances  = drawArgsData[ i ].InstanceCount;
+            indirectData[ i ].FirstIndex    = meshData[ meshId ].IndexOffset;
+            indirectData[ i ].VertexOffset  = meshData[ meshId ].VertexOffset;
+            indirectData[ i ].FirstInstance = drawArgsData[ i ].InstanceOffset;
+        }
+        else
+        {
+            indirectData[ i ].NumIndices    = 0;
+            indirectData[ i ].NumInstances  = 0;
+            indirectData[ i ].FirstIndex    = 0;
+            indirectData[ i ].VertexOffset  = 0;
+            indirectData[ i ].FirstInstance = 0;
+        }
     }
 
     m_frames[ frameIndex ]->NumDraws = drawArgsIndex;

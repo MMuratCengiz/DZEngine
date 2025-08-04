@@ -24,18 +24,19 @@ using namespace DZEngine;
 AssetBatcher::AssetBatcher( const AssetBatcherDesc &desc ) : m_graphicsContext( desc.GraphicsContext ), m_assetBundle( desc.AssetBundle ), m_assetRegistry( desc.AssetRegistry )
 {
     m_batches.reserve( 1024 );
-    AddBatch( "Default" );
+    AddBatch( "Default", GeometryLayout::GPUDriven );
 }
 
-size_t AssetBatcher::AddBatch( const std::string &alias )
+size_t AssetBatcher::AddBatch( const std::string &alias, GeometryLayout layout )
 {
     std::lock_guard lock( m_addBatchMutex );
 
     const size_t index = m_batches.size( );
 
     MeshBatchDesc batchDesc{ };
-    batchDesc.LogicalDevice = m_graphicsContext->LogicalDevice;
-    const auto meshBatch    = new MeshBatch( batchDesc );
+    batchDesc.LogicalDevice  = m_graphicsContext->LogicalDevice;
+    batchDesc.GeometryLayout = layout;
+    const auto meshBatch     = new MeshBatch( batchDesc );
 
     MaterialBatchDesc matBatchDesc{ };
     matBatchDesc.LogicalDevice = m_graphicsContext->LogicalDevice;

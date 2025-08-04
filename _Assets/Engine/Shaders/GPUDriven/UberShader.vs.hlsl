@@ -21,8 +21,7 @@ VSOutput VSMain(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     GPUObjectData objectData = g_ObjectBuffer[instanceData.ObjectID];
     GPUMeshData meshData = g_MeshBuffer[objectData.MeshID];
     
-    uint index = g_IndexBuffer[meshData.IndexOffset + vertexID];
-    Vertex vertex = g_VertexBuffer[meshData.VertexOffset + index];
+    Vertex vertex = g_VertexBuffer[meshData.VertexOffset + vertexID];
     
     float4 worldPos = mul(vertex.Position, objectData.ModelMatrix);
     float4 clipPos = mul(worldPos, g_GlobalData.ViewProjMatrix);

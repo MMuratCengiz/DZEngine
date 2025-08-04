@@ -64,11 +64,11 @@ namespace DZEngine
         explicit AssetBatcher( const AssetBatcherDesc &desc );
         ~AssetBatcher( ) = default;
 
-        size_t AddBatch( const std::string &alias );
+        size_t AddBatch( const std::string &alias, GeometryLayout layout = GeometryLayout::GPUDriven );
         size_t NumBatches( ) const;
 
         void BeginBatchUpdate( size_t batchId = 0 ) const;
-        void EndBatchUpdate( size_t batchId = 0) const;
+        void EndBatchUpdate( size_t batchId = 0 ) const;
 
         void       AddMesh( BinaryReader &reader, const std::vector<std::string> &submeshAliases = { } ) const;
         void       AddGeometry( const GeometryData *data, const std::string &alias ) const;

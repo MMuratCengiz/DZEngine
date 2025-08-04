@@ -27,7 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace DZEngine;
 
-MeshBatch::MeshBatch( const MeshBatchDesc &desc ) : m_logicalDevice( desc.LogicalDevice )
+MeshBatch::MeshBatch( const MeshBatchDesc &desc ) : m_logicalDevice( desc.LogicalDevice ), m_geometryLayout( desc.GeometryLayout )
 {
     if ( !m_logicalDevice )
     {
@@ -42,7 +42,13 @@ MeshBatch::MeshBatch( const MeshBatchDesc &desc ) : m_logicalDevice( desc.Logica
     vertexBufferDesc.HeapType   = HeapType::GPU;
     vertexBufferDesc.Usages     = ResourceUsage::CopyDst;
     vertexBufferDesc.DebugName  = "Mesh Pool Vertex Buffer";
-    m_vertexBuffer              = std::unique_ptr<IBufferResource>( m_logicalDevice->CreateBufferResource( vertexBufferDesc ) );
+    if ( m_geometryLayout == GeometryLayout::GPUDriven )
+    {
+        vertexBufferDesc.Descriptor                = ResourceDescriptor::StructuredBuffer;
+        vertexBufferDesc.StructureDesc.NumElements = desc.MaxVertexBufferBytes / sizeof( StaticMeshVertex ); // TODO dynamic
+        vertexBufferDesc.StructureDesc.Stride      = sizeof( StaticMeshVertex );                             // TODO dynamic
+    }
+    m_vertexBuffer = std::unique_ptr<IBufferResource>( m_logicalDevice->CreateBufferResource( vertexBufferDesc ) );
 
     BufferDesc indexBufferDesc{ };
     indexBufferDesc.Descriptor = ResourceDescriptor::IndexBuffer;
@@ -50,7 +56,7 @@ MeshBatch::MeshBatch( const MeshBatchDesc &desc ) : m_logicalDevice( desc.Logica
     indexBufferDesc.HeapType   = HeapType::GPU;
     indexBufferDesc.Usages     = ResourceUsage::CopyDst;
     indexBufferDesc.DebugName  = "Mesh Pool Index Buffer";
-    m_indexBuffer              = std::unique_ptr<IBufferResource>( m_logicalDevice->CreateBufferResource( indexBufferDesc ) );
+    m_indexBuffer = std::unique_ptr<IBufferResource>( m_logicalDevice->CreateBufferResource( indexBufferDesc ) );
 
     m_meshes.resize( 1024 );
 }

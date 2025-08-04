@@ -97,6 +97,9 @@ ISemaphore *GPUDrivenRenderer::RenderFrame( const RenderFrameDesc &renderFrame )
 
         const auto buffers = m_batches[ i ]->DataUpload->GetBuffers( renderFrame.FrameIndex );
 
+        const auto indexBufferView = m_assetBatcher->Mesh( i )->GetIndexBuffer( );
+        cmdList->BindIndexBuffer( indexBufferView.Buffer, IndexType::Uint32, indexBufferView.Offset );
+
         if ( const uint32_t numDraws = m_batches[ i ]->DataUpload->GetNumDraws( renderFrame.FrameIndex ); numDraws > 0 )
         {
             cmdList->DrawIndexedIndirect( buffers.IndirectBuffer, 0, numDraws, sizeof( DrawIndexedIndirectCommand ) );

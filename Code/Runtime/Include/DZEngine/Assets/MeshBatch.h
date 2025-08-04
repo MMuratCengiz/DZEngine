@@ -25,9 +25,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 namespace DZEngine
 {
+    enum class GeometryLayout
+    {
+        Traditional,
+        GPUDriven /*Vertex Buffers are created as structured buffers*/
+    };
+
     struct MeshBatchDesc
     {
         ILogicalDevice *LogicalDevice;
+        GeometryLayout  GeometryLayout = GeometryLayout::GPUDriven;
 
         size_t MaxVertexBufferBytes = 67108864;
         size_t MaxIndexBufferBytes  = 33554432;
@@ -50,6 +57,7 @@ namespace DZEngine
     class MeshBatch
     {
         ILogicalDevice *m_logicalDevice;
+        GeometryLayout  m_geometryLayout;
 
         std::unique_ptr<IBufferResource> m_vertexBuffer;
         std::unique_ptr<IBufferResource> m_indexBuffer;
