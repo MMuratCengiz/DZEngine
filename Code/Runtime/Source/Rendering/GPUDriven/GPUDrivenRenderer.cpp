@@ -67,7 +67,7 @@ void GPUDrivenRenderer::RenderFrame( const RenderFrameDesc &renderFrame )
     for ( int i = 0; i < m_assetBatcher->NumBatches( ); ++i )
     {
         std::array<RenderingAttachmentDesc, 1> attachments{ }; // Todo add depth
-        attachments[ 1 ].Resource = renderFrame.RenderTarget;
+        attachments[ 0 ].Resource = renderFrame.RenderTarget;
 
         RenderingDesc renderingDesc{ };
         renderingDesc.RTAttachments.Elements    = attachments.data( );
@@ -86,13 +86,13 @@ void GPUDrivenRenderer::RenderFrame( const RenderFrameDesc &renderFrame )
         cmdList->BindResourceGroup( binding->GetBuffersBinding( renderFrame.FrameIndex ) );
         cmdList->BindResourceGroup( binding->GetTexturesBinding( renderFrame.FrameIndex ) );
 
-        const auto vb = m_assetBatcher->Mesh( i )->GetVertexBuffer( );
-        const auto ib = m_assetBatcher->Mesh( i )->GetIndexBuffer( );
-
-        cmdList->BindVertexBuffer( vb.Buffer, vb.Offset );
-        cmdList->BindIndexBuffer( ib.Buffer, IndexType::Uint32, ib.Offset );
-
-        // TODO Draw calls
+        const auto buffers = m_batches[ i ]->DataUpload->GetBuffers( renderFrame.FrameIndex );
+        const uint32_t drawCount = m_batches[ i ]->DataUpload->GetDrawCount( renderFrame.FrameIndex );
+        
+        if ( drawCount > 0 )
+        {
+            cmdList->DrawIndexedIndirect( buffers.IndirectBuffer, 0, drawCount, sizeof( DrawIndexedIndirectCommand ) );
+        }
 
         cmdList->EndRendering( );
     }
@@ -106,12 +106,12 @@ void GPUDrivenRenderer::InitTestPipeline( )
 
     ShaderStageDesc vertShaderStageDesc{ };
     vertShaderStageDesc.Stage = ShaderStage::Vertex;
-    vertShaderStageDesc.Path  = "TODO";
+    vertShaderStageDesc.Path  = "_Assets/Engine/Shaders/GPUDriven/UberShader.vs.hlsl";
     shaderStages[ 0 ]         = vertShaderStageDesc;
 
     ShaderStageDesc pixShaderStageDesc{ };
     pixShaderStageDesc.Stage = ShaderStage::Pixel;
-    pixShaderStageDesc.Path  = "TODO";
+    pixShaderStageDesc.Path  = "_Assets/Engine/Shaders/GPUDriven/UberShader.ps.hlsl";
     shaderStages[ 1 ]        = pixShaderStageDesc;
 
     ShaderProgramDesc shaderProgramDesc{ };

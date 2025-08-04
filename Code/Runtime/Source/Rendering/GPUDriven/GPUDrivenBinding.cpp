@@ -131,13 +131,23 @@ void GPUDrivenBinding::CreateBuffersBinding( ) const
 
         const GPUDrivenBuffers buffers = m_dataUpload->GetBuffers( i );
 
-        m_samplerBindGroup->BeginUpdate( );
-        m_samplerBindGroup->Cbv( 0, buffers.GlobalDataBuffer );
-        m_samplerBindGroup->Srv( 0, buffers.ObjectBuffer );
-        m_samplerBindGroup->Srv( 1, buffers.MaterialBuffer );
-        m_samplerBindGroup->Srv( 2, buffers.MeshBuffer );
-        m_samplerBindGroup->Srv( 3, buffers.InstanceBuffer );
-        m_samplerBindGroup->EndUpdate( );
+        m_frameBindings[ i ]->BuffersBinding->BeginUpdate( );
+        m_frameBindings[ i ]->BuffersBinding->Cbv( 0, buffers.GlobalDataBuffer );
+        m_frameBindings[ i ]->BuffersBinding->Srv( 0, buffers.ObjectBuffer );
+        m_frameBindings[ i ]->BuffersBinding->Srv( 1, buffers.MaterialBuffer );
+        m_frameBindings[ i ]->BuffersBinding->Srv( 2, buffers.MeshBuffer );
+        m_frameBindings[ i ]->BuffersBinding->Srv( 3, buffers.InstanceBuffer );
+
+        if ( const auto meshBatch = m_assetBatcher->Mesh( m_batchId ) )
+        {
+            const auto vb = meshBatch->GetVertexBuffer( );
+            const auto ib = meshBatch->GetIndexBuffer( );
+            m_frameBindings[ i ]->BuffersBinding->Srv( 4, vb.Buffer );
+            m_frameBindings[ i ]->BuffersBinding->Srv( 5, ib.Buffer );
+        }
+
+        m_frameBindings[ i ]->BuffersBinding->Srv( 6, buffers.DrawArgsBuffer );
+        m_frameBindings[ i ]->BuffersBinding->EndUpdate( );
     }
 }
 

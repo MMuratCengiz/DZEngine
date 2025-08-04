@@ -64,13 +64,49 @@ GPUDrivenRootSig::GPUDrivenRootSig( ILogicalDevice *device )
     instanceBufferBinding.Name          = "g_InstanceBuffer";
     instanceBufferBinding.DataType      = BindingDataType::Struct;
     instanceBufferBinding.NumBytes      = sizeof( GPUInstanceData );
-    instanceBufferBinding.Descriptor    = ResourceDescriptor::UniformBuffer;
-    instanceBufferBinding.BindingType   = ResourceBindingType::ConstantBuffer;
-    instanceBufferBinding.Binding       = 1;
+    instanceBufferBinding.Descriptor    = ResourceDescriptor::StructuredBuffer;
+    instanceBufferBinding.BindingType   = ResourceBindingType::ShaderResource;
+    instanceBufferBinding.Binding       = 3;
     instanceBufferBinding.RegisterSpace = 1;
     instanceBufferBinding.ArraySize     = 1;
     instanceBufferBinding.Stages        = globalDataBinding.Stages;
     m_resourceBindings.push_back( instanceBufferBinding );
+
+    ResourceBindingDesc vertexBufferBinding{ };
+    vertexBufferBinding.Name          = "g_VertexBuffer";
+    vertexBufferBinding.DataType      = BindingDataType::Struct;
+    vertexBufferBinding.NumBytes      = 72;
+    vertexBufferBinding.Descriptor    = ResourceDescriptor::StructuredBuffer;
+    vertexBufferBinding.BindingType   = ResourceBindingType::ShaderResource;
+    vertexBufferBinding.Binding       = 4;
+    vertexBufferBinding.RegisterSpace = 1;
+    vertexBufferBinding.ArraySize     = 1;
+    vertexBufferBinding.Stages        = globalDataBinding.Stages;
+    m_resourceBindings.push_back( vertexBufferBinding );
+
+    ResourceBindingDesc indexBufferBinding{ };
+    indexBufferBinding.Name          = "g_IndexBuffer";
+    indexBufferBinding.DataType      = BindingDataType::Struct;
+    indexBufferBinding.NumBytes      = sizeof( uint32_t );
+    indexBufferBinding.Descriptor    = ResourceDescriptor::StructuredBuffer;
+    indexBufferBinding.BindingType   = ResourceBindingType::ShaderResource;
+    indexBufferBinding.Binding       = 5;
+    indexBufferBinding.RegisterSpace = 1;
+    indexBufferBinding.ArraySize     = 1;
+    indexBufferBinding.Stages        = globalDataBinding.Stages;
+    m_resourceBindings.push_back( indexBufferBinding );
+
+    ResourceBindingDesc drawArgsBufferBinding{ };
+    drawArgsBufferBinding.Name          = "g_DrawArgsBuffer";
+    drawArgsBufferBinding.DataType      = BindingDataType::Struct;
+    drawArgsBufferBinding.NumBytes      = 16;
+    drawArgsBufferBinding.Descriptor    = ResourceDescriptor::StructuredBuffer;
+    drawArgsBufferBinding.BindingType   = ResourceBindingType::ShaderResource;
+    drawArgsBufferBinding.Binding       = 6;
+    drawArgsBufferBinding.RegisterSpace = 1;
+    drawArgsBufferBinding.ArraySize     = 1;
+    drawArgsBufferBinding.Stages        = globalDataBinding.Stages;
+    m_resourceBindings.push_back( drawArgsBufferBinding );
 
     ResourceBindingDesc textureArrayBinding{ };
     textureArrayBinding.Name          = "g_Textures";

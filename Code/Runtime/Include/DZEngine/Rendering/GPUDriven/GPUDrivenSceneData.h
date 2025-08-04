@@ -74,10 +74,10 @@ namespace DZEngine
         float  Padding1;
     };
 
-    struct DrawIndexedCommand
+    struct DrawIndexedIndirectCommand
     {
-        uint32_t IndexCount;
-        uint32_t InstanceCount;
+        uint32_t NumIndices;
+        uint32_t NumInstances;
         uint32_t FirstIndex;
         int32_t  VertexOffset;
         uint32_t FirstInstance;
@@ -85,11 +85,11 @@ namespace DZEngine
 
     struct DrawCommand
     {
-        DrawIndexedCommand DrawCmd;
-        uint32_t           BatchID;
-        uint32_t           MaterialID;
-        uint32_t           MeshID;
-        uint32_t           Padding;
+        DrawIndexedIndirectCommand DrawCmd;
+        uint32_t                   BatchID;
+        uint32_t                   MaterialID;
+        uint32_t                   MeshID;
+        uint32_t                   Padding;
     };
 
     struct BatchData
@@ -117,5 +117,13 @@ namespace DZEngine
         Float2   ScreenSize;
         float    Time;
         float    DeltaTime;
+    };
+
+    struct DrawArguments
+    {
+        uint32_t MeshID;
+        uint32_t MaterialID;
+        uint32_t InstanceOffset;
+        uint32_t InstanceCount;
     };
 } // namespace DZEngine

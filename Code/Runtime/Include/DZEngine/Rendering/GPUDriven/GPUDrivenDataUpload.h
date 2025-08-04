@@ -46,6 +46,8 @@ namespace DZEngine
         IBufferResource *MaterialBuffer;
         IBufferResource *MeshBuffer;
         IBufferResource *InstanceBuffer;
+        IBufferResource *DrawArgsBuffer;
+        IBufferResource *IndirectBuffer;
     };
 
     class GPUDrivenDataUpload
@@ -71,6 +73,12 @@ namespace DZEngine
 
             size_t InstanceBufferNumBytes;
             size_t InstanceBufferOffset;
+            
+            size_t DrawArgsBufferNumBytes;
+            size_t DrawArgsBufferOffset;
+            
+            size_t IndirectBufferNumBytes;
+            size_t IndirectBufferOffset;
         };
 
         struct FrameData
@@ -87,6 +95,10 @@ namespace DZEngine
             std::unique_ptr<IBufferResource> MaterialBuffer; // g_MaterialBuffer;
             std::unique_ptr<IBufferResource> MeshBuffer;     // g_MeshBuffer;
             std::unique_ptr<IBufferResource> InstanceBuffer; // g_InstanceBuffer;
+            std::unique_ptr<IBufferResource> DrawArgsBuffer; // g_DrawArgsBuffer;
+            std::unique_ptr<IBufferResource> IndirectBuffer; // Indirect draw commands
+            
+            uint32_t DrawCount = 0;
         };
 
         DataRanges                              m_dataRanges;
@@ -99,6 +111,7 @@ namespace DZEngine
         void             UpdateGlobalDataBuffer( uint32_t frameIndex ) const;
         void             Submit( ISemaphore *onComplete, const ICommandListArray &commandListsToSubmit ) const;
         GPUDrivenBuffers GetBuffers( uint32_t frameIndex ) const;
+        uint32_t         GetDrawCount( uint32_t frameIndex ) const;
         ~GPUDrivenDataUpload( ) = default;
 
     private:

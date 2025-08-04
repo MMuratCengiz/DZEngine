@@ -27,6 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "DZEngine/Components/Graphics/RenderableComponent.h"
 #include "DZEngine/Components/TransformComponent.h"
 #include "DZEngine/Utilities/DataUtilities.h"
+#include "DenOfIzGraphics/Data/BatchResourceCopy.h"
 
 #include "DZEngine/Scene/World.h"
 #include "DZEngine/Utilities/MathConverter.h"
@@ -35,8 +36,7 @@ using namespace DZEngine;
 using namespace DenOfIz;
 
 GPUDrivenDataUpload::GPUDrivenDataUpload( const GPUDrivenDataUploadDesc &uploadDesc ) :
-    m_logicalDevice( uploadDesc.GraphicsContext->LogicalDevice ), m_world( uploadDesc.World ), m_assets( uploadDesc.Assets ),
-    m_uploadDesc( uploadDesc )
+    m_logicalDevice( uploadDesc.GraphicsContext->LogicalDevice ), m_world( uploadDesc.World ), m_assets( uploadDesc.Assets ), m_uploadDesc( uploadDesc )
 {
     m_batchId   = uploadDesc.BatchId;
     m_copyQueue = std::unique_ptr<ICommandQueue>( m_logicalDevice->CreateCommandQueue( CommandQueueDesc{ QueueType::Copy } ) );
@@ -48,7 +48,7 @@ GPUDrivenDataUpload::GPUDrivenDataUpload( const GPUDrivenDataUploadDesc &uploadD
 
         CommandListPoolDesc poolDesc{ };
         poolDesc.CommandQueue    = m_copyQueue.get( );
-        poolDesc.NumCommandLists = 4; // TODO Calculate the necessary number
+        poolDesc.NumCommandLists = 6;
 
         m_frames[ i ]->CommandListPool = std::unique_ptr<ICommandListPool>( m_logicalDevice->CreateCommandListPool( { m_copyQueue.get( ) } ) );
         m_frames[ i ]->CommandLists    = m_frames[ i ]->CommandListPool->GetCommandLists( );
@@ -70,6 +70,14 @@ GPUDrivenDataUpload::GPUDrivenDataUpload( const GPUDrivenDataUploadDesc &uploadD
     m_dataRanges.InstanceBufferOffset   = DataUtilities::Align( m_dataRanges.MeshBufferNumBytes + m_dataRanges.MeshBufferOffset, 256 );
     m_dataRanges.InstanceBufferNumBytes = sizeof( GPUInstanceData ) * maxNumInstances;
 
+    const size_t maxDrawArgs            = maxNumObjects;
+    m_dataRanges.DrawArgsBufferOffset   = DataUtilities::Align( m_dataRanges.InstanceBufferNumBytes + m_dataRanges.InstanceBufferOffset, 256 );
+    m_dataRanges.DrawArgsBufferNumBytes = sizeof( DrawArguments ) * maxDrawArgs;
+
+    const size_t maxIndirectCommands    = maxNumObjects;
+    m_dataRanges.IndirectBufferOffset   = DataUtilities::Align( m_dataRanges.DrawArgsBufferNumBytes + m_dataRanges.DrawArgsBufferOffset, 256 );
+    m_dataRanges.IndirectBufferNumBytes = sizeof( DrawIndexedIndirectCommand ) * maxIndirectCommands;
+
     BufferDesc globalDataBufferDesc{ };
     globalDataBufferDesc.Descriptor = ResourceDescriptor::Buffer;
     globalDataBufferDesc.Usages     = ResourceUsage::VertexAndConstantBuffer;
@@ -80,7 +88,7 @@ GPUDrivenDataUpload::GPUDrivenDataUpload( const GPUDrivenDataUploadDesc &uploadD
     stagingBufferDesc.Descriptor = ResourceDescriptor::Buffer;
     stagingBufferDesc.Usages     = ResourceUsage::CopySrc | ResourceUsage::CopyDst;
     stagingBufferDesc.HeapType   = HeapType::CPU_GPU;
-    size_t totalStagingSize      = m_dataRanges.InstanceBufferOffset + m_dataRanges.InstanceBufferNumBytes;
+    size_t totalStagingSize      = m_dataRanges.IndirectBufferOffset + m_dataRanges.IndirectBufferNumBytes;
     stagingBufferDesc.NumBytes   = DataUtilities::Align( totalStagingSize, 256 );
 
     for ( size_t i = 0; i < m_frames.size( ); ++i )
@@ -103,6 +111,17 @@ GPUDrivenDataUpload::GPUDrivenDataUpload( const GPUDrivenDataUploadDesc &uploadD
         bufferDesc.NumElements        = maxNumInstances;
         bufferDesc.Stride             = sizeof( GPUInstanceData );
         m_frames[ i ]->InstanceBuffer = CreateStructuredBuffer( bufferDesc );
+
+        bufferDesc.NumElements        = uploadDesc.MaxObjects;
+        bufferDesc.Stride             = sizeof( DrawArguments );
+        m_frames[ i ]->DrawArgsBuffer = CreateStructuredBuffer( bufferDesc );
+
+        BufferDesc indirectBufferDesc{ };
+        indirectBufferDesc.Descriptor = ResourceDescriptor::Buffer | ResourceDescriptor::IndirectBuffer;
+        indirectBufferDesc.Usages     = ResourceUsage::IndirectArgument | ResourceUsage::CopyDst;
+        indirectBufferDesc.HeapType   = HeapType::GPU;
+        indirectBufferDesc.NumBytes   = m_dataRanges.IndirectBufferNumBytes;
+        m_frames[ i ]->IndirectBuffer = std::unique_ptr<IBufferResource>( m_logicalDevice->CreateBufferResource( indirectBufferDesc ) );
     }
 }
 
@@ -161,6 +180,28 @@ void GPUDrivenDataUpload::UpdateFrame( ISemaphore *onComplete, const uint32_t fr
     commandList->CopyBufferRegion( copyRegionDesc );
     commandList->End( );
 
+    commandListIndex++;
+    commandList = commandLists.Elements[ commandListIndex ];
+    commandList->Begin( );
+    copyRegionDesc.SrcBuffer = frameData->StagingBuffer.get( );
+    copyRegionDesc.DstBuffer = frameData->DrawArgsBuffer.get( );
+    copyRegionDesc.SrcOffset = m_dataRanges.DrawArgsBufferOffset;
+    copyRegionDesc.DstOffset = 0;
+    copyRegionDesc.NumBytes  = m_dataRanges.DrawArgsBufferNumBytes;
+    commandList->CopyBufferRegion( copyRegionDesc );
+    commandList->End( );
+
+    commandListIndex++;
+    commandList = commandLists.Elements[ commandListIndex ];
+    commandList->Begin( );
+    copyRegionDesc.SrcBuffer = frameData->StagingBuffer.get( );
+    copyRegionDesc.DstBuffer = frameData->IndirectBuffer.get( );
+    copyRegionDesc.SrcOffset = m_dataRanges.IndirectBufferOffset;
+    copyRegionDesc.DstOffset = 0;
+    copyRegionDesc.NumBytes  = m_dataRanges.IndirectBufferNumBytes;
+    commandList->CopyBufferRegion( copyRegionDesc );
+    commandList->End( );
+
     Submit( onComplete, commandLists );
 }
 
@@ -168,13 +209,15 @@ void GPUDrivenDataUpload::UpdateStagingBuffer( const uint32_t frameIndex ) const
 {
     Byte *mappedMemory = m_frames[ frameIndex ]->StagingBufferMappedMemory;
 
-    const size_t totalSize = m_dataRanges.InstanceBufferOffset + m_dataRanges.InstanceBufferNumBytes;
+    const size_t totalSize = m_dataRanges.IndirectBufferOffset + m_dataRanges.IndirectBufferNumBytes;
     memset( mappedMemory, 0, totalSize );
 
     auto *objectData   = reinterpret_cast<GPUObjectData *>( mappedMemory + m_dataRanges.ObjectBufferOffset );
     auto *materialData = reinterpret_cast<GPUMaterialData *>( mappedMemory + m_dataRanges.MaterialBufferOffset );
     auto *meshData     = reinterpret_cast<GPUMeshData *>( mappedMemory + m_dataRanges.MeshBufferOffset );
     auto *instanceData = reinterpret_cast<GPUInstanceData *>( mappedMemory + m_dataRanges.InstanceBufferOffset );
+    auto *drawArgsData = reinterpret_cast<DrawArguments *>( mappedMemory + m_dataRanges.DrawArgsBufferOffset );
+    auto *indirectData = reinterpret_cast<DrawIndexedIndirectCommand *>( mappedMemory + m_dataRanges.IndirectBufferOffset );
 
     uint32_t objectIndex   = 0;
     uint32_t materialIndex = 0;
@@ -352,6 +395,29 @@ void GPUDrivenDataUpload::UpdateStagingBuffer( const uint32_t frameIndex ) const
             objectIndex++;
             instanceIndex++;
         } );
+
+    uint32_t drawArgsIndex = 0;
+    if ( objectIndex > 0 && meshIndex > 0 )
+    {
+        drawArgsData[ drawArgsIndex ].MeshID         = 0;
+        drawArgsData[ drawArgsIndex ].MaterialID     = 0;
+        drawArgsData[ drawArgsIndex ].InstanceOffset = 0;
+        drawArgsData[ drawArgsIndex ].InstanceCount  = objectIndex;
+        drawArgsIndex++;
+    }
+
+    for ( uint32_t i = 0; i < drawArgsIndex; ++i )
+    {
+        const uint32_t meshId = drawArgsData[ i ].MeshID;
+
+        indirectData[ i ].NumIndices    = meshId < meshIndex ? meshData[ meshId ].IndexCount : 0;
+        indirectData[ i ].NumInstances  = drawArgsData[ i ].InstanceCount;
+        indirectData[ i ].FirstIndex    = 0;
+        indirectData[ i ].VertexOffset  = 0;
+        indirectData[ i ].FirstInstance = drawArgsData[ i ].InstanceOffset;
+    }
+    
+    m_frames[ frameIndex ]->DrawCount = drawArgsIndex;
 }
 
 void GPUDrivenDataUpload::UpdateGlobalDataBuffer( const uint32_t frameIndex ) const
@@ -432,7 +498,14 @@ GPUDrivenBuffers GPUDrivenDataUpload::GetBuffers( const uint32_t frameIndex ) co
     buffers.MaterialBuffer   = m_frames[ frameIndex ]->MaterialBuffer.get( );
     buffers.MeshBuffer       = m_frames[ frameIndex ]->MeshBuffer.get( );
     buffers.InstanceBuffer   = m_frames[ frameIndex ]->InstanceBuffer.get( );
+    buffers.DrawArgsBuffer   = m_frames[ frameIndex ]->DrawArgsBuffer.get( );
+    buffers.IndirectBuffer   = m_frames[ frameIndex ]->IndirectBuffer.get( );
     return buffers;
+}
+
+uint32_t GPUDrivenDataUpload::GetDrawCount( const uint32_t frameIndex ) const
+{
+    return m_frames[ frameIndex ]->DrawCount;
 }
 
 std::unique_ptr<IBufferResource> GPUDrivenDataUpload::CreateStructuredBuffer( const StructuredBufferDesc &structDesc ) const

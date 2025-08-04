@@ -57,8 +57,41 @@ struct GPUInstanceData
     float2 Padding;
 };
 
-#define MAX_TEXTURE_COUNT 1024
+struct Vertex
+{
+    float4 Position;
+    float4 Normal;
+    float2 TexCoord;
+    float4 Color;
+    float4 Tangent;
+};
 
+struct DrawIndirectCommand
+{
+    uint VertexCountPerInstance;
+    uint InstanceCount;
+    uint StartVertexLocation;
+    uint StartInstanceLocation;
+};
+
+struct DrawIndexedIndirectCommand
+{
+    uint NumIndices;
+    uint NumInstances;
+    uint FirstIndex;
+    int VertexOffset;
+    uint FirstInstance;
+};
+
+struct DrawArguments
+{
+    uint MeshID;
+    uint MaterialID;
+    uint InstanceOffset;
+    uint InstanceCount;
+};
+
+#define MAX_TEXTURE_COUNT 1024
 
 Texture2D g_Textures[MAX_TEXTURE_COUNT] : register(t0, space0); // Bindless needs to be in space0 for Metal
 
@@ -68,6 +101,9 @@ StructuredBuffer<GPUObjectData> g_ObjectBuffer : register(t0, space1);
 StructuredBuffer<GPUMaterialData> g_MaterialBuffer : register(t1, space1);
 StructuredBuffer<GPUMeshData> g_MeshBuffer : register(t2, space1);
 StructuredBuffer<GPUInstanceData> g_InstanceBuffer : register(t3, space1);
+StructuredBuffer<Vertex> g_VertexBuffer : register(t4, space1);
+StructuredBuffer<uint> g_IndexBuffer : register(t5, space1);
+StructuredBuffer<DrawArguments> g_DrawArgsBuffer : register(t6, space1);
 
 SamplerState g_LinearSampler : register(s0, space2);
 SamplerState g_PointSampler : register(s1, space2);
