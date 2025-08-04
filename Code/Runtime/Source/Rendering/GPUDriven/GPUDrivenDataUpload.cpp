@@ -38,6 +38,7 @@ GPUDrivenDataUpload::GPUDrivenDataUpload( const GPUDrivenDataUploadDesc &uploadD
     m_logicalDevice( uploadDesc.GraphicsContext->LogicalDevice ), m_scene( uploadDesc.Scene ), m_world( uploadDesc.World ), m_assets( uploadDesc.Assets ),
     m_uploadDesc( uploadDesc )
 {
+    m_batchId   = uploadDesc.BatchId;
     m_copyQueue = std::unique_ptr<ICommandQueue>( m_logicalDevice->CreateCommandQueue( CommandQueueDesc{ QueueType::Copy } ) );
 
     m_frames.resize( uploadDesc.NumFrames );
@@ -219,11 +220,17 @@ void GPUDrivenDataUpload::UpdateStagingBuffer( const uint32_t frameIndex ) const
             {
                 return;
             }
+            if ( mesh.BatchId != m_batchId )
+            {
+                return;
+            }
 
             if ( !meshHandleToId.contains( mesh.Handle ) )
             {
                 if ( meshIndex >= m_uploadDesc.MaxMeshes )
+                {
                     return;
+                }
 
                 if ( const GPUSubMesh gpuSubMesh = m_assets->Mesh( mesh.BatchId )->GetSubMesh( mesh.Handle ); gpuSubMesh.Metadata )
                 {
@@ -291,6 +298,10 @@ void GPUDrivenDataUpload::UpdateStagingBuffer( const uint32_t frameIndex ) const
         [ & ]( const flecs::entity e, const TransformComponent &transform, const MeshComponent &mesh, const RenderableComponent &renderable )
         {
             if ( !renderable.Visible || objectIndex >= m_uploadDesc.MaxObjects )
+            {
+                return;
+            }
+            if ( mesh.BatchId != m_batchId )
             {
                 return;
             }

@@ -33,6 +33,7 @@ namespace DZEngine
         Scene           *Scene;
         AssetBatcher    *Assets;
         World           *World;
+        uint32_t         BatchId;
         uint32_t         NumFrames;
         uint32_t         MaxObjects   = 65536;
         uint32_t         MaxMaterials = 512;
@@ -54,6 +55,7 @@ namespace DZEngine
         Scene                         *m_scene;
         World                         *m_world;
         AssetBatcher                  *m_assets;
+        size_t                         m_batchId;
         GPUDrivenDataUploadDesc        m_uploadDesc;
         std::unique_ptr<ICommandQueue> m_copyQueue;
 
