@@ -17,7 +17,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "DZEngine/Rendering/GPUDriven/GPUDrivenRenderer.h"
-
 #include "DZEngine/Rendering/GPUDriven/GPUDrivenBinding.h"
 
 using namespace DZEngine;
@@ -86,6 +85,14 @@ void GPUDrivenRenderer::RenderFrame( const RenderFrameDesc &renderFrame )
         cmdList->BindResourceGroup( binding->GetSamplerBinding( ) );
         cmdList->BindResourceGroup( binding->GetBuffersBinding( renderFrame.FrameIndex ) );
         cmdList->BindResourceGroup( binding->GetTexturesBinding( renderFrame.FrameIndex ) );
+
+        const auto vb = m_assetBatcher->Mesh( i )->GetVertexBuffer( );
+        const auto ib = m_assetBatcher->Mesh( i )->GetIndexBuffer( );
+
+        cmdList->BindVertexBuffer( vb.Buffer, vb.Offset );
+        cmdList->BindIndexBuffer( ib.Buffer, IndexType::Uint32, ib.Offset );
+
+        // TODO Draw calls
 
         cmdList->EndRendering( );
     }
