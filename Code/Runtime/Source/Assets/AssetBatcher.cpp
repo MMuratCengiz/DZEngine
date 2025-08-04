@@ -21,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace DZEngine;
 
-AssetBatcher::AssetBatcher( const AssetBatcherDesc &desc ) : m_graphicsContext( desc.GraphicsContext )
+AssetBatcher::AssetBatcher( const AssetBatcherDesc &desc ) : m_graphicsContext( desc.GraphicsContext ), m_assetBundle( desc.AssetBundle ), m_assetRegistry( desc.AssetRegistry )
 {
     m_batches.reserve( 1024 );
 }
@@ -96,4 +96,32 @@ MeshBatch const *AssetBatcher::Mesh( size_t batchId ) const
         return nullptr;
     }
     return m_batches[ batchId ]->MeshBatch.get( );
+}
+
+MeshHandle AssetBatcher::AddMeshFromUri( size_t batchId, const std::string &uri, const std::vector<std::string> &submeshAliases ) const
+{
+    if ( batchId >= m_batches.size( ) )
+    {
+        spdlog::error( "AssetBatcher::AddMeshFromUri - Invalid batch id: {}", batchId );
+        return InvalidMeshHandle;
+    }
+
+    const auto reader = m_assetBundle->LoadAsset( uri );
+    if ( !reader )
+    {
+        spdlog::error( "AssetBatcher::AddMeshFromUri - Failed to load asset: {}", uri );
+        return InvalidMeshHandle;
+    }
+
+    if ( const GPUMesh gpuMesh = m_batches[ batchId ]->MeshBatch->AddMesh( *reader, submeshAliases ); !gpuMesh.SubMeshes.empty( ) )
+    {
+        MeshHandle meshHandle = gpuMesh.SubMeshes[ 0 ].Handle;
+        m_assetRegistry->RegisterMeshAsset( batchId, meshHandle, uri );
+
+        spdlog::info( "AssetBatcher::AddMeshFromUri - Added mesh from {} to batch {} with handle {}", uri, batchId, meshHandle.Id );
+        return meshHandle;
+    }
+
+    spdlog::error( "AssetBatcher::AddMeshFromUri - Failed to get valid handle for mesh: {}", uri );
+    return InvalidMeshHandle;
 }

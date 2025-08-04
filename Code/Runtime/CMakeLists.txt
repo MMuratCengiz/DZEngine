@@ -8,11 +8,14 @@ target_include_directories(DZRuntime PUBLIC Include)
 
 target_sources(DZRuntime PRIVATE
         Source/Assets/AssetBatcher.cpp
+        Source/Assets/AssetBundle.cpp
+        Source/Assets/AssetRegistry.cpp
         Source/Assets/MeshAssetData.cpp
         Source/Assets/MeshBatch.cpp
         Source/Input/InputSystem.cpp
         Source/Rendering/RenderLoop.cpp
         Source/Scene/Scene.cpp
+        Source/Scene/SceneLoader.cpp
         Source/Scene/World.cpp
         Source/Utilities/MathConverter.cpp
         Source/AGameRunner.cpp

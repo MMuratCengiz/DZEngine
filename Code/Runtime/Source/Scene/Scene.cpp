@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "DZEngine/Scene/Scene.h"
+#include "DZEngine/Scene/SceneLoader.h"
 
 using namespace DZEngine;
 
@@ -71,4 +72,10 @@ const std::string &Scene::GetName( ) const
 flecs::entity Scene::GetRoot( ) const
 {
     return m_root;
+}
+
+bool Scene::LoadFromFile( const std::filesystem::path &filePath )
+{
+    const LoadResult result = SceneLoader::LoadSceneFromFile( this, filePath );
+    return result == LoadResult::Success;
 }

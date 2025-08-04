@@ -18,6 +18,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include "Assets/AssetBatcher.h"
+#include "Assets/AssetBundle.h"
+#include "Assets/AssetRegistry.h"
 #include "IGame.h"
 #include "Rendering/RenderLoop.h"
 
@@ -33,13 +36,15 @@ namespace DZEngine
     class AGameRunner
     {
     protected:
-        GraphicsWindowHandle         *m_windowHandle;
-        IGame                        *m_game;
-        GraphicsContext              *m_graphicsContext;
-        std::unique_ptr<RenderLoop>   m_renderLoop;
-        std::unique_ptr<AssetBatcher> m_assetBatcher;
-        std::unique_ptr<AppContext>   m_appContext;
-        std::unique_ptr<World>        m_world;
+        GraphicsWindowHandle          *m_windowHandle;
+        IGame                         *m_game;
+        GraphicsContext               *m_graphicsContext;
+        std::unique_ptr<RenderLoop>    m_renderLoop;
+        std::unique_ptr<AssetBundle>   m_assetBundle;
+        std::unique_ptr<AssetRegistry> m_assetRegistry;
+        std::unique_ptr<AssetBatcher>  m_assetBatcher;
+        std::unique_ptr<AppContext>    m_appContext;
+        std::unique_ptr<World>         m_world;
 
     public:
         explicit AGameRunner( const GameRunnerDesc &desc );

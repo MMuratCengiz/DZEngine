@@ -18,16 +18,32 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "Rendering/GraphicsContext.h"
-#include "Scene/World.h"
-#include "DZEngine/Assets/AssetBatcher.h"
+#include <flecs.h>
+#include <string>
+#include <filesystem>
+#include <unordered_map>
 
 namespace DZEngine
 {
-    struct AppContext
+    class Scene;
+
+    enum class LoadResult
     {
-        GraphicsContext *GraphicsContext;
-        World           *World;
-        AssetBatcher    *AssetBatcher;
+        Success,
+        SceneNull,
+        FileNotFound,
+        FileOpenError,
+        JsonParseError,
+        ComponentRegistrationError
+    };
+
+    class SceneLoader
+    {
+    public:
+        static LoadResult LoadSceneFromFile( Scene *scene, const std::filesystem::path &filePath );
+        static LoadResult LoadSceneFromJson( Scene *scene, const std::string &jsonData );
+
+    private:
+        static LoadResult RegisterComponentsForDeserialization( flecs::world &world );
     };
 } // namespace DZEngine

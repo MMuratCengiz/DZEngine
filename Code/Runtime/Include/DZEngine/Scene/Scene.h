@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <flecs.h>
 #include <string>
+#include <filesystem>
 #include "DZEngine/Rendering/GraphicsContext.h"
 
 namespace DZEngine
@@ -55,5 +56,7 @@ namespace DZEngine
 
         const std::string &GetName( ) const;
         flecs::entity      GetRoot( ) const;
+        
+        bool LoadFromFile( const std::filesystem::path &filePath );
     };
 } // namespace DZEngine

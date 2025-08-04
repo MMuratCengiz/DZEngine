@@ -8,6 +8,7 @@ target_sources(DZEditor PRIVATE
         Source/Components/AssetBrowser.cpp
         Source/Components/AssetTile.cpp
         Source/Components/SceneViewRenderer.cpp
+        Source/Scene/SceneSerializer.cpp
         Source/Fonts/FontAwesome.cpp
         Source/Fonts/JetbrainsMonoImGui.cpp
         Source/Style/EditorStyle.cpp

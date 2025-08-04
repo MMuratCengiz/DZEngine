@@ -17,6 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
+#include "AssetBundle.h"
+#include "AssetRegistry.h"
 #include "DZEngine/Rendering/GraphicsContext.h"
 #include "MeshBatch.h"
 
@@ -33,6 +35,8 @@ namespace DZEngine
     struct AssetBatcherDesc
     {
         GraphicsContext *GraphicsContext;
+        AssetBundle     *AssetBundle;
+        AssetRegistry   *AssetRegistry;
     };
 
     class AssetBatcher
@@ -43,6 +47,8 @@ namespace DZEngine
         };
 
         GraphicsContext *m_graphicsContext;
+        AssetBundle     *m_assetBundle;
+        AssetRegistry   *m_assetRegistry;
 
         std::mutex                               m_addBatchMutex;
         std::vector<std::unique_ptr<AssetBatch>> m_batches;
@@ -58,6 +64,8 @@ namespace DZEngine
         void EndBatchUpdate( size_t batchId ) const;
         void AddMesh( size_t batchId, BinaryReader &reader, const std::vector<std::string> &submeshAliases = { } ) const;
         void AddGeometry( size_t batchId, const GeometryData *data, const std::string &alias ) const;
+
+        MeshHandle AddMeshFromUri( size_t batchId, const std::string &uri, const std::vector<std::string> &submeshAliases = { } ) const;
 
         MeshBatch const *Mesh( size_t batchId ) const;
     };

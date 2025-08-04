@@ -32,11 +32,19 @@ AGameRunner::AGameRunner( const GameRunnerDesc &desc ) : m_windowHandle( desc.Wi
     m_appContext->GraphicsContext = m_graphicsContext;
 
     WorldDesc worldDesc{ };
-    worldDesc.GraphicsContext  = m_graphicsContext;
-    m_world                    = std::make_unique<World>( worldDesc );
-    m_appContext->World        = m_world.get( );
-    m_assetBatcher             = std::make_unique<AssetBatcher>( AssetBatcherDesc{ m_graphicsContext } );
-    m_appContext->AssetBatcher = m_assetBatcher.get( );
+    worldDesc.GraphicsContext = m_graphicsContext;
+    m_world                   = std::make_unique<World>( worldDesc );
+    m_appContext->World       = m_world.get( );
+
+    m_assetBundle   = std::make_unique<AssetBundle>( "Assets" );
+    m_assetRegistry = std::make_unique<AssetRegistry>( "AssetRegistry.json" );
+
+    AssetBatcherDesc batcherDesc{ };
+    batcherDesc.GraphicsContext = m_graphicsContext;
+    batcherDesc.AssetBundle     = m_assetBundle.get( );
+    batcherDesc.AssetRegistry   = m_assetRegistry.get( );
+    m_assetBatcher              = std::make_unique<AssetBatcher>( batcherDesc );
+    m_appContext->AssetBatcher  = m_assetBatcher.get( );
 
     m_game->Init( m_appContext.get( ) );
 
