@@ -30,6 +30,7 @@ namespace DZEngine
         static glm::vec3           ToGlm( const DenOfIz::Float3 &interopVec3 );
         static DenOfIz::Float3     ToInterop( const glm::vec3 &glmVec3 );
         static glm::vec4           ToGlm( const DenOfIz::Float4 &float4 );
+        static glm::quat           ToGlmQuat( const DenOfIz::Quaternion &float4 );
         static DenOfIz::Float4     ToInterop( const glm::vec4 &glmVec4 );
         static glm::mat4           ToGlm( const DenOfIz::Float4x4 &interopMat4 );
         static DenOfIz::Float4x4   ToInterop( const glm::mat4 &glmMat4 );

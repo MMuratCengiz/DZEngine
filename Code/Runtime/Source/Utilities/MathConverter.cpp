@@ -37,6 +37,11 @@ glm::vec4 MathConverter::ToGlm( const DenOfIz::Float4 &float4 )
     return glm::vec4( float4.X, float4.Y, float4.Z, float4.W );
 }
 
+glm::quat MathConverter::ToGlmQuat( const DenOfIz::Quaternion &float4 )
+{
+    return glm::quat( float4.W, float4.X, float4.Y, float4.Z );
+}
+
 DenOfIz::Float4 MathConverter::ToInterop( const glm::vec4 &glmVec4 )
 {
     return DenOfIz::Float4{ glmVec4.x, glmVec4.y, glmVec4.z, glmVec4.w };
