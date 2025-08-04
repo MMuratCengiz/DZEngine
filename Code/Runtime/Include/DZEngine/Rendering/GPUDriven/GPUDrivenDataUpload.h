@@ -113,7 +113,7 @@ namespace DZEngine
         void             Submit( ISemaphore *onComplete, const ICommandListArray &commandListsToSubmit ) const;
         GPUDrivenBuffers GetBuffers( uint32_t frameIndex ) const;
         uint32_t         GetNumDraws( uint32_t frameIndex ) const;
-        ~GPUDrivenDataUpload( ) = default;
+        ~GPUDrivenDataUpload( );
 
     private:
         std::unique_ptr<IBufferResource> CreateStructuredBuffer( const StructuredBufferDesc &structDesc ) const;

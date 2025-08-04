@@ -29,7 +29,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "DZEngine/Components/Graphics/RenderableComponent.h"
 #include "DZEngine/Components/TransformComponent.h"
 #include "DZEngine/Utilities/DataUtilities.h"
-#include "DenOfIzGraphics/Data/BatchResourceCopy.h"
 
 #include "DZEngine/Scene/World.h"
 #include "DZEngine/Utilities/MathConverter.h"
@@ -560,6 +559,15 @@ GPUDrivenBuffers GPUDrivenDataUpload::GetBuffers( const uint32_t frameIndex ) co
 uint32_t GPUDrivenDataUpload::GetNumDraws( const uint32_t frameIndex ) const
 {
     return m_frames[ frameIndex ]->NumDraws;
+}
+
+GPUDrivenDataUpload::~GPUDrivenDataUpload( )
+{
+    for ( const auto &frame : m_frames )
+    {
+        frame->StagingBuffer->UnmapMemory( );
+        frame->GlobalDataBuffer->UnmapMemory( );
+    }
 }
 
 std::unique_ptr<IBufferResource> GPUDrivenDataUpload::CreateStructuredBuffer( const StructuredBufferDesc &structDesc ) const
