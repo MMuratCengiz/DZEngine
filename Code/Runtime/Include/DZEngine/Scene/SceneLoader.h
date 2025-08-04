@@ -21,7 +21,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <flecs.h>
 #include <string>
 #include <filesystem>
-#include <unordered_map>
 
 namespace DZEngine
 {
@@ -42,8 +41,5 @@ namespace DZEngine
     public:
         static LoadResult LoadSceneFromFile( Scene *scene, const std::filesystem::path &filePath );
         static LoadResult LoadSceneFromJson( Scene *scene, const std::string &jsonData );
-
-    private:
-        static LoadResult RegisterComponentsForDeserialization( flecs::world &world );
     };
 } // namespace DZEngine

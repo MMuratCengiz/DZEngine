@@ -41,11 +41,6 @@ namespace DZEngine
     public:
         static SerializationResult SaveSceneToFile( const Scene *scene, const std::filesystem::path &filePath );
         static SerializationResult SerializeScene( const Scene *scene, std::string &outJsonData );
-
-        static bool        ValidateSceneFile( const std::filesystem::path &filePath );
-        static std::string GetSceneFileExtension( );
-
-    private:
-        static SerializationResult RegisterComponentsForSerialization( flecs::world &world );
+        static bool                ValidateSceneFile( const std::filesystem::path &filePath );
     };
 } // namespace DZEngine

@@ -54,11 +54,13 @@ namespace DZEngine
         std::unordered_map<size_t, std::unordered_map<uint32_t, AssetEntry>> m_meshRegistry;
         std::unordered_map<size_t, std::unordered_map<uint32_t, AssetEntry>> m_materialRegistry;
         std::unordered_map<size_t, std::unordered_map<uint32_t, AssetEntry>> m_textureRegistry;
+        std::unordered_map<size_t, std::unordered_map<uint32_t, AssetEntry>> m_animationRegistry;
+        std::unordered_map<size_t, std::unordered_map<uint32_t, AssetEntry>> m_skeletonRegistry;
 
         std::filesystem::path m_registryPath;
 
     public:
-        AssetRegistry() = default;
+        AssetRegistry( ) = default;
         explicit AssetRegistry( const std::filesystem::path &registryPath );
 
         bool LoadFromFile( const std::filesystem::path &registryPath );
@@ -67,17 +69,21 @@ namespace DZEngine
         void RegisterMeshAsset( size_t batchId, MeshHandle handle, const std::string &uri );
         void RegisterMaterialAsset( size_t batchId, MaterialHandle handle, const std::string &uri );
         void RegisterTextureAsset( size_t batchId, TextureHandle handle, const std::string &uri );
+        void RegisterAnimationAsset( size_t batchId, AnimationClipHandle handle, const std::string &uri );
+        void RegisterSkeletonAsset( size_t batchId, SkeletonHandle handle, const std::string &uri );
 
         bool GetMeshAssetUri( size_t batchId, MeshHandle handle, std::string &outUri );
         bool GetMaterialAssetUri( size_t batchId, MaterialHandle handle, std::string &outUri );
         bool GetTextureAssetUri( size_t batchId, TextureHandle handle, std::string &outUri );
+        bool GetAnimationAssetUri( size_t batchId, AnimationClipHandle handle, std::string &outUri );
+        bool GetSkeletonAssetUri( size_t batchId, SkeletonHandle handle, std::string &outUri );
 
         void ClearBatch( size_t batchId );
         void Clear( );
 
         void LogRegistry( );
 
-        const std::filesystem::path &GetRegistryPath( ) const { return m_registryPath; }
-        void SetRegistryPath( const std::filesystem::path &path ) { m_registryPath = path; }
+        const std::filesystem::path &GetRegistryPath( ) const;
+        void                         SetRegistryPath( const std::filesystem::path &path );
     };
 } // namespace DZEngine

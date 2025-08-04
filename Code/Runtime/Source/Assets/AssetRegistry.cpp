@@ -19,8 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "DZEngine/Assets/AssetRegistry.h"
 #include <fstream>
 #include <nlohmann/json.hpp>
-#include <spdlog/spdlog.h>
 #include <set>
+#include <spdlog/spdlog.h>
 
 using namespace DZEngine;
 using json = nlohmann::json;
@@ -106,6 +106,30 @@ bool AssetRegistry::LoadFromFile( const std::filesystem::path &registryPath )
                     m_textureRegistry[ batchId ][ handleId ] = entry;
                 }
             }
+
+            if ( batchData.contains( "animations" ) && batchData[ "animations" ].is_object( ) )
+            {
+                for ( const auto &[ handleIdStr, assetData ] : batchData[ "animations" ].items( ) )
+                {
+                    uint32_t   handleId = std::stoul( handleIdStr );
+                    AssetEntry entry;
+                    entry.Uri                                  = assetData.value( "uri", "" );
+                    entry.AssetType                            = assetData.value( "type", "animation" );
+                    m_animationRegistry[ batchId ][ handleId ] = entry;
+                }
+            }
+
+            if ( batchData.contains( "skeletons" ) && batchData[ "skeletons" ].is_object( ) )
+            {
+                for ( const auto &[ handleIdStr, assetData ] : batchData[ "skeletons" ].items( ) )
+                {
+                    uint32_t   handleId = std::stoul( handleIdStr );
+                    AssetEntry entry;
+                    entry.Uri                                 = assetData.value( "uri", "" );
+                    entry.AssetType                           = assetData.value( "type", "skeleton" );
+                    m_skeletonRegistry[ batchId ][ handleId ] = entry;
+                }
+            }
         }
     }
 
@@ -119,23 +143,31 @@ bool AssetRegistry::SaveToFile( const std::filesystem::path &registryPath )
 
     json registryJson;
     registryJson[ "batches" ] = json::object( );
-
-    // Collect all batch IDs
     std::set<size_t> allBatchIds;
-    for ( const auto &[ batchId, _ ] : m_meshRegistry )
+    for ( const auto &batchId : m_meshRegistry | std::views::keys )
+    {
         allBatchIds.insert( batchId );
-    for ( const auto &[ batchId, _ ] : m_materialRegistry )
+    }
+    for ( const auto &batchId : m_materialRegistry | std::views::keys )
+    {
         allBatchIds.insert( batchId );
-    for ( const auto &[ batchId, _ ] : m_textureRegistry )
+    }
+    for ( const auto &batchId : m_textureRegistry | std::views::keys )
+    {
         allBatchIds.insert( batchId );
-
-    // Save each batch
+    }
+    for ( const auto &batchId : m_animationRegistry | std::views::keys )
+    {
+        allBatchIds.insert( batchId );
+    }
+    for ( const auto &batchId : m_skeletonRegistry | std::views::keys )
+    {
+        allBatchIds.insert( batchId );
+    }
     for ( size_t batchId : allBatchIds )
     {
         std::string batchIdStr                  = std::to_string( batchId );
         registryJson[ "batches" ][ batchIdStr ] = json::object( );
-
-        // Save meshes
         if ( m_meshRegistry.contains( batchId ) )
         {
             registryJson[ "batches" ][ batchIdStr ][ "meshes" ] = json::object( );
@@ -145,8 +177,6 @@ bool AssetRegistry::SaveToFile( const std::filesystem::path &registryPath )
                 registryJson[ "batches" ][ batchIdStr ][ "meshes" ][ handleIdStr ] = { { "uri", entry.Uri }, { "type", entry.AssetType } };
             }
         }
-
-        // Save materials
         if ( m_materialRegistry.contains( batchId ) )
         {
             registryJson[ "batches" ][ batchIdStr ][ "materials" ] = json::object( );
@@ -156,8 +186,6 @@ bool AssetRegistry::SaveToFile( const std::filesystem::path &registryPath )
                 registryJson[ "batches" ][ batchIdStr ][ "materials" ][ handleIdStr ] = { { "uri", entry.Uri }, { "type", entry.AssetType } };
             }
         }
-
-        // Save textures
         if ( m_textureRegistry.contains( batchId ) )
         {
             registryJson[ "batches" ][ batchIdStr ][ "textures" ] = json::object( );
@@ -167,9 +195,26 @@ bool AssetRegistry::SaveToFile( const std::filesystem::path &registryPath )
                 registryJson[ "batches" ][ batchIdStr ][ "textures" ][ handleIdStr ] = { { "uri", entry.Uri }, { "type", entry.AssetType } };
             }
         }
+        if ( m_animationRegistry.contains( batchId ) )
+        {
+            registryJson[ "batches" ][ batchIdStr ][ "animations" ] = json::object( );
+            for ( const auto &[ handleId, entry ] : m_animationRegistry[ batchId ] )
+            {
+                std::string handleIdStr                                                = std::to_string( handleId );
+                registryJson[ "batches" ][ batchIdStr ][ "animations" ][ handleIdStr ] = { { "uri", entry.Uri }, { "type", entry.AssetType } };
+            }
+        }
+        if ( m_skeletonRegistry.contains( batchId ) )
+        {
+            registryJson[ "batches" ][ batchIdStr ][ "skeletons" ] = json::object( );
+            for ( const auto &[ handleId, entry ] : m_skeletonRegistry[ batchId ] )
+            {
+                std::string handleIdStr                                               = std::to_string( handleId );
+                registryJson[ "batches" ][ batchIdStr ][ "skeletons" ][ handleIdStr ] = { { "uri", entry.Uri }, { "type", entry.AssetType } };
+            }
+        }
     }
 
-    // Create directories if needed
     std::error_code ec;
     std::filesystem::create_directories( registryPath.parent_path( ), ec );
     if ( ec )
@@ -178,7 +223,6 @@ bool AssetRegistry::SaveToFile( const std::filesystem::path &registryPath )
         return false;
     }
 
-    // Write to file
     std::ofstream file( registryPath );
     if ( !file.is_open( ) )
     {
@@ -229,7 +273,27 @@ void AssetRegistry::RegisterTextureAsset( size_t batchId, TextureHandle handle, 
     spdlog::debug( "AssetRegistry::RegisterTextureAsset - Batch: {}, Handle: {}, URI: {}", batchId, handle.Id, uri );
 }
 
-bool AssetRegistry::GetMeshAssetUri( size_t batchId, MeshHandle handle, std::string &outUri )
+void AssetRegistry::RegisterAnimationAsset( size_t batchId, AnimationClipHandle handle, const std::string &uri )
+{
+    AssetEntry entry;
+    entry.Uri                                   = uri;
+    entry.AssetType                             = "animation";
+    m_animationRegistry[ batchId ][ handle.Id ] = entry;
+
+    spdlog::debug( "AssetRegistry::RegisterAnimationAsset - Batch: {}, Handle: {}, URI: {}", batchId, handle.Id, uri );
+}
+
+void AssetRegistry::RegisterSkeletonAsset( size_t batchId, SkeletonHandle handle, const std::string &uri )
+{
+    AssetEntry entry;
+    entry.Uri                                  = uri;
+    entry.AssetType                            = "skeleton";
+    m_skeletonRegistry[ batchId ][ handle.Id ] = entry;
+
+    spdlog::debug( "AssetRegistry::RegisterSkeletonAsset - Batch: {}, Handle: {}, URI: {}", batchId, handle.Id, uri );
+}
+
+bool AssetRegistry::GetMeshAssetUri( const size_t batchId, const MeshHandle handle, std::string &outUri )
 {
     if ( m_meshRegistry.contains( batchId ) && m_meshRegistry[ batchId ].contains( handle.Id ) )
     {
@@ -239,7 +303,7 @@ bool AssetRegistry::GetMeshAssetUri( size_t batchId, MeshHandle handle, std::str
     return false;
 }
 
-bool AssetRegistry::GetMaterialAssetUri( size_t batchId, MaterialHandle handle, std::string &outUri )
+bool AssetRegistry::GetMaterialAssetUri( const size_t batchId, const MaterialHandle handle, std::string &outUri )
 {
     if ( m_materialRegistry.contains( batchId ) && m_materialRegistry[ batchId ].contains( handle.Id ) )
     {
@@ -249,11 +313,31 @@ bool AssetRegistry::GetMaterialAssetUri( size_t batchId, MaterialHandle handle, 
     return false;
 }
 
-bool AssetRegistry::GetTextureAssetUri( size_t batchId, TextureHandle handle, std::string &outUri )
+bool AssetRegistry::GetTextureAssetUri( const size_t batchId, const TextureHandle handle, std::string &outUri )
 {
     if ( m_textureRegistry.contains( batchId ) && m_textureRegistry[ batchId ].contains( handle.Id ) )
     {
         outUri = m_textureRegistry[ batchId ][ handle.Id ].Uri;
+        return true;
+    }
+    return false;
+}
+
+bool AssetRegistry::GetAnimationAssetUri( const size_t batchId, const AnimationClipHandle handle, std::string &outUri )
+{
+    if ( m_animationRegistry.contains( batchId ) && m_animationRegistry[ batchId ].contains( handle.Id ) )
+    {
+        outUri = m_animationRegistry[ batchId ][ handle.Id ].Uri;
+        return true;
+    }
+    return false;
+}
+
+bool AssetRegistry::GetSkeletonAssetUri( const size_t batchId, const SkeletonHandle handle, std::string &outUri )
+{
+    if ( m_skeletonRegistry.contains( batchId ) && m_skeletonRegistry[ batchId ].contains( handle.Id ) )
+    {
+        outUri = m_skeletonRegistry[ batchId ][ handle.Id ].Uri;
         return true;
     }
     return false;
@@ -264,6 +348,8 @@ void AssetRegistry::ClearBatch( size_t batchId )
     m_meshRegistry.erase( batchId );
     m_materialRegistry.erase( batchId );
     m_textureRegistry.erase( batchId );
+    m_animationRegistry.erase( batchId );
+    m_skeletonRegistry.erase( batchId );
 
     spdlog::debug( "AssetRegistry::ClearBatch - Cleared batch: {}", batchId );
 }
@@ -273,6 +359,8 @@ void AssetRegistry::Clear( )
     m_meshRegistry.clear( );
     m_materialRegistry.clear( );
     m_textureRegistry.clear( );
+    m_animationRegistry.clear( );
+    m_skeletonRegistry.clear( );
 
     spdlog::debug( "AssetRegistry::Clear - Cleared all registries" );
 }
@@ -282,12 +370,26 @@ void AssetRegistry::LogRegistry( )
     spdlog::info( "=== AssetRegistry Contents ===" );
 
     std::set<size_t> allBatchIds;
-    for ( const auto &[ batchId, _ ] : m_meshRegistry )
+    for ( const auto &batchId : m_meshRegistry | std::views::keys )
+    {
         allBatchIds.insert( batchId );
-    for ( const auto &[ batchId, _ ] : m_materialRegistry )
+    }
+    for ( const auto &batchId : m_materialRegistry | std::views::keys )
+    {
         allBatchIds.insert( batchId );
-    for ( const auto &[ batchId, _ ] : m_textureRegistry )
+    }
+    for ( const auto &batchId : m_textureRegistry | std::views::keys )
+    {
         allBatchIds.insert( batchId );
+    }
+    for ( const auto &batchId : m_animationRegistry | std::views::keys )
+    {
+        allBatchIds.insert( batchId );
+    }
+    for ( const auto &batchId : m_skeletonRegistry | std::views::keys )
+    {
+        allBatchIds.insert( batchId );
+    }
 
     for ( size_t batchId : allBatchIds )
     {
@@ -316,5 +418,31 @@ void AssetRegistry::LogRegistry( )
                 spdlog::info( "  Texture {}: {}", handleId, entry.Uri );
             }
         }
+
+        if ( m_animationRegistry.contains( batchId ) )
+        {
+            for ( const auto &[ handleId, entry ] : m_animationRegistry[ batchId ] )
+            {
+                spdlog::info( "  Animation {}: {}", handleId, entry.Uri );
+            }
+        }
+
+        if ( m_skeletonRegistry.contains( batchId ) )
+        {
+            for ( const auto &[ handleId, entry ] : m_skeletonRegistry[ batchId ] )
+            {
+                spdlog::info( "  Skeleton {}: {}", handleId, entry.Uri );
+            }
+        }
     }
+}
+
+const std::filesystem::path &AssetRegistry::GetRegistryPath( ) const
+{
+    return m_registryPath;
+}
+
+void AssetRegistry::SetRegistryPath( const std::filesystem::path &path )
+{
+    m_registryPath = path;
 }

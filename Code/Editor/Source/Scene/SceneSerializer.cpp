@@ -17,15 +17,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "DZEngine/Scene/SceneSerializer.h"
+#include "DZEngine/Scene/ComponentSerialization.h"
 #include "DZEngine/Scene/Scene.h"
 
-#include "DZEngine/Components/CameraComponent.h"
-#include "DZEngine/Components/Graphics/MaterialComponent.h"
-#include "DZEngine/Components/Graphics/MeshComponent.h"
-#include "DZEngine/Components/Graphics/RenderableComponent.h"
-#include "DZEngine/Components/TransformComponent.h"
-
-#include <DenOfIzGraphics/Utilities/InteropMath.h>
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
@@ -87,11 +81,7 @@ SerializationResult SceneSerializer::SerializeScene( const Scene *scene, std::st
     const flecs::entity root  = scene->GetRoot( );
     flecs::world        world = root.world( );
 
-    if ( const SerializationResult regResult = RegisterComponentsForSerialization( world ); regResult != SerializationResult::Success )
-    {
-        outJsonData = "{}";
-        return regResult;
-    }
+    ComponentSerialization::RegisterAllComponents( world );
 
     const auto query = world.query_builder( ).with( flecs::ChildOf, root ).build( );
 
@@ -126,7 +116,7 @@ bool SceneSerializer::ValidateSceneFile( const std::filesystem::path &filePath )
     {
         return false;
     }
-    if ( filePath.extension( ) != GetSceneFileExtension( ) )
+    if ( filePath.extension( ) != ".json" )
     {
         return false;
     }
@@ -135,7 +125,7 @@ bool SceneSerializer::ValidateSceneFile( const std::filesystem::path &filePath )
     {
         return false;
     }
-    std::string jsonData( ( std::istreambuf_iterator<char>( file ) ), std::istreambuf_iterator<char>( ) );
+    std::string jsonData( ( std::istreambuf_iterator( file ) ), std::istreambuf_iterator<char>( ) );
     file.close( );
     if ( !json::accept( jsonData ) )
     {
@@ -146,44 +136,4 @@ bool SceneSerializer::ValidateSceneFile( const std::filesystem::path &filePath )
         return false;
     }
     return true;
-}
-
-std::string SceneSerializer::GetSceneFileExtension( )
-{
-    return ".dzscene";
-}
-
-SerializationResult SceneSerializer::RegisterComponentsForSerialization( flecs::world &world )
-{
-    static bool registered = false;
-    if ( registered )
-    {
-        return SerializationResult::Success;
-    }
-
-    world.component<Float3>( ).member( "X", &Float3::X ).member( "Y", &Float3::Y ).member( "Z", &Float3::Z );
-
-    world.component<Float4>( ).member( "X", &Float4::X ).member( "Y", &Float4::Y ).member( "Z", &Float4::Z ).member( "W", &Float4::W );
-
-    world.component<TransformComponent>( )
-        .member( "Position", &TransformComponent::Position )
-        .member( "Rotation", &TransformComponent::Rotation )
-        .member( "Scale", &TransformComponent::Scale );
-
-    world.component<RenderableComponent>( )
-        .member( "Visible", &RenderableComponent::Visible )
-        .member( "CastShadows", &RenderableComponent::CastShadows )
-        .member( "ReceiveShadows", &RenderableComponent::ReceiveShadows )
-        .member( "RenderLayer", &RenderableComponent::RenderLayer )
-        .member( "RenderOrder", &RenderableComponent::RenderOrder );
-
-    world.component<MaterialComponent>( ).member( "Handle", &MaterialComponent::Handle );
-
-    world.component<MeshComponent>( ).member( "BatchId", &MeshComponent::BatchId ).member( "Handle", &MeshComponent::Handle );
-
-    world.component<CameraComponent>( );
-
-    registered = true;
-    spdlog::debug( "Components registered for serialization" );
-    return SerializationResult::Success;
 }

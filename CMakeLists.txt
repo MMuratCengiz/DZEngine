@@ -30,13 +30,6 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Don't use add_subdirectory for DenOfIz
-# Instead, build it separately and use find_package
-# add_subdirectory(DenOfIz)
-
-# Find DenOfIz as an installed package
-# You'll need to build and install DenOfIz separately first:
-# cd DenOfIz && cmake -B build -DCMAKE_INSTALL_PREFIX=../DenOfIz_install && cmake --build build --target install
 find_package(DenOfIzGraphics REQUIRED)
 
 add_subdirectory(Code)
@@ -76,3 +69,6 @@ set_target_properties(DZEngine PROPERTIES
 
 target_link_libraries(DZEngine PRIVATE DZApp)
 denofiz_setup_target(DZEngine)
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/assets.cmake)
+copy_to_binary_target("${CMAKE_CURRENT_SOURCE_DIR}" "_Assets" * TheKindlingScript)

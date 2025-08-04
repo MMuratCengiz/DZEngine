@@ -26,6 +26,7 @@ namespace DZEngine
 {
     struct CameraComponent
     {
+        bool     Active;
         Float4x4 View;
         Float4x4 Projection;
         Float4x4 ViewProjection;

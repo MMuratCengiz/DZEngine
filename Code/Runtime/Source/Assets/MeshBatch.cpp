@@ -34,6 +34,7 @@ MeshBatch::MeshBatch( const MeshBatchDesc &desc ) : m_logicalDevice( desc.Logica
         spdlog::error( "MeshPool: LogicalDevice is required" );
         return;
     }
+    m_batchResourceCopy = std::make_unique<BatchResourceCopy>( m_logicalDevice );
 
     BufferDesc vertexBufferDesc{ };
     vertexBufferDesc.Descriptor = ResourceDescriptor::VertexBuffer;

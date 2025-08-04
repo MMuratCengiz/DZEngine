@@ -29,6 +29,7 @@ AGameRunner::AGameRunner( const GameRunnerDesc &desc ) : m_windowHandle( desc.Wi
     m_graphicsContext           = m_renderLoop->GetGraphicsContext( );
 
     m_appContext                  = std::make_unique<AppContext>( );
+    m_appContext->NumFrames       = 3;
     m_appContext->GraphicsContext = m_graphicsContext;
 
     WorldDesc worldDesc{ };

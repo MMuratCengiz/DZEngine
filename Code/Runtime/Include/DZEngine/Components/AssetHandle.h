@@ -78,11 +78,13 @@ namespace DZEngine
     using SceneHandle         = AssetHandle<TSceneHandle>;
     using SkeletonHandle      = AssetHandle<TSkeletonHandle>;
 
-    constexpr auto InvalidMeshHandle     = MeshHandle{ };
-    constexpr auto InvalidMaterialHandle = MaterialHandle{ };
-    constexpr auto InvalidTextureHandle  = TextureHandle{ };
-    constexpr auto InvalidShaderHandle   = ShaderHandle{ };
-    constexpr auto InvalidSceneHandle    = SceneHandle{ };
+    constexpr auto InvalidAnimationClipHandle = AnimationClipHandle{ };
+    constexpr auto InvalidMeshHandle           = MeshHandle{ };
+    constexpr auto InvalidMaterialHandle      = MaterialHandle{ };
+    constexpr auto InvalidTextureHandle       = TextureHandle{ };
+    constexpr auto InvalidShaderHandle        = ShaderHandle{ };
+    constexpr auto InvalidSceneHandle         = SceneHandle{ };
+    constexpr auto InvalidSkeletonHandle      = SkeletonHandle{ };
 } // namespace DZEngine
 
 template <typename T>

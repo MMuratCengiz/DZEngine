@@ -18,14 +18,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include "DZEngine/Assets/AssetBatcher.h"
 #include "Rendering/GraphicsContext.h"
 #include "Scene/World.h"
-#include "DZEngine/Assets/AssetBatcher.h"
 
 namespace DZEngine
 {
     struct AppContext
     {
+        uint32_t         NumFrames;
         GraphicsContext *GraphicsContext;
         World           *World;
         AssetBatcher    *AssetBatcher;

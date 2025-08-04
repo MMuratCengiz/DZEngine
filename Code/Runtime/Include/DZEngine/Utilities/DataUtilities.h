@@ -18,28 +18,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "DZEngine/AppContext.h"
-#include "DenOfIzGraphics/DenOfIzGraphics.h"
-#include "GraphicsContext.h"
+#include <cstdint>
 
 namespace DZEngine
 {
-    struct RendererDesc
-    {
-        AppContext *AppContext;
-    };
-
-    struct RenderFrameDesc
-    {
-        uint32_t          FrameIndex;
-        ITextureResource *RenderTarget;
-        ISemaphore       *OnComplete;
-    };
-
-    class IRenderer
+    class DataUtilities
     {
     public:
-        virtual ~IRenderer( )                                          = default;
-        virtual void RenderFrame( const RenderFrameDesc &renderFrame ) = 0;
+        static uint32_t Align( const uint32_t value, const uint32_t alignment );
     };
 } // namespace DZEngine

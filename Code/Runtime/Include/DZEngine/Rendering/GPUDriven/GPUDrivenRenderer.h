@@ -18,28 +18,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "DZEngine/AppContext.h"
-#include "DenOfIzGraphics/DenOfIzGraphics.h"
-#include "GraphicsContext.h"
+#include "../IRenderer.h"
+#include "GPUDrivenDataUpload.h"
+#include "GPUDrivenRootSig.h"
 
 namespace DZEngine
 {
-    struct RendererDesc
+    class GPUDrivenRenderer final : public IRenderer
     {
-        AppContext *AppContext;
-    };
+        std::unique_ptr<GPUDrivenRootSig>    m_rootSig;
+        std::unique_ptr<GPUDrivenDataUpload> m_dataUpload;
 
-    struct RenderFrameDesc
-    {
-        uint32_t          FrameIndex;
-        ITextureResource *RenderTarget;
-        ISemaphore       *OnComplete;
-    };
-
-    class IRenderer
-    {
     public:
-        virtual ~IRenderer( )                                          = default;
-        virtual void RenderFrame( const RenderFrameDesc &renderFrame ) = 0;
+        explicit GPUDrivenRenderer( const RendererDesc &rendererDesc );
+        void RenderFrame( const RenderFrameDesc &renderFrame ) override;
+        ~GPUDrivenRenderer( ) override = default;
     };
 } // namespace DZEngine

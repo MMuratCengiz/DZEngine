@@ -18,28 +18,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "DZEngine/AppContext.h"
-#include "DenOfIzGraphics/DenOfIzGraphics.h"
-#include "GraphicsContext.h"
+#include <flecs.h>
 
 namespace DZEngine
 {
-    struct RendererDesc
-    {
-        AppContext *AppContext;
-    };
-
-    struct RenderFrameDesc
-    {
-        uint32_t          FrameIndex;
-        ITextureResource *RenderTarget;
-        ISemaphore       *OnComplete;
-    };
-
-    class IRenderer
+    class ComponentSerialization
     {
     public:
-        virtual ~IRenderer( )                                          = default;
-        virtual void RenderFrame( const RenderFrameDesc &renderFrame ) = 0;
+        static void RegisterAllComponents( flecs::world &world );
+
+    private:
+        static void RegisterMathTypes( flecs::world &world );
+        static void RegisterEngineComponents( flecs::world &world );
     };
 } // namespace DZEngine

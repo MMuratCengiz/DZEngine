@@ -54,16 +54,6 @@ namespace DZEngine
         std::vector<BoundingVolume> BoundingVolumes;
     };
 
-    struct JointData
-    {
-        std::string           Name;
-        Float4x4              InverseBindMatrix;
-        Float4x4              LocalTransform;
-        Float4x4              GlobalTransform;
-        int32_t               ParentIndex = -1;
-        std::vector<uint32_t> ChildIndices;
-    };
-
     struct UserProperty
     {
         std::string Key;

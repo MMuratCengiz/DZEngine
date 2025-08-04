@@ -17,10 +17,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
+#include "AnimationBatch.h"
 #include "AssetBundle.h"
 #include "AssetRegistry.h"
 #include "DZEngine/Rendering/GraphicsContext.h"
+#include "MaterialBatch.h"
 #include "MeshBatch.h"
+#include "SkeletonBatch.h"
 
 namespace DZEngine
 {
@@ -43,7 +46,10 @@ namespace DZEngine
     {
         struct AssetBatch
         {
-            std::unique_ptr<MeshBatch> MeshBatch;
+            std::unique_ptr<MeshBatch>      MeshBatch;
+            std::unique_ptr<MaterialBatch>  MaterialBatch;
+            std::unique_ptr<AnimationBatch> AnimationBatch;
+            std::unique_ptr<SkeletonBatch>  SkeletonBatch;
         };
 
         GraphicsContext *m_graphicsContext;
@@ -62,11 +68,29 @@ namespace DZEngine
 
         void BeginBatchUpdate( size_t batchId ) const;
         void EndBatchUpdate( size_t batchId ) const;
-        void AddMesh( size_t batchId, BinaryReader &reader, const std::vector<std::string> &submeshAliases = { } ) const;
-        void AddGeometry( size_t batchId, const GeometryData *data, const std::string &alias ) const;
 
-        MeshHandle AddMeshFromUri( size_t batchId, const std::string &uri, const std::vector<std::string> &submeshAliases = { } ) const;
+        void       AddMesh( BinaryReader &reader, const std::vector<std::string> &submeshAliases = { } ) const;
+        void       AddGeometry( const GeometryData *data, const std::string &alias ) const;
+        void       AddMesh( size_t batchId, BinaryReader &reader, const std::vector<std::string> &submeshAliases = { } ) const;
+        MeshHandle AddMesh( size_t batchId, const std::string &uri, const std::vector<std::string> &submeshAliases = { } ) const;
+        void       AddGeometry( size_t batchId, const GeometryData *data, const std::string &alias ) const;
 
-        MeshBatch const *Mesh( size_t batchId ) const;
+        TextureHandle  LoadTexture( const std::string &alias, const std::string &uri ) const;
+        TextureHandle  LoadTexture( size_t batchId, const std::string &alias, const std::string &uri ) const;
+        TextureHandle  AddTexture( const std::string &alias, ITextureResource *texture ) const;
+        TextureHandle  AddTexture( size_t batchId, const std::string &alias, ITextureResource *texture ) const;
+        MaterialHandle AddMaterial( const std::string &alias, const MaterialDataRequest &material ) const;
+        MaterialHandle AddMaterial( size_t batchId, const std::string &alias, const MaterialDataRequest &material ) const;
+
+        AnimationClipHandle AddAnimation( size_t batchId, const std::string &uri, const std::string &alias ) const;
+        AnimationClipHandle AddAnimation( const std::string &uri, const std::string &alias ) const;
+
+        SkeletonHandle AddSkeleton( size_t batchId, const std::string &uri, const std::string &alias ) const;
+        SkeletonHandle AddSkeleton( const std::string &uri, const std::string &alias ) const;
+
+        MeshBatch const      *Mesh( size_t batchId = 0 ) const;
+        MaterialBatch const  *Material( size_t batchId = 0 ) const;
+        AnimationBatch const *Animation( size_t batchId = 0 ) const;
+        SkeletonBatch const  *Skeleton( size_t batchId = 0 ) const;
     };
 } // namespace DZEngine

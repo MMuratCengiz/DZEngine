@@ -16,30 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "DZEngine/Utilities/DataUtilities.h"
 
-#include "DZEngine/AppContext.h"
-#include "DenOfIzGraphics/DenOfIzGraphics.h"
-#include "GraphicsContext.h"
+using namespace DZEngine;
 
-namespace DZEngine
+uint32_t DataUtilities::Align( const uint32_t value, const uint32_t alignment )
 {
-    struct RendererDesc
-    {
-        AppContext *AppContext;
-    };
-
-    struct RenderFrameDesc
-    {
-        uint32_t          FrameIndex;
-        ITextureResource *RenderTarget;
-        ISemaphore       *OnComplete;
-    };
-
-    class IRenderer
-    {
-    public:
-        virtual ~IRenderer( )                                          = default;
-        virtual void RenderFrame( const RenderFrameDesc &renderFrame ) = 0;
-    };
-} // namespace DZEngine
+    return ( value + alignment - 1 ) & ~( alignment - 1 );
+}
