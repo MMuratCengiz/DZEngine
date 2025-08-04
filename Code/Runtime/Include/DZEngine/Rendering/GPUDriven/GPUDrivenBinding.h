@@ -29,6 +29,7 @@ namespace DZEngine
         GPUDrivenRootSig    *RootSig;
         GPUDrivenDataUpload *DataUpload;
         AppContext          *AppContext;
+        uint32_t             BatchId;
     };
 
     class GPUDrivenBinding
@@ -43,15 +44,17 @@ namespace DZEngine
         GPUDrivenDataUpload *m_dataUpload;
         AssetBatcher        *m_assetBatcher;
         World               *m_world;
+        uint32_t             m_batchId;
 
         struct FrameBinding
         {
             std::unique_ptr<IResourceBindGroup> BuffersBinding;
             std::unique_ptr<IResourceBindGroup> TexturesBinding;
         };
-        std::unique_ptr<ISampler> m_linearSampler;
-        std::unique_ptr<ISampler> m_pointSampler;
-        std::unique_ptr<ISampler> m_anisotropicSampler;
+        std::unique_ptr<ISampler>         m_linearSampler;
+        std::unique_ptr<ISampler>         m_pointSampler;
+        std::unique_ptr<ISampler>         m_anisotropicSampler;
+        std::unique_ptr<ITextureResource> m_nullTexture;
 
         std::unique_ptr<IResourceBindGroup> m_samplerBindGroup;
 
@@ -65,7 +68,7 @@ namespace DZEngine
     private:
         void CreateSamplersBinding( );
         void CreateBuffersBinding( ) const;
-        void CreateTexturesBinding( ) const;
+        void CreateTexturesBinding( );
         void UpdateTextures( uint32_t frameIndex ) const;
     };
 } // namespace DZEngine

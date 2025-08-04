@@ -53,6 +53,12 @@ namespace DZEngine
         MaterialHandle Handle;
     };
 
+    struct TextureData
+    {
+        TextureHandle     Handle;
+        ITextureResource *Texture;
+    };
+
     class MaterialBatch
     {
         ILogicalDevice                    *m_logicalDevice;
@@ -86,6 +92,8 @@ namespace DZEngine
 
         ITextureResource *GetTexture( const std::string &alias );
         ITextureResource *GetTexture( TextureHandle handle ) const;
+
+        std::vector<TextureData> GetTextures( ) const;
 
     private:
         size_t NextTextureHandle( const std::string &alias );

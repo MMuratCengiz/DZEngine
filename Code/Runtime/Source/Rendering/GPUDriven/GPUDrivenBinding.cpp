@@ -45,6 +45,7 @@ GPUDrivenBinding::GPUDrivenBinding( const GPUDrivenBindingDesc &bindingDesc )
     m_dataUpload      = bindingDesc.DataUpload;
     m_assetBatcher    = bindingDesc.AppContext->AssetBatcher;
     m_world           = bindingDesc.AppContext->World;
+    m_batchId         = bindingDesc.BatchId;
 
     m_frameBindings.resize( m_numFrames );
     CreateSamplersBinding( );
@@ -125,7 +126,7 @@ void GPUDrivenBinding::CreateBuffersBinding( ) const
     }
 }
 
-void GPUDrivenBinding::CreateTexturesBinding( ) const
+void GPUDrivenBinding::CreateTexturesBinding( )
 {
     ResourceBindGroupDesc bindGroupDesc{ };
     bindGroupDesc.RegisterSpace = TexturesSpace;
@@ -136,11 +137,40 @@ void GPUDrivenBinding::CreateTexturesBinding( ) const
         m_frameBindings[ i ]->TexturesBinding = std::unique_ptr<IResourceBindGroup>( m_graphicsContext->LogicalDevice->CreateResourceBindGroup( bindGroupDesc ) );
         UpdateTextures( i );
     }
+
+    TextureDesc textureDesc{ };
+    textureDesc.Width        = 1;
+    textureDesc.Height       = 1;
+    textureDesc.Format       = Format::R8G8B8A8Unorm;
+    textureDesc.InitialUsage = ResourceUsage::Common;
+    textureDesc.Usages       = ResourceUsage::ShaderResource;
+    textureDesc.Descriptor   = ResourceDescriptor::Texture;
+    textureDesc.HeapType     = HeapType::GPU;
+    textureDesc.DebugName    = InteropString( "UI Null Texture" );
+
+    m_nullTexture = std::unique_ptr<ITextureResource>( m_graphicsContext->LogicalDevice->CreateTextureResource( textureDesc ) );
 }
 
-void GPUDrivenBinding::UpdateTextures( uint32_t frameIndex ) const
+void GPUDrivenBinding::UpdateTextures( const uint32_t frameIndex ) const
 {
     std::vector<ITextureResource *> textures;
 
-    // WIP
+    const auto texHandles = m_assetBatcher->Material( m_batchId )->GetTextures( );
+    textures.reserve( texHandles.size( ) );
+    for ( const auto &batchTextures : texHandles )
+    {
+        textures[ batchTextures.Handle.Id ] = batchTextures.Texture;
+        if ( batchTextures.Texture == nullptr )
+        {
+            textures[ batchTextures.Handle.Id ] = m_nullTexture.get( );
+        }
+    }
+
+    TextureResourceArray textureArray{ };
+    textureArray.Elements    = textures.data( );
+    textureArray.NumElements = static_cast<uint32_t>( textures.size( ) );
+
+    m_frameBindings[ frameIndex ]->TexturesBinding->BeginUpdate( );
+    m_frameBindings[ frameIndex ]->TexturesBinding->SrvArray( 0, textureArray );
+    m_frameBindings[ frameIndex ]->TexturesBinding->EndUpdate( );
 }

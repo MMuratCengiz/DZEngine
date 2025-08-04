@@ -119,6 +119,17 @@ ITextureResource *MaterialBatch::GetTexture( const TextureHandle handle ) const
     return m_textures[ handle.Id ];
 }
 
+std::vector<TextureData> MaterialBatch::GetTextures( ) const
+{
+    std::vector<TextureData> textures;
+    for ( int i = 0; i < m_textures.size( ); i++ )
+    {
+        const TextureHandle texHandle( i );
+        textures.push_back( { texHandle, m_textures[ i ] } );
+    }
+    return textures;
+}
+
 size_t MaterialBatch::NextTextureHandle( const std::string &alias )
 {
     std::lock_guard lock( m_nextTexHandleLock );
