@@ -30,7 +30,6 @@ namespace DZEngine
     struct GPUDrivenDataUploadDesc
     {
         GraphicsContext *GraphicsContext;
-        Scene           *Scene;
         AssetBatcher    *Assets;
         World           *World;
         uint32_t         BatchId;

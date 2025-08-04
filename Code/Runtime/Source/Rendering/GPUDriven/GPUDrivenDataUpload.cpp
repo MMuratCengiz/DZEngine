@@ -35,7 +35,7 @@ using namespace DZEngine;
 using namespace DenOfIz;
 
 GPUDrivenDataUpload::GPUDrivenDataUpload( const GPUDrivenDataUploadDesc &uploadDesc ) :
-    m_logicalDevice( uploadDesc.GraphicsContext->LogicalDevice ), m_scene( uploadDesc.Scene ), m_world( uploadDesc.World ), m_assets( uploadDesc.Assets ),
+    m_logicalDevice( uploadDesc.GraphicsContext->LogicalDevice ), m_world( uploadDesc.World ), m_assets( uploadDesc.Assets ),
     m_uploadDesc( uploadDesc )
 {
     m_batchId   = uploadDesc.BatchId;

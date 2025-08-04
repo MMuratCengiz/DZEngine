@@ -34,6 +34,7 @@ namespace DZEngine
         uint32_t          FrameIndex;
         ITextureResource *RenderTarget;
         ISemaphore       *OnComplete;
+        Viewport          Viewport;
     };
 
     class IRenderer

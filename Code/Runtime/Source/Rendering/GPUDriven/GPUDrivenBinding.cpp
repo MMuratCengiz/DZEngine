@@ -58,6 +58,21 @@ void GPUDrivenBinding::Update( const uint32_t frameIndex ) const
     UpdateTextures( frameIndex );
 }
 
+IResourceBindGroup *GPUDrivenBinding::GetSamplerBinding( ) const
+{
+    return m_samplerBindGroup.get( );
+}
+
+IResourceBindGroup *GPUDrivenBinding::GetBuffersBinding( const uint32_t frameIndex ) const
+{
+    return m_frameBindings[ frameIndex ]->BuffersBinding.get( );
+}
+
+IResourceBindGroup *GPUDrivenBinding::GetTexturesBinding( const uint32_t frameIndex ) const
+{
+    return m_frameBindings[ frameIndex ]->TexturesBinding.get( );
+}
+
 void GPUDrivenBinding::CreateSamplersBinding( )
 {
     SamplerDesc linearSamplerDesc{ };

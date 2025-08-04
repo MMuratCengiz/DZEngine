@@ -65,6 +65,7 @@ namespace DZEngine
         ~AssetBatcher( ) = default;
 
         size_t AddBatch( const std::string &alias );
+        size_t NumBatches( ) const;
 
         void BeginBatchUpdate( size_t batchId ) const;
         void EndBatchUpdate( size_t batchId ) const;

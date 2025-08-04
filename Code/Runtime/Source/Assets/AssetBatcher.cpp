@@ -59,6 +59,11 @@ size_t AssetBatcher::AddBatch( const std::string &alias )
     return index;
 }
 
+size_t AssetBatcher::NumBatches( ) const
+{
+    return m_batches.size( );
+}
+
 void AssetBatcher::BeginBatchUpdate( size_t batchId ) const
 {
     if ( batchId >= m_batches.size( ) )

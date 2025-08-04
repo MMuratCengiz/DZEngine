@@ -34,9 +34,9 @@ namespace DZEngine
 
     class GPUDrivenBinding
     {
-        constexpr uint32_t TexturesSpace = 0;
-        constexpr uint32_t BuffersSpace  = 1;
-        constexpr uint32_t SamplerSpace  = 2;
+        static constexpr uint32_t TexturesSpace = 0;
+        static constexpr uint32_t BuffersSpace  = 1;
+        static constexpr uint32_t SamplerSpace  = 2;
 
         GraphicsContext     *m_graphicsContext;
         uint32_t             m_numFrames;
@@ -63,6 +63,11 @@ namespace DZEngine
     public:
         explicit GPUDrivenBinding( const GPUDrivenBindingDesc &bindingDesc );
         void Update( const uint32_t frameIndex ) const;
+
+        IResourceBindGroup *GetSamplerBinding( ) const;
+        IResourceBindGroup *GetBuffersBinding( uint32_t frameIndex ) const;
+        IResourceBindGroup *GetTexturesBinding( uint32_t frameIndex ) const;
+
         ~GPUDrivenBinding( ) = default;
 
     private:
