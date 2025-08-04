@@ -87,10 +87,10 @@ namespace DZEngine
         TextureHandle  AddTexture( const std::string &alias, ITextureResource *texture );
         MaterialHandle AddMaterial( const std::string &alias, MaterialDataRequest material );
 
-        MaterialData *GetMaterial( const std::string &alias );
+        MaterialData *GetMaterial( const std::string &alias ) const;
         MaterialData *GetMaterial( MaterialHandle handle ) const;
 
-        ITextureResource *GetTexture( const std::string &alias );
+        ITextureResource *GetTexture( const std::string &alias ) const;
         ITextureResource *GetTexture( TextureHandle handle ) const;
 
         std::vector<TextureData> GetTextures( ) const;

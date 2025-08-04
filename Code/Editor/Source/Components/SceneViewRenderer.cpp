@@ -26,6 +26,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "DZEngine/Components/Graphics/MeshComponent.h"
 #include "DZEngine/Components/Graphics/RenderableComponent.h"
 #include "DZEngine/Components/TransformComponent.h"
+#include "DZEngine/Systems/SceneViewCameraSystem.h"
 #include "DenOfIzGraphics/Data/BatchResourceCopy.h"
 
 using namespace DZEngine;
@@ -39,6 +40,8 @@ SceneViewRenderer::SceneViewRenderer( const SceneViewRendererDesc &desc )
     m_assets            = desc.AppContext->AssetBatcher;
     m_ecsWorld          = &desc.AppContext->World->GetWorld( );
     m_resourceTracking  = desc.AppContext->GraphicsContext->ResourceTracking;
+
+    desc.AppContext->World->RegisterSystem<SceneViewCameraSystem>( );
 
     CreateRenderTargets( );
     CreateAssets( );
@@ -96,12 +99,6 @@ void SceneViewRenderer::CreateAssets( ) const
     sphereDesc.Tessellation = 24.0f;
     const auto sphere       = std::unique_ptr<GeometryData>( Geometry::BuildSphere( sphereDesc ) );
     m_assets->AddGeometry( sphere.get( ), "Sphere1" );
-    m_assets->EndBatchUpdate( );
-}
-
-void SceneViewRenderer::CreateScene( ) const
-{
-    m_assets->BeginBatchUpdate( 0 );
 
     MaterialDataRequest redMaterial{ };
     redMaterial.BaseColorFactor   = { 0.8f, 0.2f, 0.2f, 1.0f };
@@ -110,7 +107,7 @@ void SceneViewRenderer::CreateScene( ) const
     redMaterial.NormalScale       = 1.0f;
     redMaterial.OcclusionStrength = 1.0f;
     redMaterial.EmissiveFactor    = { 0.0f, 0.0f, 0.0f, 0.0f };
-    auto redMatHandle             = m_assets->AddMaterial( "RedMaterial", redMaterial );
+    m_assets->AddMaterial( "RedMaterial", redMaterial );
 
     MaterialDataRequest blueMaterial{ };
     blueMaterial.BaseColorFactor   = { 0.2f, 0.4f, 0.9f, 1.0f };
@@ -119,14 +116,19 @@ void SceneViewRenderer::CreateScene( ) const
     blueMaterial.NormalScale       = 1.0f;
     blueMaterial.OcclusionStrength = 1.0f;
     blueMaterial.EmissiveFactor    = { 0.0f, 0.0f, 0.0f, 0.0f };
-    auto blueMatHandle             = m_assets->AddMaterial( "BlueMaterial", blueMaterial );
+    m_assets->AddMaterial( "BlueMaterial", blueMaterial );
 
-    auto boxMesh    = m_assets->Mesh( 0 )->GetSubMesh( "Box1" );
-    auto sphereMesh = m_assets->Mesh( 0 )->GetSubMesh( "Sphere1" );
+    m_assets->EndBatchUpdate( );
+}
+
+void SceneViewRenderer::CreateScene( ) const
+{
+    const auto boxMesh    = m_assets->Mesh( 0 )->GetSubMesh( "Box1" );
+    const auto sphereMesh = m_assets->Mesh( 0 )->GetSubMesh( "Sphere1" );
 
     m_assets->EndBatchUpdate( 0 );
 
-    auto camera = m_ecsWorld->entity( "Camera" );
+    const auto camera = m_ecsWorld->entity( "Camera" );
     camera.add<TransformComponent>( );
     camera.add<CameraComponent>( );
 
@@ -148,7 +150,7 @@ void SceneViewRenderer::CreateScene( ) const
     cameraComp.ViewProjection = *reinterpret_cast<const Float4x4 *>( &viewProj );
     cameraComp.Position       = { 0.0f, 0.0f, 5.0f, 1.0f };
 
-    auto redBox = m_ecsWorld->entity( "RedBox" );
+    const auto redBox = m_ecsWorld->entity( "RedBox" );
     redBox.add<TransformComponent>( );
     redBox.add<MeshComponent>( );
     redBox.add<MaterialComponent>( );
@@ -164,12 +166,12 @@ void SceneViewRenderer::CreateScene( ) const
     redBoxMesh.Handle  = boxMesh.Handle;
 
     auto &redBoxMaterial  = redBox.get_mut<MaterialComponent>( );
-    redBoxMaterial.Handle = redMatHandle;
+    redBoxMaterial.Handle = m_assets->Material( ) ->GetMaterial( "RedMaterial" )->Handle;
 
     auto &redBoxRenderable   = redBox.get_mut<RenderableComponent>( );
     redBoxRenderable.Visible = true;
 
-    auto blueSphere = m_ecsWorld->entity( "BlueSphere" );
+    const auto blueSphere = m_ecsWorld->entity( "BlueSphere" );
     blueSphere.add<TransformComponent>( );
     blueSphere.add<MeshComponent>( );
     blueSphere.add<MaterialComponent>( );
@@ -185,12 +187,12 @@ void SceneViewRenderer::CreateScene( ) const
     blueSphereMesh.Handle  = sphereMesh.Handle;
 
     auto &blueSphereMaterial  = blueSphere.get_mut<MaterialComponent>( );
-    blueSphereMaterial.Handle = blueMatHandle;
+    blueSphereMaterial.Handle = m_assets->Material( ) ->GetMaterial( "BlueMaterial" )->Handle;
 
     auto &blueSphereRenderable   = blueSphere.get_mut<RenderableComponent>( );
     blueSphereRenderable.Visible = true;
 
-    auto greenBox = m_ecsWorld->entity( "GreenBox" );
+    const auto greenBox = m_ecsWorld->entity( "GreenBox" );
     greenBox.add<TransformComponent>( );
     greenBox.add<MeshComponent>( );
     greenBox.add<RenderableComponent>( );

@@ -81,7 +81,7 @@ MaterialHandle MaterialBatch::AddMaterial( const std::string &alias, MaterialDat
     return MaterialHandle( nextMatHandle );
 }
 
-MaterialData *MaterialBatch::GetMaterial( const std::string &alias )
+MaterialData *MaterialBatch::GetMaterial( const std::string &alias ) const
 {
     const auto it = m_matAliases.find( alias );
     if ( it == m_matAliases.end( ) )
@@ -100,7 +100,7 @@ MaterialData *MaterialBatch::GetMaterial( const MaterialHandle handle ) const
     return m_materialData[ handle.Id ].get( );
 }
 
-ITextureResource *MaterialBatch::GetTexture( const std::string &alias )
+ITextureResource *MaterialBatch::GetTexture( const std::string &alias ) const
 {
     const auto it = m_texAliases.find( alias );
     if ( it == m_texAliases.end( ) )
