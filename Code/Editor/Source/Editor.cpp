@@ -109,23 +109,11 @@ void Editor::HandleEvent( const Event &event ) const
     m_imguiRenderer->ProcessEvent( event );
 }
 
-void Editor::Update( EditorUpdateDesc updateDesc )
+void Editor::Update( const EditorUpdateDesc &updateDesc )
 {
     m_stepTimer.Tick( );
 
-    ICommandList *viewportCmdList = m_viewportCommandLists[ updateDesc.FrameIndex ];
-
-    viewportCmdList->Begin( );
-    m_sceneViewRenderer->Render( viewportCmdList, updateDesc.FrameIndex );
-    viewportCmdList->End( );
-
-    ISemaphore             *viewportSemaphore = m_viewportSemaphore.get( );
-    ExecuteCommandListsDesc viewportExecuteDesc{ };
-    viewportExecuteDesc.CommandLists.Elements        = &viewportCmdList;
-    viewportExecuteDesc.CommandLists.NumElements     = 1;
-    viewportExecuteDesc.SignalSemaphores.Elements    = &viewportSemaphore;
-    viewportExecuteDesc.SignalSemaphores.NumElements = 1;
-    m_graphicsContext->GraphicsQueue->ExecuteCommandLists( viewportExecuteDesc );
+    ISemaphore *viewportSemaphore = m_sceneViewRenderer->Render( updateDesc.FrameIndex );
 
     ICommandList *commandList = m_commandLists[ updateDesc.FrameIndex ];
 
@@ -159,7 +147,7 @@ void Editor::Update( EditorUpdateDesc updateDesc )
     {
         waitSemaphores.push_back( updateDesc.GameSemaphore );
     }
-    waitSemaphores.push_back( m_viewportSemaphore.get( ) );
+    waitSemaphores.push_back( viewportSemaphore );
 
     executeCommandListsDesc.WaitSemaphores.Elements    = waitSemaphores.data( );
     executeCommandListsDesc.WaitSemaphores.NumElements = static_cast<uint32_t>( waitSemaphores.size( ) );

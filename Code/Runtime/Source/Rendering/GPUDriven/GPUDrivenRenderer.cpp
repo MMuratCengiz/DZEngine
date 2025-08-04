@@ -55,7 +55,7 @@ GPUDrivenRenderer::GPUDrivenRenderer( const RendererDesc &rendererDesc )
     InitTestPipeline( );
 }
 
-void GPUDrivenRenderer::RenderFrame( const RenderFrameDesc &renderFrame )
+ISemaphore *GPUDrivenRenderer::RenderFrame( const RenderFrameDesc &renderFrame )
 {
     std::vector<ISemaphore *> waitSemaphores{ };
 
@@ -70,6 +70,8 @@ void GPUDrivenRenderer::RenderFrame( const RenderFrameDesc &renderFrame )
 
     auto cmdList = m_commandLists[ renderFrame.FrameIndex ];
     cmdList->Begin( );
+
+    m_graphicsContext->ResourceTracking->TransitionTexture( cmdList, renderFrame.RenderTarget, ResourceUsage::RenderTarget );
 
     for ( int i = 0; i < m_assetBatcher->NumBatches( ); ++i )
     {
@@ -103,6 +105,7 @@ void GPUDrivenRenderer::RenderFrame( const RenderFrameDesc &renderFrame )
         cmdList->EndRendering( );
     }
 
+    m_graphicsContext->ResourceTracking->TransitionTexture( cmdList, renderFrame.RenderTarget, renderFrame.RenderTargetAfterUsage );
     cmdList->End( );
 
     ExecuteCommandListsDesc executeDesc{ };
@@ -110,11 +113,21 @@ void GPUDrivenRenderer::RenderFrame( const RenderFrameDesc &renderFrame )
     executeDesc.CommandLists.NumElements   = 1;
     executeDesc.WaitSemaphores.Elements    = waitSemaphores.data( );
     executeDesc.WaitSemaphores.NumElements = waitSemaphores.size( );
+
+    ISemaphore *signalSemaphore              = m_signalSemaphores[ renderFrame.FrameIndex ].get( );
+    executeDesc.SignalSemaphores.Elements    = &signalSemaphore;
+    executeDesc.SignalSemaphores.NumElements = 1;
     m_commandQueue->ExecuteCommandLists( executeDesc );
+    return signalSemaphore;
 }
 
 void GPUDrivenRenderer::InitTestPipeline( )
 {
+    for ( int i = 0; i < m_numFrames; ++i )
+    {
+        m_signalSemaphores.emplace_back( std::unique_ptr<ISemaphore>( m_graphicsContext->LogicalDevice->CreateSemaphore( ) ) );
+    }
+
     std::array<ShaderStageDesc, 2> shaderStages{ };
 
     ShaderStageDesc vertShaderStageDesc{ };

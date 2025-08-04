@@ -42,16 +42,17 @@ namespace DZEngine
         std::vector<std::unique_ptr<BatchData>> m_batches;
 
         // TODO temporary for testing
-        std::unique_ptr<ICommandQueue>    m_commandQueue;
-        std::unique_ptr<ICommandListPool> m_commandListPool;
-        std::vector<ICommandList *>       m_commandLists;
-        std::unique_ptr<ShaderProgram>    m_program;
-        std::unique_ptr<IPipeline>        m_pipeline;
+        std::vector<std::unique_ptr<ISemaphore>> m_signalSemaphores;
+        std::unique_ptr<ICommandQueue>           m_commandQueue;
+        std::unique_ptr<ICommandListPool>        m_commandListPool;
+        std::vector<ICommandList *>              m_commandLists;
+        std::unique_ptr<ShaderProgram>           m_program;
+        std::unique_ptr<IPipeline>               m_pipeline;
 
     public:
         explicit GPUDrivenRenderer( const RendererDesc &rendererDesc );
-        void RenderFrame( const RenderFrameDesc &renderFrame ) override;
-        void InitTestPipeline( ); // Todo use render graph here and more dynamic pipelines
+        ISemaphore *RenderFrame( const RenderFrameDesc &renderFrame ) override;
+        void        InitTestPipeline( ); // Todo use render graph here and more dynamic pipelines
         ~GPUDrivenRenderer( ) override = default;
     };
 } // namespace DZEngine

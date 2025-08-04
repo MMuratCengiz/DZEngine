@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <memory>
 
 #include "DZEngine/Assets/MeshBatch.h"
+#include "DZEngine/Rendering/GPUDriven/GPUDrivenRenderer.h"
 #include "DenOfIzGraphics/DenOfIzGraphics.h"
 
 using namespace DenOfIz;
@@ -29,43 +30,41 @@ namespace DZEngine
 {
     struct SceneViewRendererDesc
     {
-        ILogicalDevice *LogicalDevice = nullptr;
-        Viewport        Viewport{ };
-        uint32_t        NumFramesInFlight = 3;
+        AppContext *AppContext = nullptr;
+        Viewport    Viewport{ };
+        uint32_t    NumFramesInFlight = 3;
     };
 
     class SceneViewRenderer
     {
-        ILogicalDevice *m_logicalDevice = nullptr;
-        Viewport        m_viewport{ };
-        uint32_t        m_numFramesInFlight = 3;
+        flecs::world     *m_ecsWorld      = nullptr;
+        ILogicalDevice   *m_logicalDevice = nullptr;
+        Viewport          m_viewport{ };
+        uint32_t          m_numFramesInFlight = 3;
+        ResourceTracking *m_resourceTracking  = nullptr;
 
-        std::unique_ptr<ShaderProgram>   m_shaderProgram;
-        std::unique_ptr<IInputLayout>    m_inputLayout;
-        std::unique_ptr<IRootSignature>  m_rootSignature;
-        std::unique_ptr<IPipeline>       m_pipeline;
+        std::unique_ptr<ShaderProgram>  m_shaderProgram;
+        std::unique_ptr<IInputLayout>   m_inputLayout;
+        std::unique_ptr<IRootSignature> m_rootSignature;
+        std::unique_ptr<IPipeline>      m_pipeline;
 
         std::vector<std::unique_ptr<ITextureResource>> m_renderTargets;
         std::vector<std::unique_ptr<ITextureResource>> m_depthTextures;
 
-        ResourceTracking m_resourceTracking{ };
-
-        std::unique_ptr<MeshBatch> m_meshBatch;
+        AssetBatcher                      *m_assets;
+        std::unique_ptr<GPUDrivenRenderer> m_renderer;
 
     public:
         explicit SceneViewRenderer( const SceneViewRendererDesc &desc );
         ~SceneViewRenderer( ) = default;
 
         void              UpdateViewport( const Viewport &viewport );
-        void              Render( ICommandList *commandList, uint32_t frameIndex );
+        ISemaphore       *Render( uint32_t frameIndex ) const;
         ITextureResource *GetRenderTarget( uint32_t frameIndex ) const;
 
     private:
-        void      CreateVertexBuffer( );
-        void      CreateShaderProgram( );
-        void      CreatePipeline( );
-        void      CreateRenderTargets( );
-        ByteArray GetVertexShader( ) const;
-        ByteArray GetPixelShader( ) const;
+        void CreateAssets( ) const;
+        void CreateScene( ) const;
+        void CreateRenderTargets( );
     };
 } // namespace DZEngine

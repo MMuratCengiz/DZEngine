@@ -17,23 +17,37 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "DZEngine/Components/SceneViewRenderer.h"
-#include <array>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <spdlog/spdlog.h>
-
-#include "DenOfIzGraphics/Assets/Import/ShaderImporter.h"
+#include "DZEngine/Assets/MaterialBatch.h"
+#include "DZEngine/Components/CameraComponent.h"
+#include "DZEngine/Components/Graphics/MaterialComponent.h"
+#include "DZEngine/Components/Graphics/MeshComponent.h"
+#include "DZEngine/Components/Graphics/RenderableComponent.h"
+#include "DZEngine/Components/TransformComponent.h"
 #include "DenOfIzGraphics/Data/BatchResourceCopy.h"
-#include "DenOfIzGraphics/Utilities/InteropUtilities.h"
 
 using namespace DZEngine;
 using namespace DenOfIz;
 
-SceneViewRenderer::SceneViewRenderer( const SceneViewRendererDesc &desc ) :
-    m_logicalDevice( desc.LogicalDevice ), m_viewport( desc.Viewport ), m_numFramesInFlight( desc.NumFramesInFlight )
+SceneViewRenderer::SceneViewRenderer( const SceneViewRendererDesc &desc )
 {
-    CreateVertexBuffer( );
-    CreateShaderProgram( );
-    CreatePipeline( );
+    m_logicalDevice     = desc.AppContext->GraphicsContext->LogicalDevice;
+    m_viewport          = desc.Viewport;
+    m_numFramesInFlight = desc.NumFramesInFlight;
+    m_assets            = desc.AppContext->AssetBatcher;
+    m_ecsWorld          = &desc.AppContext->World->GetWorld( );
+    m_resourceTracking  = desc.AppContext->GraphicsContext->ResourceTracking;
+
     CreateRenderTargets( );
+    CreateAssets( );
+    CreateScene( );
+
+    RendererDesc rendererDesc{ };
+    rendererDesc.AppContext = desc.AppContext;
+
+    m_renderer = std::make_unique<GPUDrivenRenderer>( rendererDesc );
 }
 
 void SceneViewRenderer::UpdateViewport( const Viewport &viewport )
@@ -45,30 +59,13 @@ void SceneViewRenderer::UpdateViewport( const Viewport &viewport )
     }
 }
 
-void SceneViewRenderer::Render( ICommandList *commandList, const uint32_t frameIndex )
+ISemaphore *SceneViewRenderer::Render( const uint32_t frameIndex ) const
 {
-    ITextureResource *renderTarget = GetRenderTarget( frameIndex );
-
-    m_resourceTracking.TransitionTexture( commandList, renderTarget, ResourceUsage::RenderTarget );
-
-    RenderingAttachmentDesc attachmentDesc{ };
-    attachmentDesc.Resource = renderTarget;
-
-    RenderingDesc renderingDesc{ };
-    renderingDesc.RTAttachments.Elements    = &attachmentDesc;
-    renderingDesc.RTAttachments.NumElements = 1;
-    commandList->BeginRendering( renderingDesc );
-
-    commandList->BindViewport( m_viewport.X, m_viewport.Y, m_viewport.Width, m_viewport.Height );
-    commandList->BindScissorRect( m_viewport.X, m_viewport.Y, m_viewport.Width, m_viewport.Height );
-    commandList->BindPipeline( m_pipeline.get( ) );
-    commandList->BindVertexBuffer( m_meshBatch->GetVertexBuffer( ).Buffer );
-    commandList->BindIndexBuffer( m_meshBatch->GetIndexBuffer( ).Buffer, IndexType::Uint32 );
-    commandList->DrawIndexed( 36, 1, 0, 0 );
-
-    commandList->EndRendering( );
-
-    m_resourceTracking.TransitionTexture( commandList, renderTarget, ResourceUsage::ShaderResource );
+    RenderFrameDesc renderFrameDesc{ };
+    renderFrameDesc.FrameIndex   = frameIndex;
+    renderFrameDesc.Viewport     = m_viewport;
+    renderFrameDesc.RenderTarget = GetRenderTarget( frameIndex );
+    return m_renderer->RenderFrame( renderFrameDesc );
 }
 
 ITextureResource *SceneViewRenderer::GetRenderTarget( const uint32_t frameIndex ) const
@@ -81,13 +78,8 @@ ITextureResource *SceneViewRenderer::GetRenderTarget( const uint32_t frameIndex 
     return nullptr;
 }
 
-void SceneViewRenderer::CreateVertexBuffer( )
+void SceneViewRenderer::CreateAssets( ) const
 {
-    MeshBatchDesc meshPoolDesc{ };
-    meshPoolDesc.LogicalDevice = m_logicalDevice;
-    m_meshBatch                = std::make_unique<MeshBatch>( meshPoolDesc );
-    m_meshBatch->BeginUpdate( );
-
     BoxDesc boxDesc{ };
     boxDesc.BuildDesc = 0;
     boxDesc.Width     = 1.0f;
@@ -95,57 +87,125 @@ void SceneViewRenderer::CreateVertexBuffer( )
     boxDesc.Depth     = 1.0f;
 
     const auto box = std::unique_ptr<GeometryData>( Geometry::BuildBox( boxDesc ) );
-    m_meshBatch->AddGeometry( box.get( ) );
+    m_assets->BeginBatchUpdate( );
+    m_assets->AddGeometry( box.get( ), "Box1" );
 
     SphereDesc sphereDesc{ };
     sphereDesc.BuildDesc    = 0;
     sphereDesc.Diameter     = 1.0f;
     sphereDesc.Tessellation = 24.0f;
     const auto sphere       = std::unique_ptr<GeometryData>( Geometry::BuildSphere( sphereDesc ) );
-    m_meshBatch->AddGeometry( sphere.get( ) );
-    m_meshBatch->EndUpdate( );
+    m_assets->AddGeometry( sphere.get( ), "Sphere1" );
+    m_assets->EndBatchUpdate( );
 }
 
-void SceneViewRenderer::CreateShaderProgram( )
+void SceneViewRenderer::CreateScene( ) const
 {
-    std::array<ShaderStageDesc, 2> shaderStages{ };
+    m_assets->BeginBatchUpdate( 0 );
 
-    ShaderStageDesc &vertexShaderDesc = shaderStages[ 0 ];
-    vertexShaderDesc.Stage            = ShaderStage::Vertex;
-    vertexShaderDesc.EntryPoint       = "VSMain";
-    vertexShaderDesc.Data             = GetVertexShader( );
+    MaterialDataRequest redMaterial{ };
+    redMaterial.BaseColorFactor   = { 0.8f, 0.2f, 0.2f, 1.0f };
+    redMaterial.MetallicFactor    = 0.1f;
+    redMaterial.RoughnessFactor   = 0.7f;
+    redMaterial.NormalScale       = 1.0f;
+    redMaterial.OcclusionStrength = 1.0f;
+    redMaterial.EmissiveFactor    = { 0.0f, 0.0f, 0.0f, 0.0f };
+    auto redMatHandle             = m_assets->AddMaterial( "RedMaterial", redMaterial );
 
-    ShaderStageDesc &pixelShaderDesc = shaderStages[ 1 ];
-    pixelShaderDesc.Stage            = ShaderStage::Pixel;
-    pixelShaderDesc.EntryPoint       = "PSMain";
-    pixelShaderDesc.Data             = GetPixelShader( );
+    MaterialDataRequest blueMaterial{ };
+    blueMaterial.BaseColorFactor   = { 0.2f, 0.4f, 0.9f, 1.0f };
+    blueMaterial.MetallicFactor    = 0.3f;
+    blueMaterial.RoughnessFactor   = 0.4f;
+    blueMaterial.NormalScale       = 1.0f;
+    blueMaterial.OcclusionStrength = 1.0f;
+    blueMaterial.EmissiveFactor    = { 0.0f, 0.0f, 0.0f, 0.0f };
+    auto blueMatHandle             = m_assets->AddMaterial( "BlueMaterial", blueMaterial );
 
-    ShaderProgramDesc shaderProgramDesc{ };
-    shaderProgramDesc.ShaderStages.Elements    = shaderStages.data( );
-    shaderProgramDesc.ShaderStages.NumElements = shaderStages.size( );
-    m_shaderProgram                            = std::make_unique<ShaderProgram>( shaderProgramDesc );
+    auto boxMesh    = m_assets->Mesh( 0 )->GetSubMesh( "Box1" );
+    auto sphereMesh = m_assets->Mesh( 0 )->GetSubMesh( "Sphere1" );
 
-    std::free( vertexShaderDesc.Data.Elements );
-    std::free( pixelShaderDesc.Data.Elements );
-}
+    m_assets->EndBatchUpdate( 0 );
 
-void SceneViewRenderer::CreatePipeline( )
-{
-    const ShaderReflectDesc reflectDesc = m_shaderProgram->Reflect( );
-    m_inputLayout                       = std::unique_ptr<IInputLayout>( m_logicalDevice->CreateInputLayout( reflectDesc.InputLayout ) );
-    m_rootSignature                     = std::unique_ptr<IRootSignature>( m_logicalDevice->CreateRootSignature( reflectDesc.RootSignature ) );
+    auto camera = m_ecsWorld->entity( "Camera" );
+    camera.add<TransformComponent>( );
+    camera.add<CameraComponent>( );
 
-    PipelineDesc pipelineDesc{ };
-    pipelineDesc.InputLayout   = m_inputLayout.get( );
-    pipelineDesc.ShaderProgram = m_shaderProgram.get( );
-    pipelineDesc.RootSignature = m_rootSignature.get( );
+    auto &cameraTransform    = camera.get_mut<TransformComponent>( );
+    cameraTransform.Position = { 0.0f, 0.0f, 5.0f };
+    cameraTransform.Rotation = { 0.0f, 0.0f, 0.0f, 1.0f };
+    cameraTransform.Scale    = { 1.0f, 1.0f, 1.0f };
 
-    RenderTargetDesc renderTargetDesc{ };
-    renderTargetDesc.Format                         = Format::B8G8R8A8Unorm;
-    pipelineDesc.Graphics.RenderTargets.NumElements = 1;
-    pipelineDesc.Graphics.RenderTargets.Elements    = &renderTargetDesc;
+    auto &cameraComp  = camera.get_mut<CameraComponent>( );
+    cameraComp.Active = true;
 
-    m_pipeline = std::unique_ptr<IPipeline>( m_logicalDevice->CreatePipeline( pipelineDesc ) );
+    const float aspectRatio = static_cast<float>( m_viewport.Width ) / static_cast<float>( m_viewport.Height );
+    const auto  view        = glm::lookAt( glm::vec3( 0.0f, 0.0f, 5.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+    const auto  projection  = glm::perspective( glm::radians( 45.0f ), aspectRatio, 0.1f, 100.0f );
+
+    cameraComp.View           = *reinterpret_cast<const Float4x4 *>( &view );
+    cameraComp.Projection     = *reinterpret_cast<const Float4x4 *>( &projection );
+    const auto viewProj       = projection * view;
+    cameraComp.ViewProjection = *reinterpret_cast<const Float4x4 *>( &viewProj );
+    cameraComp.Position       = { 0.0f, 0.0f, 5.0f, 1.0f };
+
+    auto redBox = m_ecsWorld->entity( "RedBox" );
+    redBox.add<TransformComponent>( );
+    redBox.add<MeshComponent>( );
+    redBox.add<MaterialComponent>( );
+    redBox.add<RenderableComponent>( );
+
+    auto &redBoxTransform    = redBox.get_mut<TransformComponent>( );
+    redBoxTransform.Position = { -2.0f, 0.0f, 0.0f };
+    redBoxTransform.Rotation = { 0.0f, 0.0f, 0.0f, 1.0f };
+    redBoxTransform.Scale    = { 1.0f, 1.0f, 1.0f };
+
+    auto &redBoxMesh   = redBox.get_mut<MeshComponent>( );
+    redBoxMesh.BatchId = 0;
+    redBoxMesh.Handle  = boxMesh.Handle;
+
+    auto &redBoxMaterial  = redBox.get_mut<MaterialComponent>( );
+    redBoxMaterial.Handle = redMatHandle;
+
+    auto &redBoxRenderable   = redBox.get_mut<RenderableComponent>( );
+    redBoxRenderable.Visible = true;
+
+    auto blueSphere = m_ecsWorld->entity( "BlueSphere" );
+    blueSphere.add<TransformComponent>( );
+    blueSphere.add<MeshComponent>( );
+    blueSphere.add<MaterialComponent>( );
+    blueSphere.add<RenderableComponent>( );
+
+    auto &blueSphereTransform    = blueSphere.get_mut<TransformComponent>( );
+    blueSphereTransform.Position = { 2.0f, 0.0f, 0.0f };
+    blueSphereTransform.Rotation = { 0.0f, 0.0f, 0.0f, 1.0f };
+    blueSphereTransform.Scale    = { 1.0f, 1.0f, 1.0f };
+
+    auto &blueSphereMesh   = blueSphere.get_mut<MeshComponent>( );
+    blueSphereMesh.BatchId = 0;
+    blueSphereMesh.Handle  = sphereMesh.Handle;
+
+    auto &blueSphereMaterial  = blueSphere.get_mut<MaterialComponent>( );
+    blueSphereMaterial.Handle = blueMatHandle;
+
+    auto &blueSphereRenderable   = blueSphere.get_mut<RenderableComponent>( );
+    blueSphereRenderable.Visible = true;
+
+    auto greenBox = m_ecsWorld->entity( "GreenBox" );
+    greenBox.add<TransformComponent>( );
+    greenBox.add<MeshComponent>( );
+    greenBox.add<RenderableComponent>( );
+
+    auto &greenBoxTransform    = greenBox.get_mut<TransformComponent>( );
+    greenBoxTransform.Position = { 0.0f, 2.0f, 0.0f };
+    greenBoxTransform.Rotation = { 0.0f, 0.0f, 0.0f, 1.0f };
+    greenBoxTransform.Scale    = { 0.5f, 0.5f, 0.5f };
+
+    auto &greenBoxMesh   = greenBox.get_mut<MeshComponent>( );
+    greenBoxMesh.BatchId = 0;
+    greenBoxMesh.Handle  = boxMesh.Handle;
+
+    auto &greenBoxRenderable   = greenBox.get_mut<RenderableComponent>( );
+    greenBoxRenderable.Visible = true;
 }
 
 void SceneViewRenderer::CreateRenderTargets( )
@@ -169,7 +229,7 @@ void SceneViewRenderer::CreateRenderTargets( )
 
         m_renderTargets.push_back( std::unique_ptr<ITextureResource>( m_logicalDevice->CreateTextureResource( renderTargetDesc ) ) );
 
-        m_resourceTracking.TrackTexture( m_renderTargets[ i ].get( ), ResourceUsage::ShaderResource );
+        m_resourceTracking->TrackTexture( m_renderTargets[ i ].get( ), ResourceUsage::ShaderResource );
 
         TextureDesc depthDesc{ };
         depthDesc.Width      = static_cast<uint32_t>( m_viewport.Width );
@@ -180,54 +240,6 @@ void SceneViewRenderer::CreateRenderTargets( )
         depthDesc.DebugName  = "SceneViewDepthBuffer";
 
         m_depthTextures.push_back( std::unique_ptr<ITextureResource>( m_logicalDevice->CreateTextureResource( depthDesc ) ) );
-        m_resourceTracking.TrackTexture( m_depthTextures[ i ].get( ), ResourceUsage::DepthWrite );
+        m_resourceTracking->TrackTexture( m_depthTextures[ i ].get( ), ResourceUsage::DepthWrite );
     }
-}
-
-ByteArray SceneViewRenderer::GetVertexShader( ) const
-{
-    const auto shaderCode = R"(
-        struct VSInput
-        {
-            float4 Position : POSITION;
-            float4 Normal : NORMAL;
-            float2 TexCoord : TEXCOORD0;
-            float4 Color : COLOR0;
-            float4 Tangent : TANGENT0;
-        };
-
-        struct PSInput
-        {
-            float4 Position : SV_POSITION;
-            float4 Color : COLOR;
-        };
-
-        PSInput VSMain(VSInput input)
-        {
-            PSInput output;
-            output.Position = input.Position;
-            output.Color = input.Color;
-            return output;
-        }
-        )";
-
-    return InteropUtilities::StringToBytes( shaderCode );
-}
-
-ByteArray SceneViewRenderer::GetPixelShader( ) const
-{
-    const auto shaderCode = R"(
-        struct PSInput
-        {
-            float4 Position : SV_POSITION;
-            float4 Color : COLOR;
-        };
-
-        float4 PSMain(PSInput input) : SV_TARGET
-        {
-            return input.Color;
-        }
-        )";
-
-    return InteropUtilities::StringToBytes( shaderCode );
 }

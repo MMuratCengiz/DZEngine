@@ -35,12 +35,13 @@ namespace DZEngine
         ITextureResource *RenderTarget;
         ISemaphore       *OnComplete;
         Viewport          Viewport;
+        uint32_t          RenderTargetAfterUsage = ResourceUsage::ShaderResource;
     };
 
     class IRenderer
     {
     public:
-        virtual ~IRenderer( )                                          = default;
-        virtual void RenderFrame( const RenderFrameDesc &renderFrame ) = 0;
+        virtual ~IRenderer( )                                                 = default;
+        virtual ISemaphore *RenderFrame( const RenderFrameDesc &renderFrame ) = 0;
     };
 } // namespace DZEngine

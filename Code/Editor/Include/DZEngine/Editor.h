@@ -63,7 +63,7 @@ namespace DZEngine
         ~Editor( );
         GameRenderView GetGameRenderView( uint32_t frameIndex ) const;
         void           HandleEvent( const Event &event ) const;
-        void           Update( EditorUpdateDesc updateDesc );
+        void           Update( const EditorUpdateDesc &updateDesc );
 
     private:
         void RenderMenuBar( );
