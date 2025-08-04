@@ -417,7 +417,7 @@ void GPUDrivenDataUpload::UpdateStagingBuffer( const uint32_t frameIndex ) const
         indirectData[ i ].FirstInstance = drawArgsData[ i ].InstanceOffset;
     }
     
-    m_frames[ frameIndex ]->DrawCount = drawArgsIndex;
+    m_frames[ frameIndex ]->NumDraws = drawArgsIndex;
 }
 
 void GPUDrivenDataUpload::UpdateGlobalDataBuffer( const uint32_t frameIndex ) const
@@ -503,9 +503,9 @@ GPUDrivenBuffers GPUDrivenDataUpload::GetBuffers( const uint32_t frameIndex ) co
     return buffers;
 }
 
-uint32_t GPUDrivenDataUpload::GetDrawCount( const uint32_t frameIndex ) const
+uint32_t GPUDrivenDataUpload::GetNumDraws( const uint32_t frameIndex ) const
 {
-    return m_frames[ frameIndex ]->DrawCount;
+    return m_frames[ frameIndex ]->NumDraws;
 }
 
 std::unique_ptr<IBufferResource> GPUDrivenDataUpload::CreateStructuredBuffer( const StructuredBufferDesc &structDesc ) const

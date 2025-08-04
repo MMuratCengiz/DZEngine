@@ -87,7 +87,7 @@ void GPUDrivenRenderer::RenderFrame( const RenderFrameDesc &renderFrame )
         cmdList->BindResourceGroup( binding->GetTexturesBinding( renderFrame.FrameIndex ) );
 
         const auto buffers = m_batches[ i ]->DataUpload->GetBuffers( renderFrame.FrameIndex );
-        const uint32_t drawCount = m_batches[ i ]->DataUpload->GetDrawCount( renderFrame.FrameIndex );
+        const uint32_t drawCount = m_batches[ i ]->DataUpload->GetNumDraws( renderFrame.FrameIndex );
         
         if ( drawCount > 0 )
         {

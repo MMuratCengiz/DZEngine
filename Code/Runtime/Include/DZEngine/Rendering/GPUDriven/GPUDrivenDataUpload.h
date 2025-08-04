@@ -98,7 +98,7 @@ namespace DZEngine
             std::unique_ptr<IBufferResource> DrawArgsBuffer; // g_DrawArgsBuffer;
             std::unique_ptr<IBufferResource> IndirectBuffer; // Indirect draw commands
             
-            uint32_t DrawCount = 0;
+            uint32_t NumDraws = 0;
         };
 
         DataRanges                              m_dataRanges;
@@ -111,7 +111,7 @@ namespace DZEngine
         void             UpdateGlobalDataBuffer( uint32_t frameIndex ) const;
         void             Submit( ISemaphore *onComplete, const ICommandListArray &commandListsToSubmit ) const;
         GPUDrivenBuffers GetBuffers( uint32_t frameIndex ) const;
-        uint32_t         GetDrawCount( uint32_t frameIndex ) const;
+        uint32_t         GetNumDraws( uint32_t frameIndex ) const;
         ~GPUDrivenDataUpload( ) = default;
 
     private:
