@@ -8,6 +8,7 @@
     "flecs",
     "joltphysics",
     "taskflow",
+    "nlohmann-json",
     {
       "name": "imgui",
       "features": [
