@@ -183,7 +183,7 @@ namespace DenOfIz
         }
     };
 
-    struct DZ_API Float_4x4Array
+    struct DZ_API Float4x4Array
     {
         Float4x4 *Elements;
         size_t    NumElements;

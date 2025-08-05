@@ -24,7 +24,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <chrono>
 #endif
 
-#include "Common_Apple.h"
 #include "Common_Windows.h"
 #include "DenOfIzGraphics/Assets/FileSystem/FSConfig.h"
 

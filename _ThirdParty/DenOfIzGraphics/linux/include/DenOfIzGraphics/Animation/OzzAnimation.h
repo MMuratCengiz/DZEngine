@@ -28,15 +28,15 @@ namespace DenOfIz
 
     struct DZ_API SamplingJobDesc
     {
-        OzzContext     *Context = nullptr;
-        float           Ratio   = 0.0f;
-        Float_4x4Array *OutTransforms{ };
+        OzzContext    *Context = nullptr;
+        float          Ratio   = 0.0f;
+        Float4x4Array *OutTransforms{ };
     };
 
     struct DZ_API BlendingJobLayerDesc
     {
-        Float_4x4Array Transforms{ }; // Todo this could potentially be expensive copying
-        float          Weight = 0.0f;
+        Float4x4Array Transforms{ }; // Todo this could potentially be expensive copying
+        float         Weight = 0.0f;
     };
 
     struct DZ_API BlendingJobLayerDescArray
@@ -50,23 +50,23 @@ namespace DenOfIz
         OzzContext               *Context = nullptr;
         BlendingJobLayerDescArray Layers{ };
         float                     Threshold = 0.1f;
-        Float_4x4Array           *OutTransforms{ };
+        Float4x4Array            *OutTransforms{ };
     };
 
     struct DZ_API LocalToModelJobDesc
     {
-        OzzContext     *Context = nullptr;
-        Float_4x4Array *OutTransforms{ };
+        OzzContext    *Context = nullptr;
+        Float4x4Array *OutTransforms{ };
     };
 
     struct DZ_API SkinningJobDesc
     {
-        OzzContext          *Context = nullptr;
-        const Float_4x4Array JointTransforms;
-        const FloatArray     Vertices;
-        const FloatArray     Weights;
-        const UInt16Array    Indices;
-        int                  InfluenceCount = 0;
+        OzzContext         *Context = nullptr;
+        const Float4x4Array JointTransforms;
+        const FloatArray    Vertices;
+        const FloatArray    Weights;
+        const UInt16Array   Indices;
+        int                 InfluenceCount = 0;
 
         FloatArray *OutVertices{ };
         FloatArray *OutNormals{ };
@@ -75,10 +75,10 @@ namespace DenOfIz
 
     struct DZ_API IkTwoBoneJobResult
     {
-        bool    Success{ false };
+        bool   Success{ false };
         Float4 StartJointCorrection{ };
         Float4 MidJointCorrection{ };
-        bool    Reached{ };
+        bool   Reached{ };
     };
 
     struct DZ_API IkTwoBoneJobDesc
@@ -89,14 +89,14 @@ namespace DenOfIz
         Float3   Target{ 0, 0, 1 };
         Float3   PoleVector{ 0, 0, 1 };
         Float3   MidAxis{ 0, 0, 1 };
-        float     Weight     = 0;
-        float     TwistAngle = 0;
-        float     Soften     = 0;
+        float    Weight     = 0;
+        float    TwistAngle = 0;
+        float    Soften     = 0;
     };
 
     struct DZ_API IkAimJobResult
     {
-        bool    Success{ false };
+        bool   Success{ false };
         Float4 JointCorrection{ };
     };
 
@@ -104,9 +104,9 @@ namespace DenOfIz
     {
         OzzContext *Context    = nullptr;
         int         JointIndex = -1;
-        Float3     Target{ 0, 0, 1 };
-        Float3     Forward{ 0, 0, 1 };
-        Float3     Up{ 0, 1, 0 };
+        Float3      Target{ 0, 0, 1 };
+        Float3      Forward{ 0, 0, 1 };
+        Float3      Up{ 0, 1, 0 };
         float       Weight = 1.0f;
     };
 
@@ -122,10 +122,10 @@ namespace DenOfIz
     {
         bool                    Success{ false };
         float                   FloatValue{ 0.0f };
-        Float2                 Float2Value{ };
-        Float3                 Float3Value{ };
-        Float4                 Float4Value{ };
-        Float4                 QuaternionValue{ };
+        Float2                  Float2Value{ };
+        Float3                  Float3Value{ };
+        Float4                  Float4Value{ };
+        Float4                  QuaternionValue{ };
         TrackSamplingResultType Type{ TrackSamplingResultType::Float };
     };
     struct DZ_API TrackSamplingJobDesc
@@ -141,6 +141,7 @@ namespace DenOfIz
     private:
         std::vector<float> m_triggered;
         friend class OzzAnimation;
+
     public:
         bool       Success{ false };
         FloatArray Triggered;
