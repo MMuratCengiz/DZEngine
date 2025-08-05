@@ -20,8 +20,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <cmath>
 #include <flecs.h>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
 #include "DZEngine/Assets/StaticMeshVertex.h"
 #include "DZEngine/Components/CameraComponent.h"
 #include "DZEngine/Components/Graphics/MaterialComponent.h"
@@ -30,8 +28,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "DZEngine/Components/TransformComponent.h"
 #include "DZEngine/Utilities/DataUtilities.h"
 
+#include "DZEngine/Math/MathConverter.h"
 #include "DZEngine/Scene/World.h"
-#include "DZEngine/Utilities/MathConverter.h"
 
 using namespace DZEngine;
 using namespace DenOfIz;
@@ -352,17 +350,14 @@ void GPUDrivenDataUpload::UpdateStagingBuffer( const uint32_t frameIndex ) const
                 return;
             }
 
-            const glm::vec3 scale       = MathConverter::ToGlm( transform.Scale );
-            const glm::vec3 position    = MathConverter::ToGlm( transform.Position );
-            const glm::vec4 rotationVec = MathConverter::ToGlm( transform.Rotation );
-            const auto      rotation    = glm::quat( rotationVec.w, rotationVec.x, rotationVec.y, rotationVec.z );
-
-            auto model = glm::mat4x4( 1.0f );
-            model      = glm::translate( model, position );
-            model      = model * glm::mat4_cast( rotation );
-            model      = glm::scale( model, scale );
-
-            objectData[ objectIndex ].ModelMatrix = MathConverter::ToInterop( model );
+            const DirectX::XMVECTOR scale          = MathConverter::Float3ToXMVECTOR( transform.Scale );
+            const DirectX::XMVECTOR position       = MathConverter::Float3ToXMVECTOR( transform.Position );
+            const DirectX::XMVECTOR rotationVec    = MathConverter::Float4ToXMVECTOR( transform.Rotation );
+            const DirectX::XMMATRIX scaleMatrix    = DirectX::XMMatrixScalingFromVector( scale );
+            const DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationQuaternion( rotationVec );
+            const DirectX::XMMATRIX positionMatrix = DirectX::XMMatrixTranslationFromVector( position );
+            const DirectX::XMMATRIX modelMatrix    = scaleMatrix * rotationMatrix * positionMatrix;
+            objectData[ objectIndex ].ModelMatrix  = MathConverter::Float4X4FromXMMATRIX( modelMatrix );
 
             uint32_t materialId = 0;
             if ( e.has<MaterialComponent>( ) )

@@ -4,7 +4,7 @@
   "dependencies": [
     "fmt",
     "spdlog",
-    "glm",
+    "directxmath",
     "flecs",
     "joltphysics",
     "taskflow",

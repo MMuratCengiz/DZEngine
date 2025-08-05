@@ -17,8 +17,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "DZEngine/Components/SceneViewRenderer.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <spdlog/spdlog.h>
 #include "DZEngine/Assets/MaterialBatch.h"
 #include "DZEngine/Components/CameraComponent.h"
@@ -127,28 +125,6 @@ void SceneViewRenderer::CreateScene( ) const
     const auto sphereMesh = m_assets->Mesh( 0 )->GetSubMesh( "Sphere1" );
 
     m_assets->EndBatchUpdate( 0 );
-
-    const auto camera = m_ecsWorld->entity( "Camera" );
-    camera.add<TransformComponent>( );
-    camera.add<CameraComponent>( );
-
-    auto &cameraTransform    = camera.get_mut<TransformComponent>( );
-    cameraTransform.Position = { 0.0f, 0.0f, 5.0f };
-    cameraTransform.Rotation = { 0.0f, 0.0f, 0.0f, 1.0f };
-    cameraTransform.Scale    = { 1.0f, 1.0f, 1.0f };
-
-    auto &cameraComp  = camera.get_mut<CameraComponent>( );
-    cameraComp.Active = true;
-
-    const float aspectRatio = static_cast<float>( m_viewport.Width ) / static_cast<float>( m_viewport.Height );
-    const auto  view        = glm::lookAt( glm::vec3( 0.0f, 0.0f, 5.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
-    const auto  projection  = glm::perspective( glm::radians( 45.0f ), aspectRatio, 0.1f, 100.0f );
-
-    cameraComp.View           = *reinterpret_cast<const Float4x4 *>( &view );
-    cameraComp.Projection     = *reinterpret_cast<const Float4x4 *>( &projection );
-    const auto viewProj       = projection * view;
-    cameraComp.ViewProjection = *reinterpret_cast<const Float4x4 *>( &viewProj );
-    cameraComp.Position       = { 0.0f, 0.0f, 5.0f, 1.0f };
 
     const auto redBox = m_ecsWorld->entity( "RedBox" );
     redBox.add<TransformComponent>( );

@@ -23,7 +23,7 @@ using namespace DZEngine;
 
 EditorGameRunner::EditorGameRunner( const GameRunnerDesc &desc ) : AGameRunner( desc )
 {
-    SceneViewCameraSystem::Register( m_world->GetWorld( ) );
+    SceneViewCameraSystem::Register( m_world->GetWorld( ), desc.Window->GetGraphicsWindowHandle( ) );
 
     EditorDesc editorDesc{ };
     editorDesc.AppContext = m_appContext.get( );

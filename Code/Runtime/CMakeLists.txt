@@ -1,6 +1,7 @@
 find_package(flecs CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
+find_package(DirectXMath CONFIG REQUIRED)
 
 add_library(DZRuntime STATIC)
 
@@ -18,6 +19,7 @@ target_sources(DZRuntime PRIVATE
         Source/Assets/SkeletonBatch.cpp
         Source/Assets/MaterialBatch.cpp
         Source/Input/InputSystem.cpp
+        Source/Math/MathConverter.cpp
         Source/Rendering/GPUDriven/GPUDrivenBinding.cpp
         Source/Rendering/GPUDriven/GPUDrivenDataUpload.cpp
         Source/Rendering/GPUDriven/GPUDrivenRenderer.cpp
@@ -28,10 +30,9 @@ target_sources(DZRuntime PRIVATE
         Source/Scene/SceneLoader.cpp
         Source/Scene/World.cpp
         Source/Utilities/DataUtilities.cpp
-        Source/Utilities/MathConverter.cpp
         Source/AGameRunner.cpp
         Source/DummyGame.cpp
         Source/GameRunner.cpp
 )
 
-target_link_libraries(DZRuntime PUBLIC DenOfIz::DenOfIzGraphics flecs::flecs spdlog::spdlog fmt::fmt)
+target_link_libraries(DZRuntime PUBLIC DenOfIz::DenOfIzGraphics flecs::flecs spdlog::spdlog fmt::fmt Microsoft::DirectXMath)

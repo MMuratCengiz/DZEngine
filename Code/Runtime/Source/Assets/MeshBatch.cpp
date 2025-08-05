@@ -17,11 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "DZEngine/Assets/MeshBatch.h"
-
-#include <glm/common.hpp>
-#include <glm/vec3.hpp>
-
 #include "DZEngine/Assets/StaticMeshVertex.h"
+#include "DZEngine/Math/Math.h"
 
 #include <spdlog/spdlog.h>
 
@@ -56,7 +53,7 @@ MeshBatch::MeshBatch( const MeshBatchDesc &desc ) : m_logicalDevice( desc.Logica
     indexBufferDesc.HeapType   = HeapType::GPU;
     indexBufferDesc.Usages     = ResourceUsage::CopyDst;
     indexBufferDesc.DebugName  = "Mesh Pool Index Buffer";
-    m_indexBuffer = std::unique_ptr<IBufferResource>( m_logicalDevice->CreateBufferResource( indexBufferDesc ) );
+    m_indexBuffer              = std::unique_ptr<IBufferResource>( m_logicalDevice->CreateBufferResource( indexBufferDesc ) );
 
     m_meshes.resize( 1024 );
 }
@@ -178,8 +175,10 @@ GPUMesh MeshBatch::AddGeometry( const GeometryData *geometry, std::string alias 
     std::vector<StaticMeshVertex> vertices;
     vertices.reserve( numVertices );
 
-    auto minBounds = glm::vec3( std::numeric_limits<float>::max( ) );
-    auto maxBounds = glm::vec3( std::numeric_limits<float>::lowest( ) );
+    float unlikelyMin = std::numeric_limits<float>::max( );
+    auto  minBounds   = DirectX::XMFLOAT3( unlikelyMin, unlikelyMin, unlikelyMin );
+    float unlikelyMax = std::numeric_limits<float>::lowest( );
+    auto  maxBounds   = DirectX::XMFLOAT3( unlikelyMax, unlikelyMax, unlikelyMax );
 
     for ( uint32_t i = 0; i < numVertices; ++i )
     {
@@ -204,10 +203,13 @@ GPUMesh MeshBatch::AddGeometry( const GeometryData *geometry, std::string alias 
 
         vertices.push_back( vertex );
 
-        glm::vec3 pos( vertex.Position.X, vertex.Position.Y, vertex.Position.Z );
+        DirectX::XMFLOAT3 pos( vertex.Position.X, vertex.Position.Y, vertex.Position.Z );
+        DirectX::XMVECTOR posVec = DirectX::XMLoadFloat3( &pos );
+        DirectX::XMVECTOR minVec = DirectX::XMLoadFloat3( &minBounds );
+        DirectX::XMVECTOR maxVec = DirectX::XMLoadFloat3( &maxBounds );
 
-        minBounds = glm::min( minBounds, pos );
-        maxBounds = glm::max( maxBounds, pos );
+        DirectX::XMStoreFloat3( &minBounds, DirectX::XMVectorMin( posVec, minVec ) );
+        DirectX::XMStoreFloat3( &maxBounds, DirectX::XMVectorMax( posVec, maxVec ) );
     }
 
     const size_t numVertexBytes = vertices.size( ) * sizeof( StaticMeshVertex );
