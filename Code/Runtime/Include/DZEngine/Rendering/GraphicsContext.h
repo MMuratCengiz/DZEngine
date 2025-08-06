@@ -24,12 +24,13 @@ namespace DZEngine
 {
     struct GraphicsContext
     {
-        uint32_t          NumFramesInFlight = 3;
-        ILogicalDevice   *LogicalDevice     = nullptr;
-        ICommandQueue    *CopyQueue         = nullptr;
-        ICommandQueue    *GraphicsQueue     = nullptr;
-        ICommandQueue    *ComputeQueue      = nullptr;
-        ResourceTracking *ResourceTracking  = nullptr;
-        ISwapChain       *SwapChain         = nullptr;
+        uint32_t              NumFramesInFlight = 3;
+        GraphicsWindowHandle *WindowHandle      = nullptr;
+        ILogicalDevice       *LogicalDevice     = nullptr;
+        ICommandQueue        *CopyQueue         = nullptr;
+        ICommandQueue        *GraphicsQueue     = nullptr;
+        ICommandQueue        *ComputeQueue      = nullptr;
+        ResourceTracking     *ResourceTracking  = nullptr;
+        ISwapChain           *SwapChain         = nullptr;
     };
 } // namespace DZEngine

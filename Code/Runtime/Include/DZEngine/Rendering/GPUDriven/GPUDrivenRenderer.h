@@ -49,10 +49,15 @@ namespace DZEngine
         std::unique_ptr<ShaderProgram>           m_program;
         std::unique_ptr<IPipeline>               m_pipeline;
 
+        uint32_t                                       m_currentWidth  = 0;
+        uint32_t                                       m_currentHeight = 0;
+        std::vector<std::unique_ptr<ITextureResource>> m_depthTargets;
+
     public:
         explicit GPUDrivenRenderer( const RendererDesc &rendererDesc );
         ISemaphore *RenderFrame( const RenderFrameDesc &renderFrame ) override;
         void        InitTestPipeline( ); // Todo use render graph here and more dynamic pipelines
+        void        RecreateDepthTexturesIfNeeded( );
         ~GPUDrivenRenderer( ) override = default;
     };
 } // namespace DZEngine

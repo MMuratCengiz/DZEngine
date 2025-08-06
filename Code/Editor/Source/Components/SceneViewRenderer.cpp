@@ -124,8 +124,6 @@ void SceneViewRenderer::CreateScene( ) const
     const auto boxMesh    = m_assets->Mesh( 0 )->GetSubMesh( "Box1" );
     const auto sphereMesh = m_assets->Mesh( 0 )->GetSubMesh( "Sphere1" );
 
-    m_assets->EndBatchUpdate( 0 );
-
     const auto redBox = m_ecsWorld->entity( "RedBox" );
     redBox.add<TransformComponent>( );
     redBox.add<MeshComponent>( );

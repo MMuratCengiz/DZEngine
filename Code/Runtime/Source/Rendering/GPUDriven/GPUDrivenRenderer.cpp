@@ -57,6 +57,8 @@ GPUDrivenRenderer::GPUDrivenRenderer( const RendererDesc &rendererDesc )
 
 ISemaphore *GPUDrivenRenderer::RenderFrame( const RenderFrameDesc &renderFrame )
 {
+    RecreateDepthTexturesIfNeeded( );
+
     std::vector<ISemaphore *> waitSemaphores{ };
 
     for ( int i = 0; i < m_assetBatcher->NumBatches( ); ++i )
@@ -73,22 +75,29 @@ ISemaphore *GPUDrivenRenderer::RenderFrame( const RenderFrameDesc &renderFrame )
 
     m_graphicsContext->ResourceTracking->TransitionTexture( cmdList, renderFrame.RenderTarget, ResourceUsage::RenderTarget );
 
+    const auto depthTarget = m_depthTargets[ renderFrame.FrameIndex ].get( );
+    m_graphicsContext->ResourceTracking->TransitionTexture( cmdList, depthTarget, ResourceUsage::DepthWrite );
+
+    RenderingAttachmentDesc rtAttachment{ };
+    rtAttachment.Resource = renderFrame.RenderTarget;
+
+    RenderingAttachmentDesc depthAttachment{ };
+    depthAttachment.Resource = depthTarget;
+
+    RenderingDesc renderingDesc{ };
+    renderingDesc.RTAttachments.Elements    = &rtAttachment;
+    renderingDesc.RTAttachments.NumElements = 1;
+    renderingDesc.DepthAttachment           = depthAttachment;
+
+    const Viewport &vp = renderFrame.Viewport;
+
+    cmdList->BeginRendering( renderingDesc );
+    cmdList->BindViewport( vp.X, vp.Y, vp.Width, vp.Height );
+    cmdList->BindScissorRect( vp.X, vp.Y, vp.Width, vp.Height );
+    cmdList->BindPipeline( m_pipeline.get( ) );
+
     for ( int i = 0; i < m_assetBatcher->NumBatches( ); ++i )
     {
-        std::array<RenderingAttachmentDesc, 1> attachments{ }; // Todo add depth
-        attachments[ 0 ].Resource = renderFrame.RenderTarget;
-
-        RenderingDesc renderingDesc{ };
-        renderingDesc.RTAttachments.Elements    = attachments.data( );
-        renderingDesc.RTAttachments.NumElements = attachments.size( );
-
-        const Viewport &vp = renderFrame.Viewport;
-
-        cmdList->BeginRendering( renderingDesc );
-        cmdList->BindViewport( vp.X, vp.Y, vp.Width, vp.Height );
-        cmdList->BindScissorRect( vp.X, vp.Y, vp.Width, vp.Height );
-        cmdList->BindPipeline( m_pipeline.get( ) );
-
         const auto &binding = m_batches[ i ]->DataBinding;
 
         cmdList->BindResourceGroup( binding->GetSamplerBinding( ) );
@@ -104,9 +113,9 @@ ISemaphore *GPUDrivenRenderer::RenderFrame( const RenderFrameDesc &renderFrame )
         {
             cmdList->DrawIndexedIndirect( buffers.IndirectBuffer, 0, numDraws, sizeof( DrawIndexedIndirectCommand ) );
         }
-
-        cmdList->EndRendering( );
     }
+
+    cmdList->EndRendering( );
 
     m_graphicsContext->ResourceTracking->TransitionTexture( cmdList, renderFrame.RenderTarget, renderFrame.RenderTargetAfterUsage );
     cmdList->End( );
@@ -175,8 +184,42 @@ void GPUDrivenRenderer::InitTestPipeline( )
     RenderTargetDesc renderTargetDesc{ };
     renderTargetDesc.Format = Format::B8G8R8A8Unorm;
 
-    pipelineDesc.Graphics.RenderTargets.Elements    = &renderTargetDesc;
-    pipelineDesc.Graphics.RenderTargets.NumElements = 1;
+    pipelineDesc.Graphics.RenderTargets.Elements       = &renderTargetDesc;
+    pipelineDesc.Graphics.RenderTargets.NumElements    = 1;
+    pipelineDesc.Graphics.DepthTest.Enable             = true;
+    pipelineDesc.Graphics.DepthStencilAttachmentFormat = Format::D32Float;
 
     m_pipeline = std::unique_ptr<IPipeline>( m_graphicsContext->LogicalDevice->CreatePipeline( pipelineDesc ) );
+
+    RecreateDepthTexturesIfNeeded( );
+}
+
+void GPUDrivenRenderer::RecreateDepthTexturesIfNeeded( )
+{
+    const auto surface = m_graphicsContext->WindowHandle->GetSurface( );
+    if ( !m_depthTargets.empty( ) && surface.Width == m_currentWidth && surface.Height == m_currentHeight )
+    {
+        return;
+    }
+    m_graphicsContext->LogicalDevice->WaitIdle( );
+
+    m_depthTargets.clear( );
+    m_depthTargets.resize( m_numFrames );
+
+    TextureDesc depthTargetDesc{ };
+    depthTargetDesc.Width      = surface.Width;
+    depthTargetDesc.Height     = surface.Height;
+    depthTargetDesc.Format     = Format::D32Float;
+    depthTargetDesc.Usages     = ResourceUsage::DepthWrite | ResourceUsage::DepthRead;
+    depthTargetDesc.Descriptor = ResourceDescriptor::DepthStencil;
+
+    for ( uint32_t i = 0; i < m_numFrames; i++ )
+    {
+        m_depthTargets[ i ] = std::unique_ptr<ITextureResource>( m_graphicsContext->LogicalDevice->CreateTextureResource( depthTargetDesc ) );
+        m_graphicsContext->ResourceTracking->TrackTexture( m_depthTargets[ i ].get( ), ResourceUsage::Common );
+    }
+
+    m_currentWidth  = surface.Width;
+    m_currentHeight = surface.Height;
+    m_graphicsContext->LogicalDevice->WaitIdle( );
 }

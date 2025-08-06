@@ -48,6 +48,7 @@ RenderLoop::RenderLoop( const RenderLoopDesc renderLoopDesc ) : m_windowHandle( 
 
     m_graphicsContext                    = std::make_unique<GraphicsContext>( );
     m_graphicsContext->NumFramesInFlight = MAX_FRAMES_IN_FLIGHT;
+    m_graphicsContext->WindowHandle      = m_windowHandle;
     m_graphicsContext->LogicalDevice     = m_logicalDevice.get( );
     m_graphicsContext->CopyQueue         = m_copyQueue.get( );
     m_graphicsContext->GraphicsQueue     = m_graphicsQueue.get( );
